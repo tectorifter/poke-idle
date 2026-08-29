@@ -18821,7 +18821,7 @@
     "id": 1139,
     "name": "Terapagos-Stellar",
     "types": [
-      "Normal"
+      "Stellar"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19239,8 +19239,7 @@
     "id": 1164,
     "name": "Tera Lugia",
     "types": [
-      "Psychic",
-      "Flying"
+      "Psychic"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19256,8 +19255,7 @@
     "id": 1165,
     "name": "Tera Ho-Oh",
     "types": [
-      "Fire",
-      "Flying"
+      "Fire"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19273,8 +19271,7 @@
     "id": 1166,
     "name": "Tera Rayquaza",
     "types": [
-      "Dragon",
-      "Flying"
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19290,8 +19287,7 @@
     "id": 1167,
     "name": "Tera Dialga",
     "types": [
-      "Steel",
-      "Dragon"
+      "Steel"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19307,8 +19303,7 @@
     "id": 1168,
     "name": "Tera Palkia",
     "types": [
-      "Water",
-      "Dragon"
+      "Water"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19324,8 +19319,7 @@
     "id": 1169,
     "name": "Tera Giratina",
     "types": [
-      "Ghost",
-      "Dragon"
+      "Ghost"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19341,8 +19335,7 @@
     "id": 1170,
     "name": "Tera Reshiram",
     "types": [
-      "Dragon",
-      "Fire"
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19358,8 +19351,7 @@
     "id": 1171,
     "name": "Tera Zekrom",
     "types": [
-      "Dragon",
-      "Electric"
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19391,8 +19383,7 @@
     "id": 1173,
     "name": "Tera Yveltal",
     "types": [
-      "Dark",
-      "Flying"
+      "Dark"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19408,8 +19399,7 @@
     "id": 1174,
     "name": "Tera Solgaleo",
     "types": [
-      "Psychic",
-      "Steel"
+      "Psychic"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19425,8 +19415,7 @@
     "id": 1175,
     "name": "Tera Lunala",
     "types": [
-      "Psychic",
-      "Ghost"
+      "Psychic"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19474,8 +19463,7 @@
     "id": 1178,
     "name": "Tera Eternatus",
     "types": [
-      "Poison",
-      "Dragon"
+      "Poison"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19491,8 +19479,7 @@
     "id": 1179,
     "name": "Tera Koraidon",
     "types": [
-      "Fighting",
-      "Dragon"
+      "Fighting"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19508,8 +19495,7 @@
     "id": 1180,
     "name": "Tera Miraidon",
     "types": [
-      "Electric",
-      "Dragon"
+      "Electric"
     ],
     "catch": 3,
     "growth": "Slow",

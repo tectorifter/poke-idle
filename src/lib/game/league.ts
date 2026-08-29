@@ -11,7 +11,7 @@
 // blocks: which stage is next, whether the player's team can enter it, how to
 // resolve one trainer fight, and the ball-reward bonus.
 
-import { LEAGUE, speciesByName } from "./dex";
+import { LEAGUE, ROUTES, speciesByName } from "./dex";
 import { attackDamage, combatStats, levelOf, makeOwned } from "./formulas";
 import type { BallKind, EliteFourDef, GymDef, LeagueProgress, OwnedPoke, TrainerDef } from "./types";
 
@@ -45,14 +45,38 @@ export function trainerOf(stage: LeagueStage): TrainerDef {
   return stage.kind === "gym" ? stage.gym.leader : stage.kind === "elite-four" ? stage.member : stage.trainer;
 }
 
+/** Full anomaly-tier species pool (Dynamax/Mega/Ultra Beast/Tera routes combined) —
+ *  the same pool the Anomalies region spawns from, reused here as the substitution
+ *  pool once the league starts infusing anomaly Pokemon into its rosters. */
+function anomalyPool(): string[] {
+  const anomalies = ROUTES["Anomalies"];
+  if (!anomalies) return [];
+  return Object.values(anomalies).flatMap((r) => r.pokes);
+}
+
+/** Fraction of each trainer's team that gets swapped for anomaly-tier Pokemon:
+ *  0 before the 3rd full league clear, ramping linearly, 100% by the 6th clear. */
+export function anomalyInfusionFraction(runsCompleted: number): number {
+  if (runsCompleted < 3) return 0;
+  if (runsCompleted >= 6) return 1;
+  return (runsCompleted - 3) / 3;
+}
+
 /** Builds live OwnedPoke instances for a trainer's team, ready to battle against.
  *  `prestige` scales the trainer's own mons (see leagueEnemyPrestige) — this is how
  *  the league keeps pace with the player across repeat clears, independent of the
- *  player's own reward on winning (see LEAGUE_PRESTIGE_REWARD). */
-export function buildTrainerTeam(trainer: TrainerDef, prestige = 0): OwnedPoke[] {
+ *  player's own reward on winning (see LEAGUE_PRESTIGE_REWARD). `anomalyFraction`
+ *  independently swaps in anomaly-tier species per slot (level kept the same, only
+ *  the species identity changes) once the league starts infusing them (see
+ *  anomalyInfusionFraction). */
+export function buildTrainerTeam(trainer: TrainerDef, prestige = 0, anomalyFraction = 0): OwnedPoke[] {
+  const pool = anomalyFraction > 0 ? anomalyPool() : [];
   return trainer.team
     .filter((p) => speciesByName(p.name))
-    .map((p) => makeOwned(p.name, p.level, false, prestige));
+    .map((p) => {
+      const name = pool.length > 0 && Math.random() < anomalyFraction ? pool[Math.floor(Math.random() * pool.length)] : p.name;
+      return makeOwned(name, p.level, false, prestige);
+    });
 }
 
 export type BattleTurnResult = {
@@ -100,9 +124,14 @@ export type LeagueBattleOutcome = {
  * team passed in; returns the post-battle team (HP applied, not yet healed —
  * winStage()/loseStage() handle healing and progression on top of this).
  */
-export function simulateLeagueBattle(playerTeam: OwnedPoke[], trainer: TrainerDef, enemyPrestige = 0): LeagueBattleOutcome {
+export function simulateLeagueBattle(
+  playerTeam: OwnedPoke[],
+  trainer: TrainerDef,
+  enemyPrestige = 0,
+  anomalyFraction = 0,
+): LeagueBattleOutcome {
   const team = playerTeam.map((p) => ({ ...p }));
-  const enemyTeam = buildTrainerTeam(trainer, enemyPrestige);
+  const enemyTeam = buildTrainerTeam(trainer, enemyPrestige, anomalyFraction);
   const log: string[] = [];
   let active = team.findIndex((p) => p.hp > 0);
   if (active < 0) {

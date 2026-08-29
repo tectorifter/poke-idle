@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  anomalyInfusionFraction,
   currentStage,
   initialLeagueProgress,
   leagueEnemyPrestige,
@@ -58,7 +59,12 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     const stage: LeagueStage | null = currentStage(get().progress);
     if (!stage) return team;
     const trainer = trainerOf(stage);
-    const outcome = simulateLeagueBattle(team, trainer, leagueEnemyPrestige(get().progress));
+    const outcome = simulateLeagueBattle(
+      team,
+      trainer,
+      leagueEnemyPrestige(get().progress),
+      anomalyInfusionFraction(get().progress.runsCompleted),
+    );
 
     if (outcome.playerWon) {
       const { progress, team: healed } = winStage(get().progress, outcome.team);

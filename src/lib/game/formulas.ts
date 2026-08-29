@@ -51,12 +51,41 @@ function prestigeMult(prestige: number): number {
   return 1 + prestige / 100;
 }
 
+// Permanent flavor bonuses for anomaly-caught Pokemon — derived from the name itself
+// (which never changes once caught), so no extra save data is needed for these to
+// persist forever on a caught mon, whether it's actively battling or just owned.
+const MEGA_STAT_MULT = 1.05;
+const MEGA_DAMAGE_MULT = 1.02;
+const DYNAMAX_HP_MULT = 1.5;
+const TERA_DAMAGE_MULT = 1.1;
+
+const TERA_EXCLUSIVE_NAMES = new Set([
+  "Ogerpon",
+  "Ogerpon-Wellspring",
+  "Ogerpon-Hearthflame",
+  "Ogerpon-Cornerstone",
+  "Terapagos",
+  "Terapagos-Terastal",
+  "Terapagos-Stellar",
+]);
+
+export function isMegaName(name: string): boolean {
+  return name.startsWith("M-");
+}
+export function isDynamaxName(name: string): boolean {
+  return name.startsWith("Dynamax ");
+}
+export function isTeraName(name: string): boolean {
+  return name.startsWith("Tera ") || TERA_EXCLUSIVE_NAMES.has(name);
+}
+
 export function statValue(raw: number, level: number, prestige: number): number {
   return Math.floor((((raw + 50) * level) / 150) * prestigeMult(prestige));
 }
 
 export function maxHpOf(spec: Species, level: number, prestige: number): number {
-  return Math.max(3, Math.floor(((spec.hp * level) / 40) * prestigeMult(prestige)) * 3);
+  const base = Math.max(3, Math.floor(((spec.hp * level) / 40) * prestigeMult(prestige)) * 3);
+  return base;
 }
 
 export function combatStats(poke: OwnedPoke) {
@@ -65,14 +94,18 @@ export function combatStats(poke: OwnedPoke) {
     return { maxHp: 10, atk: 1, def: 1, spa: 1, spd: 1, spe: 1, avgAtk: 1, avgDef: 1, speedMs: 800, types: ["Normal"] as string[] };
   }
   const lvl = levelOf(poke);
-  const atk = statValue(spec.atk, lvl, poke.prestige);
-  const def = statValue(spec.def, lvl, poke.prestige);
-  const spa = statValue(spec.spa, lvl, poke.prestige);
-  const spd = statValue(spec.spd, lvl, poke.prestige);
-  const spe = statValue(spec.spe, lvl, poke.prestige);
+  const mega = isMegaName(poke.name);
+  const statMult = mega ? MEGA_STAT_MULT : 1;
+  const atk = Math.floor(statValue(spec.atk, lvl, poke.prestige) * statMult);
+  const def = Math.floor(statValue(spec.def, lvl, poke.prestige) * statMult);
+  const spa = Math.floor(statValue(spec.spa, lvl, poke.prestige) * statMult);
+  const spd = Math.floor(statValue(spec.spd, lvl, poke.prestige) * statMult);
+  const spe = Math.floor(statValue(spec.spe, lvl, poke.prestige) * statMult);
   const speed = Math.floor((1000 / (500 + spe)) * 800);
+  let maxHp = Math.floor(maxHpOf(spec, lvl, poke.prestige) * statMult);
+  if (isDynamaxName(poke.name)) maxHp = Math.floor(maxHp * DYNAMAX_HP_MULT);
   return {
-    maxHp: maxHpOf(spec, lvl, poke.prestige),
+    maxHp,
     atk,
     def,
     spa,
@@ -104,7 +137,12 @@ export function attackDamage(attacker: OwnedPoke, defender: OwnedPoke): { damage
   const d = combatStats(defender);
   const multiplier = typeMultiplier(a.types, d.types);
   const bonus = levelDamageBonus(levelOf(attacker), attacker.prestige, multiplier);
-  return { damage: rollDamage(a.avgAtk, d.avgDef, multiplier, bonus), multiplier };
+  let damage = rollDamage(a.avgAtk, d.avgDef, multiplier, bonus);
+  if (damage > 0) {
+    if (isMegaName(attacker.name)) damage = Math.round(damage * MEGA_DAMAGE_MULT);
+    if (isTeraName(attacker.name)) damage = Math.round(damage * TERA_DAMAGE_MULT);
+  }
+  return { damage, multiplier };
 }
 
 export function catchChancePercent(catchRate: number, ball: BallKind): number {
