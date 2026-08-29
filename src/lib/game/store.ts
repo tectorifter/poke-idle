@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { ROUTES, REGIONS, REGION_UNLOCK, speciesByName, STARTERS } from "./dex";
 import {
   attackDamage,
+  BENCH_EXP_SHARE,
   catchChancePercent,
   combatStats,
   expAtLevel,
@@ -369,9 +370,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       }
 
       const atkPoke = team[activeIndex];
+      const fullReward = expReward(fallen);
       if (atkPoke) {
         const before = levelOf(atkPoke);
-        atkPoke.exp += expReward(fallen, true);
+        atkPoke.exp += fullReward;
         const after = levelOf(atkPoke);
         if (after > before) {
           atkPoke.hp = combatStats(atkPoke).maxHp;
@@ -388,7 +390,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       for (const p of team) {
         if (p === atkPoke) continue;
         const before = levelOf(p);
-        p.exp += expReward(fallen, false);
+        p.exp += fullReward * BENCH_EXP_SHARE;
         if (levelOf(p) > before) {
           p.hp = combatStats(p).maxHp;
           log = pushLog(log, `${p.name} grew to Lv. ${levelOf(p)}!`, "level");
