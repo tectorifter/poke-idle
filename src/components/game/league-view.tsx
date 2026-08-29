@@ -98,7 +98,7 @@ export function LeagueView() {
             lastResult === "win" ? "bg-hp/20 text-hp" : "bg-danger/20 text-danger",
           )}
         >
-          {lastResult === "win" ? "Victory! Team healed, advancing." : "Defeated — run reset to Gym 1."}
+          {lastResult === "win" ? "Victory! +8 prestige for the whole team, healed, advancing." : "Defeated — run reset to Gym 1."}
         </div>
       )}
 

@@ -161,9 +161,15 @@ export function healTeam(team: OwnedPoke[]): OwnedPoke[] {
   return team.map((p) => ({ ...p, hp: combatStats(p).maxHp }));
 }
 
-/** Call after the player's team clears the current stage's trainer. */
+export const LEAGUE_PRESTIGE_REWARD = 8;
+
+/** Call after the player's team clears the current stage's trainer. Every win grants
+ *  +LEAGUE_PRESTIGE_REWARD prestige to the whole team (gym, Elite Four, or Champion —
+ *  any league beat counts), applied before healing so the full heal lands at the new,
+ *  higher max HP. */
 export function winStage(progress: LeagueProgress, team: OwnedPoke[]): { progress: LeagueProgress; team: OwnedPoke[] } {
-  const healed = healTeam(team);
+  const boosted = team.map((p) => ({ ...p, prestige: p.prestige + LEAGUE_PRESTIGE_REWARD }));
+  const healed = healTeam(boosted);
   const wasLastStage = progress.stageIndex >= STAGE_COUNT - 1;
   if (wasLastStage) {
     // Beat the final champion: loop back to gym 1, tally the clear.

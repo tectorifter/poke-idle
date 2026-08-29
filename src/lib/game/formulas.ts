@@ -85,18 +85,26 @@ export function combatStats(poke: OwnedPoke) {
   };
 }
 
-export function rollDamage(attackerAtk: number, defenderDef: number, multiplier: number): number {
+export function rollDamage(attackerAtk: number, defenderDef: number, multiplier: number, levelDmgBonus = 0): number {
   const power = attackerAtk * multiplier;
   const raw = power - defenderDef / 10;
-  if (raw <= 0) return 0;
-  return Math.ceil(raw * ((Math.random() + 0.1) * 2) / 100);
+  const base = raw <= 0 ? 0 : Math.ceil(raw * ((Math.random() + 0.1) * 2) / 100);
+  return base + levelDmgBonus;
+}
+
+/** Extra flat damage from the attacker's level, scaled by their prestige and by
+ *  how effective the hit is — so a super-effective, highly-prestiged, high-level
+ *  hit visibly outpaces a neutral low-level one instead of both rounding to 1. */
+export function levelDamageBonus(level: number, prestige: number, multiplier: number): number {
+  return Math.floor((level / 10) * 1.5 * prestigeMult(prestige) * multiplier);
 }
 
 export function attackDamage(attacker: OwnedPoke, defender: OwnedPoke): { damage: number; multiplier: number } {
   const a = combatStats(attacker);
   const d = combatStats(defender);
   const multiplier = typeMultiplier(a.types, d.types);
-  return { damage: rollDamage(a.avgAtk, d.avgDef, multiplier), multiplier };
+  const bonus = levelDamageBonus(levelOf(attacker), attacker.prestige, multiplier);
+  return { damage: rollDamage(a.avgAtk, d.avgDef, multiplier, bonus), multiplier };
 }
 
 export function catchChancePercent(catchRate: number, ball: BallKind): number {
