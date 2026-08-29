@@ -45,11 +45,14 @@ export function trainerOf(stage: LeagueStage): TrainerDef {
   return stage.kind === "gym" ? stage.gym.leader : stage.kind === "elite-four" ? stage.member : stage.trainer;
 }
 
-/** Builds live OwnedPoke instances for a trainer's team, ready to battle against. */
-export function buildTrainerTeam(trainer: TrainerDef): OwnedPoke[] {
+/** Builds live OwnedPoke instances for a trainer's team, ready to battle against.
+ *  `prestige` scales the trainer's own mons (see leagueEnemyPrestige) — this is how
+ *  the league keeps pace with the player across repeat clears, independent of the
+ *  player's own reward on winning (see LEAGUE_PRESTIGE_REWARD). */
+export function buildTrainerTeam(trainer: TrainerDef, prestige = 0): OwnedPoke[] {
   return trainer.team
     .filter((p) => speciesByName(p.name))
-    .map((p) => makeOwned(p.name, p.level));
+    .map((p) => makeOwned(p.name, p.level, false, prestige));
 }
 
 export type BattleTurnResult = {
@@ -97,9 +100,9 @@ export type LeagueBattleOutcome = {
  * team passed in; returns the post-battle team (HP applied, not yet healed —
  * winStage()/loseStage() handle healing and progression on top of this).
  */
-export function simulateLeagueBattle(playerTeam: OwnedPoke[], trainer: TrainerDef): LeagueBattleOutcome {
+export function simulateLeagueBattle(playerTeam: OwnedPoke[], trainer: TrainerDef, enemyPrestige = 0): LeagueBattleOutcome {
   const team = playerTeam.map((p) => ({ ...p }));
-  const enemyTeam = buildTrainerTeam(trainer);
+  const enemyTeam = buildTrainerTeam(trainer, enemyPrestige);
   const log: string[] = [];
   let active = team.findIndex((p) => p.hp > 0);
   if (active < 0) {
@@ -161,7 +164,16 @@ export function healTeam(team: OwnedPoke[]): OwnedPoke[] {
   return team.map((p) => ({ ...p, hp: combatStats(p).maxHp }));
 }
 
-export const LEAGUE_PRESTIGE_REWARD = 8;
+export const LEAGUE_PRESTIGE_REWARD = 1;
+
+/** How much prestige the league's own trainer mons carry, scaled by full clears —
+ *  this is what "keeps up with the player's strength" across repeat runs. Anomaly
+ *  wild encounters follow this same value (see store.ts's spawnEnemy). */
+export const LEAGUE_ENEMY_PRESTIGE_PER_RUN = 8;
+
+export function leagueEnemyPrestige(progress: LeagueProgress): number {
+  return progress.runsCompleted * LEAGUE_ENEMY_PRESTIGE_PER_RUN;
+}
 
 /** Call after the player's team clears the current stage's trainer. Every win grants
  *  +LEAGUE_PRESTIGE_REWARD prestige to the whole team (gym, Elite Four, or Champion —

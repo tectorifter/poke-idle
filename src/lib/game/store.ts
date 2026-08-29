@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { ROUTES, REGIONS, REGION_UNLOCK, speciesByName, STARTERS } from "./dex";
+import { leagueEnemyPrestige } from "./league";
+import { useLeague } from "./league-store";
 import {
   attackDamage,
   BENCH_EXP_SHARE,
@@ -81,6 +83,7 @@ export type GameState = {
   stats: Stats;
   lastHeal: number;
   autoPrestige: boolean;
+  anomalyCleared: Record<string, boolean>;
   log: LogLine[];
   paused: boolean;
   playerHit: number;
@@ -127,6 +130,7 @@ function emptyState(): GameState {
     stats: defaultStats(),
     lastHeal: 0,
     autoPrestige: false,
+    anomalyCleared: {},
     log: [],
     paused: false,
     playerHit: 0,
@@ -152,6 +156,7 @@ function persist(state: GameState) {
     lastHeal: state.lastHeal,
     autoPrestige: state.autoPrestige,
     started: state.started,
+    anomalyCleared: state.anomalyCleared,
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(blob));
@@ -160,13 +165,17 @@ function persist(state: GameState) {
   }
 }
 
-function spawnEnemy(region: string, routeId: string): OwnedPoke | null {
+function spawnEnemy(region: string, routeId: string, anomalyCleared: Record<string, boolean>): OwnedPoke | null {
   const route = ROUTES[region]?.[routeId];
   if (!route || route.pokes.length === 0) return null;
   const name = pickWeighted(route.pokes, route.weights);
   if (!speciesByName(name)) return null;
   const shiny = Math.random() < SHINY_ODDS;
-  return makeOwned(name, randomLevel(route.minLevel, route.maxLevel), shiny, 0);
+  // Anomaly routes track the league's own difficulty escalation, but only once you've
+  // beaten that specific anomaly at least once — giving one baseline clear before it
+  // starts ramping with the league's repeat-clear scaling.
+  const prestige = region === "Anomalies" && anomalyCleared[routeId] ? leagueEnemyPrestige(useLeague.getState().progress) : 0;
+  return makeOwned(name, randomLevel(route.minLevel, route.maxLevel), shiny, prestige);
 }
 
 function markDex(dex: Record<string, DexFlag>, name: string, flag: DexFlag): Record<string, DexFlag> {
@@ -202,7 +211,8 @@ function hydrate(): GameState {
     stats: { ...defaultStats(), ...saved.stats },
     lastHeal: saved.lastHeal ?? 0,
     autoPrestige: !!saved.autoPrestige,
-    enemy: spawnEnemy(region, route),
+    anomalyCleared: saved.anomalyCleared ?? {},
+    enemy: spawnEnemy(region, route, saved.anomalyCleared ?? {}),
     now: Date.now(),
   };
   if (state.enemy) {
@@ -225,7 +235,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   startWith: (name) => {
     const starter = makeOwned(name, 5, false, 0);
-    const enemy = spawnEnemy("Kanto", "route");
+    const enemy = spawnEnemy("Kanto", "route", {});
     const dex: Record<string, DexFlag> = { [name]: 6 };
     let stats = defaultStats();
     if (enemy) {
@@ -273,7 +283,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       activeIndex = living;
     }
 
-    const spawned = s.enemy ? { ...s.enemy } : spawnEnemy(s.region, s.route);
+    const spawned = s.enemy ? { ...s.enemy } : spawnEnemy(s.region, s.route, s.anomalyCleared);
     if (!spawned) return;
     let enemy: OwnedPoke = spawned;
 
@@ -282,6 +292,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let stats = s.stats;
     let balls = s.balls;
     let storage = s.storage;
+    let anomalyCleared = s.anomalyCleared;
     let playerHit = s.playerHit;
     let enemyHit = s.enemyHit;
     let lastCatch: GameState["lastCatch"] = "none";
@@ -324,6 +335,9 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         ...stats,
         beaten: stats.beaten + 1,
       };
+      if (s.region === "Anomalies" && !anomalyCleared[s.route]) {
+        anomalyCleared = { ...anomalyCleared, [s.route]: true };
+      }
       log = pushLog(log, `Felled ${fallen.shiny ? "Shiny " : ""}${fallen.name}!`, fallen.shiny ? "shiny" : "neutral");
 
       const wantCatch =
@@ -397,7 +411,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         }
       }
 
-      const next = spawnEnemy(s.region, s.route);
+      const next = spawnEnemy(s.region, s.route, anomalyCleared);
       if (next) {
         enemy = next;
         dex = markDex(dex, next.name, next.shiny ? 2 : 1);
@@ -448,6 +462,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         playerHit,
         enemyHit,
         lastCatch,
+        anomalyCleared,
         now,
       };
       set(nextState);
@@ -470,7 +485,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (def.requiredPrestige != null && prestige < def.requiredPrestige) return;
     playerTimer = 0;
     enemyTimer = 0;
-    const enemy = spawnEnemy(region, route);
+    const enemy = spawnEnemy(region, route, get().anomalyCleared);
     let dex = get().dex;
     let stats = get().stats;
     let log = get().log;

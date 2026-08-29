@@ -114,4 +114,5 @@ export type SaveBlob = {
   lastHeal: number;
   autoPrestige: boolean;
   started: boolean;
+  anomalyCleared: Record<string, boolean>;
 };
