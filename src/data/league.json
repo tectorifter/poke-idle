@@ -1,0 +1,1139 @@
+{
+  "minLevel": 50,
+  "maxLevel": 100,
+  "ballBonusPercent": 20,
+  "gyms": [
+    {
+      "id": "gym1",
+      "number": 1,
+      "name": "Verdant Gym",
+      "type": "Grass",
+      "minLevel": 46,
+      "maxLevel": 50,
+      "leader": {
+        "id": "leader1",
+        "name": "Rowan",
+        "title": "Grass-type Gym Leader",
+        "team": [
+          {
+            "name": "Nuzleaf",
+            "level": 50
+          },
+          {
+            "name": "Flapple",
+            "level": 50
+          },
+          {
+            "name": "Kartana",
+            "level": 50
+          }
+        ]
+      },
+      "badge": "Grass Badge"
+    },
+    {
+      "id": "gym2",
+      "number": 2,
+      "name": "Ember Gym",
+      "type": "Fire",
+      "minLevel": 47,
+      "maxLevel": 51,
+      "leader": {
+        "id": "leader2",
+        "name": "Ignis",
+        "title": "Fire-type Gym Leader",
+        "team": [
+          {
+            "name": "Chandelure",
+            "level": 51
+          },
+          {
+            "name": "Heatran",
+            "level": 51
+          },
+          {
+            "name": "P-Groudon",
+            "level": 51
+          }
+        ]
+      },
+      "badge": "Fire Badge"
+    },
+    {
+      "id": "gym3",
+      "number": 3,
+      "name": "Tide Gym",
+      "type": "Water",
+      "minLevel": 49,
+      "maxLevel": 53,
+      "leader": {
+        "id": "leader3",
+        "name": "Marin",
+        "title": "Water-type Gym Leader",
+        "team": [
+          {
+            "name": "Keldeo",
+            "level": 53
+          },
+          {
+            "name": "P-Kyogre",
+            "level": 53
+          },
+          {
+            "name": "P-Kyogre",
+            "level": 53
+          }
+        ]
+      },
+      "badge": "Water Badge"
+    },
+    {
+      "id": "gym4",
+      "number": 4,
+      "name": "Voltage Gym",
+      "type": "Electric",
+      "minLevel": 50,
+      "maxLevel": 54,
+      "leader": {
+        "id": "leader4",
+        "name": "Voltz",
+        "title": "Electric-type Gym Leader",
+        "team": [
+          {
+            "name": "Zekrom",
+            "level": 54
+          },
+          {
+            "name": "Zekrom",
+            "level": 54
+          },
+          {
+            "name": "Zekrom",
+            "level": 54
+          }
+        ]
+      },
+      "badge": "Electric Badge"
+    },
+    {
+      "id": "gym5",
+      "number": 5,
+      "name": "Hive Gym",
+      "type": "Bug",
+      "minLevel": 51,
+      "maxLevel": 55,
+      "leader": {
+        "id": "leader5",
+        "name": "Cricket",
+        "title": "Bug-type Gym Leader",
+        "team": [
+          {
+            "name": "Genesect",
+            "level": 55
+          },
+          {
+            "name": "Genesect",
+            "level": 55
+          },
+          {
+            "name": "Genesect",
+            "level": 55
+          }
+        ]
+      },
+      "badge": "Bug Badge"
+    },
+    {
+      "id": "gym6",
+      "number": 6,
+      "name": "Plainview Gym",
+      "type": "Normal",
+      "minLevel": 53,
+      "maxLevel": 57,
+      "leader": {
+        "id": "leader6",
+        "name": "Dale",
+        "title": "Normal-type Gym Leader",
+        "team": [
+          {
+            "name": "Arceus",
+            "level": 57
+          },
+          {
+            "name": "Arceus",
+            "level": 57
+          },
+          {
+            "name": "Arceus",
+            "level": 57
+          }
+        ]
+      },
+      "badge": "Normal Badge"
+    },
+    {
+      "id": "gym7",
+      "number": 7,
+      "name": "Skyline Gym",
+      "type": "Flying",
+      "minLevel": 54,
+      "maxLevel": 58,
+      "leader": {
+        "id": "leader7",
+        "name": "Aeris",
+        "title": "Flying-type Gym Leader",
+        "team": [
+          {
+            "name": "Yveltal",
+            "level": 58
+          },
+          {
+            "name": "Yveltal",
+            "level": 58
+          },
+          {
+            "name": "Yveltal",
+            "level": 58
+          }
+        ]
+      },
+      "badge": "Flying Badge"
+    },
+    {
+      "id": "gym8",
+      "number": 8,
+      "name": "Toxic Gym",
+      "type": "Poison",
+      "minLevel": 55,
+      "maxLevel": 59,
+      "leader": {
+        "id": "leader8",
+        "name": "Vex",
+        "title": "Poison-type Gym Leader",
+        "team": [
+          {
+            "name": "Eternatus-Eternamax",
+            "level": 59
+          },
+          {
+            "name": "Eternatus-Eternamax",
+            "level": 59
+          },
+          {
+            "name": "Eternatus-Eternamax",
+            "level": 59
+          }
+        ]
+      },
+      "badge": "Poison Badge"
+    },
+    {
+      "id": "gym9",
+      "number": 9,
+      "name": "Bedrock Gym",
+      "type": "Ground",
+      "minLevel": 57,
+      "maxLevel": 61,
+      "leader": {
+        "id": "leader9",
+        "name": "Terra",
+        "title": "Ground-type Gym Leader",
+        "team": [
+          {
+            "name": "P-Groudon",
+            "level": 61
+          },
+          {
+            "name": "P-Groudon",
+            "level": 61
+          },
+          {
+            "name": "P-Groudon",
+            "level": 61
+          }
+        ]
+      },
+      "badge": "Ground Badge"
+    },
+    {
+      "id": "gym10",
+      "number": 10,
+      "name": "Quarry Gym",
+      "type": "Rock",
+      "minLevel": 58,
+      "maxLevel": 62,
+      "leader": {
+        "id": "leader10",
+        "name": "Boulder",
+        "title": "Rock-type Gym Leader",
+        "team": [
+          {
+            "name": "Diancie",
+            "level": 62
+          },
+          {
+            "name": "Diancie",
+            "level": 62
+          },
+          {
+            "name": "Diancie",
+            "level": 62
+          }
+        ]
+      },
+      "badge": "Rock Badge"
+    },
+    {
+      "id": "gym11",
+      "number": 11,
+      "name": "Ironfist Gym",
+      "type": "Fighting",
+      "minLevel": 59,
+      "maxLevel": 63,
+      "leader": {
+        "id": "leader11",
+        "name": "Kaida",
+        "title": "Fighting-type Gym Leader",
+        "team": [
+          {
+            "name": "Zamazenta-Crowned",
+            "level": 63
+          },
+          {
+            "name": "Zamazenta-Crowned",
+            "level": 63
+          },
+          {
+            "name": "Zamazenta-Crowned",
+            "level": 63
+          }
+        ]
+      },
+      "badge": "Fighting Badge"
+    },
+    {
+      "id": "gym12",
+      "number": 12,
+      "name": "Mindscape Gym",
+      "type": "Psychic",
+      "minLevel": 60,
+      "maxLevel": 64,
+      "leader": {
+        "id": "leader12",
+        "name": "Mira",
+        "title": "Psychic-type Gym Leader",
+        "team": [
+          {
+            "name": "Calyrex-Shadow",
+            "level": 64
+          },
+          {
+            "name": "Calyrex-Shadow",
+            "level": 64
+          },
+          {
+            "name": "Calyrex-Shadow",
+            "level": 64
+          }
+        ]
+      },
+      "badge": "Psychic Badge"
+    },
+    {
+      "id": "gym13",
+      "number": 13,
+      "name": "Hollow Gym",
+      "type": "Ghost",
+      "minLevel": 62,
+      "maxLevel": 66,
+      "leader": {
+        "id": "leader13",
+        "name": "Shade",
+        "title": "Ghost-type Gym Leader",
+        "team": [
+          {
+            "name": "Calyrex-Shadow",
+            "level": 66
+          },
+          {
+            "name": "Calyrex-Shadow",
+            "level": 66
+          },
+          {
+            "name": "Calyrex-Shadow",
+            "level": 66
+          }
+        ]
+      },
+      "badge": "Ghost Badge"
+    },
+    {
+      "id": "gym14",
+      "number": 14,
+      "name": "Frostbite Gym",
+      "type": "Ice",
+      "minLevel": 63,
+      "maxLevel": 67,
+      "leader": {
+        "id": "leader14",
+        "name": "Frost",
+        "title": "Ice-type Gym Leader",
+        "team": [
+          {
+            "name": "W-Kyurem",
+            "level": 67
+          },
+          {
+            "name": "W-Kyurem",
+            "level": 67
+          },
+          {
+            "name": "W-Kyurem",
+            "level": 67
+          }
+        ]
+      },
+      "badge": "Ice Badge"
+    },
+    {
+      "id": "gym15",
+      "number": 15,
+      "name": "Forge Gym",
+      "type": "Steel",
+      "minLevel": 64,
+      "maxLevel": 68,
+      "leader": {
+        "id": "leader15",
+        "name": "Ferra",
+        "title": "Steel-type Gym Leader",
+        "team": [
+          {
+            "name": "Zamazenta-Crowned",
+            "level": 68
+          },
+          {
+            "name": "Zamazenta-Crowned",
+            "level": 68
+          },
+          {
+            "name": "Zamazenta-Crowned",
+            "level": 68
+          }
+        ]
+      },
+      "badge": "Steel Badge"
+    },
+    {
+      "id": "gym16",
+      "number": 16,
+      "name": "Wyrmspire Gym",
+      "type": "Dragon",
+      "minLevel": 66,
+      "maxLevel": 70,
+      "leader": {
+        "id": "leader16",
+        "name": "Draven",
+        "title": "Dragon-type Gym Leader",
+        "team": [
+          {
+            "name": "Eternatus-Eternamax",
+            "level": 70
+          },
+          {
+            "name": "Eternatus-Eternamax",
+            "level": 70
+          },
+          {
+            "name": "Eternatus-Eternamax",
+            "level": 70
+          }
+        ]
+      },
+      "badge": "Dragon Badge"
+    },
+    {
+      "id": "gym17",
+      "number": 17,
+      "name": "Nightfall Gym",
+      "type": "Dark",
+      "minLevel": 67,
+      "maxLevel": 71,
+      "leader": {
+        "id": "leader17",
+        "name": "Nyx",
+        "title": "Dark-type Gym Leader",
+        "team": [
+          {
+            "name": "Yveltal",
+            "level": 71
+          },
+          {
+            "name": "Yveltal",
+            "level": 71
+          },
+          {
+            "name": "Yveltal",
+            "level": 71
+          }
+        ]
+      },
+      "badge": "Dark Badge"
+    },
+    {
+      "id": "gym18",
+      "number": 18,
+      "name": "Glimmer Gym",
+      "type": "Fairy",
+      "minLevel": 68,
+      "maxLevel": 72,
+      "leader": {
+        "id": "leader18",
+        "name": "Lumi",
+        "title": "Fairy-type Gym Leader",
+        "team": [
+          {
+            "name": "Zacian-Crowned",
+            "level": 72
+          },
+          {
+            "name": "Zacian-Crowned",
+            "level": 72
+          },
+          {
+            "name": "Zacian-Crowned",
+            "level": 72
+          }
+        ]
+      },
+      "badge": "Fairy Badge"
+    },
+    {
+      "id": "gym19",
+      "number": 19,
+      "name": "Verdant Gym II",
+      "type": "Grass",
+      "minLevel": 70,
+      "maxLevel": 74,
+      "leader": {
+        "id": "leader19",
+        "name": "Rowan (Veteran)",
+        "title": "Grass-type Gym Leader",
+        "team": [
+          {
+            "name": "Zarude",
+            "level": 74
+          },
+          {
+            "name": "Zarude",
+            "level": 74
+          },
+          {
+            "name": "Zarude",
+            "level": 74
+          },
+          {
+            "name": "Zarude",
+            "level": 74
+          }
+        ]
+      },
+      "badge": "Grass Badge (Advanced)"
+    },
+    {
+      "id": "gym20",
+      "number": 20,
+      "name": "Ember Gym II",
+      "type": "Fire",
+      "minLevel": 71,
+      "maxLevel": 75,
+      "leader": {
+        "id": "leader20",
+        "name": "Ignis (Veteran)",
+        "title": "Fire-type Gym Leader",
+        "team": [
+          {
+            "name": "P-Groudon",
+            "level": 75
+          },
+          {
+            "name": "P-Groudon",
+            "level": 75
+          },
+          {
+            "name": "P-Groudon",
+            "level": 75
+          },
+          {
+            "name": "P-Groudon",
+            "level": 75
+          }
+        ]
+      },
+      "badge": "Fire Badge (Advanced)"
+    },
+    {
+      "id": "gym21",
+      "number": 21,
+      "name": "Tide Gym II",
+      "type": "Water",
+      "minLevel": 72,
+      "maxLevel": 76,
+      "leader": {
+        "id": "leader21",
+        "name": "Marin (Veteran)",
+        "title": "Water-type Gym Leader",
+        "team": [
+          {
+            "name": "P-Kyogre",
+            "level": 76
+          },
+          {
+            "name": "P-Kyogre",
+            "level": 76
+          },
+          {
+            "name": "P-Kyogre",
+            "level": 76
+          },
+          {
+            "name": "P-Kyogre",
+            "level": 76
+          }
+        ]
+      },
+      "badge": "Water Badge (Advanced)"
+    },
+    {
+      "id": "gym22",
+      "number": 22,
+      "name": "Voltage Gym II",
+      "type": "Electric",
+      "minLevel": 74,
+      "maxLevel": 78,
+      "leader": {
+        "id": "leader22",
+        "name": "Voltz (Veteran)",
+        "title": "Electric-type Gym Leader",
+        "team": [
+          {
+            "name": "Zekrom",
+            "level": 78
+          },
+          {
+            "name": "Zekrom",
+            "level": 78
+          },
+          {
+            "name": "Zekrom",
+            "level": 78
+          },
+          {
+            "name": "Zekrom",
+            "level": 78
+          }
+        ]
+      },
+      "badge": "Electric Badge (Advanced)"
+    },
+    {
+      "id": "gym23",
+      "number": 23,
+      "name": "Hive Gym II",
+      "type": "Bug",
+      "minLevel": 75,
+      "maxLevel": 79,
+      "leader": {
+        "id": "leader23",
+        "name": "Cricket (Veteran)",
+        "title": "Bug-type Gym Leader",
+        "team": [
+          {
+            "name": "Genesect",
+            "level": 79
+          },
+          {
+            "name": "Genesect",
+            "level": 79
+          },
+          {
+            "name": "Genesect",
+            "level": 79
+          },
+          {
+            "name": "Genesect",
+            "level": 79
+          }
+        ]
+      },
+      "badge": "Bug Badge (Advanced)"
+    },
+    {
+      "id": "gym24",
+      "number": 24,
+      "name": "Plainview Gym II",
+      "type": "Normal",
+      "minLevel": 76,
+      "maxLevel": 80,
+      "leader": {
+        "id": "leader24",
+        "name": "Dale (Veteran)",
+        "title": "Normal-type Gym Leader",
+        "team": [
+          {
+            "name": "Arceus",
+            "level": 80
+          },
+          {
+            "name": "Arceus",
+            "level": 80
+          },
+          {
+            "name": "Arceus",
+            "level": 80
+          },
+          {
+            "name": "Arceus",
+            "level": 80
+          }
+        ]
+      },
+      "badge": "Normal Badge (Advanced)"
+    }
+  ],
+  "eliteFours": [
+    {
+      "id": "elite-four-1",
+      "members": [
+        {
+          "id": "e4-1-1",
+          "name": "Frost the Ice Master",
+          "title": "Elite Four - Ice specialist",
+          "team": [
+            {
+              "name": "Piloswine",
+              "level": 82
+            },
+            {
+              "name": "Froslass",
+              "level": 82
+            },
+            {
+              "name": "Mr. Rime",
+              "level": 82
+            },
+            {
+              "name": "Chien-Pao",
+              "level": 82
+            },
+            {
+              "name": "W-Kyurem",
+              "level": 82
+            }
+          ]
+        },
+        {
+          "id": "e4-1-2",
+          "name": "Draven the Dragon Master",
+          "title": "Elite Four - Dragon specialist",
+          "team": [
+            {
+              "name": "Noivern",
+              "level": 83
+            },
+            {
+              "name": "Latios",
+              "level": 83
+            },
+            {
+              "name": "Palkia",
+              "level": 83
+            },
+            {
+              "name": "Eternatus-Eternamax",
+              "level": 83
+            },
+            {
+              "name": "Eternatus-Eternamax",
+              "level": 83
+            }
+          ]
+        },
+        {
+          "id": "e4-1-3",
+          "name": "Nyx the Dark Master",
+          "title": "Elite Four - Dark specialist",
+          "team": [
+            {
+              "name": "Mandibuzz",
+              "level": 84
+            },
+            {
+              "name": "Chien-Pao",
+              "level": 84
+            },
+            {
+              "name": "Yveltal",
+              "level": 84
+            },
+            {
+              "name": "Yveltal",
+              "level": 84
+            },
+            {
+              "name": "Yveltal",
+              "level": 84
+            }
+          ]
+        },
+        {
+          "id": "e4-1-4",
+          "name": "Shade the Ghost Master",
+          "title": "Elite Four - Ghost specialist",
+          "team": [
+            {
+              "name": "Spectrier",
+              "level": 86
+            },
+            {
+              "name": "Calyrex-Shadow",
+              "level": 86
+            },
+            {
+              "name": "Calyrex-Shadow",
+              "level": 86
+            },
+            {
+              "name": "Calyrex-Shadow",
+              "level": 86
+            },
+            {
+              "name": "Calyrex-Shadow",
+              "level": 86
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elite-four-2",
+      "members": [
+        {
+          "id": "e4-2-1",
+          "name": "Kaida the Fighting Master",
+          "title": "Elite Four - Fighting specialist",
+          "team": [
+            {
+              "name": "Hitmontop",
+              "level": 87
+            },
+            {
+              "name": "Paldean Tauros-Aqua",
+              "level": 87
+            },
+            {
+              "name": "Chesnaught",
+              "level": 87
+            },
+            {
+              "name": "Virizion",
+              "level": 87
+            },
+            {
+              "name": "Zamazenta-Crowned",
+              "level": 87
+            }
+          ]
+        },
+        {
+          "id": "e4-2-2",
+          "name": "Ferra the Steel Master",
+          "title": "Elite Four - Steel specialist",
+          "team": [
+            {
+              "name": "Escavalier",
+              "level": 88
+            },
+            {
+              "name": "Probopass",
+              "level": 88
+            },
+            {
+              "name": "Metagross",
+              "level": 88
+            },
+            {
+              "name": "Zamazenta-Crowned",
+              "level": 88
+            },
+            {
+              "name": "Zamazenta-Crowned",
+              "level": 88
+            }
+          ]
+        },
+        {
+          "id": "e4-2-3",
+          "name": "Boulder the Rock Master",
+          "title": "Elite Four - Rock specialist",
+          "team": [
+            {
+              "name": "Carracosta",
+              "level": 89
+            },
+            {
+              "name": "Aggron",
+              "level": 89
+            },
+            {
+              "name": "Diancie",
+              "level": 89
+            },
+            {
+              "name": "Diancie",
+              "level": 89
+            },
+            {
+              "name": "Diancie",
+              "level": 89
+            }
+          ]
+        },
+        {
+          "id": "e4-2-4",
+          "name": "Terra the Ground Master",
+          "title": "Elite Four - Ground specialist",
+          "team": [
+            {
+              "name": "Rhyperior",
+              "level": 91
+            },
+            {
+              "name": "P-Groudon",
+              "level": 91
+            },
+            {
+              "name": "P-Groudon",
+              "level": 91
+            },
+            {
+              "name": "P-Groudon",
+              "level": 91
+            },
+            {
+              "name": "P-Groudon",
+              "level": 91
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elite-four-3",
+      "members": [
+        {
+          "id": "e4-3-1",
+          "name": "Mira the Psychic Master",
+          "title": "Elite Four - Psychic specialist",
+          "team": [
+            {
+              "name": "Chimecho",
+              "level": 92
+            },
+            {
+              "name": "A-Raichu",
+              "level": 92
+            },
+            {
+              "name": "Farigiraf",
+              "level": 92
+            },
+            {
+              "name": "Deoxys",
+              "level": 92
+            },
+            {
+              "name": "Calyrex-Shadow",
+              "level": 92
+            }
+          ]
+        },
+        {
+          "id": "e4-3-2",
+          "name": "Lumi the Fairy Master",
+          "title": "Elite Four - Fairy specialist",
+          "team": [
+            {
+              "name": "Ribombee",
+              "level": 93
+            },
+            {
+              "name": "Tinkaton",
+              "level": 93
+            },
+            {
+              "name": "Tapu Fini",
+              "level": 93
+            },
+            {
+              "name": "Zacian-Crowned",
+              "level": 93
+            },
+            {
+              "name": "Zacian-Crowned",
+              "level": 93
+            }
+          ]
+        },
+        {
+          "id": "e4-3-3",
+          "name": "Aeris the Flying Master",
+          "title": "Elite Four - Flying specialist",
+          "team": [
+            {
+              "name": "Hawlucha",
+              "level": 95
+            },
+            {
+              "name": "Tornadus",
+              "level": 95
+            },
+            {
+              "name": "Yveltal",
+              "level": 95
+            },
+            {
+              "name": "Yveltal",
+              "level": 95
+            },
+            {
+              "name": "Yveltal",
+              "level": 95
+            }
+          ]
+        },
+        {
+          "id": "e4-3-4",
+          "name": "Cricket the Bug Master",
+          "title": "Elite Four - Bug specialist",
+          "team": [
+            {
+              "name": "Leavanny",
+              "level": 96
+            },
+            {
+              "name": "Genesect",
+              "level": 96
+            },
+            {
+              "name": "Genesect",
+              "level": 96
+            },
+            {
+              "name": "Genesect",
+              "level": 96
+            },
+            {
+              "name": "Genesect",
+              "level": 96
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "champions": [
+    {
+      "id": "champion1",
+      "name": "Champion Aldric",
+      "title": "Pokemon League Champion",
+      "team": [
+        {
+          "name": "Eternatus-Eternamax",
+          "level": 97
+        },
+        {
+          "name": "Reshiram",
+          "level": 97
+        },
+        {
+          "name": "Ho-Oh",
+          "level": 97
+        },
+        {
+          "name": "Hydreigon",
+          "level": 97
+        },
+        {
+          "name": "Zygarde",
+          "level": 97
+        },
+        {
+          "name": "Magearna",
+          "level": 97
+        }
+      ]
+    },
+    {
+      "id": "champion2",
+      "name": "Champion Seren",
+      "title": "Pokemon League Champion",
+      "team": [
+        {
+          "name": "P-Kyogre",
+          "level": 99
+        },
+        {
+          "name": "Miraidon",
+          "level": 99
+        },
+        {
+          "name": "Calyrex-Ice",
+          "level": 99
+        },
+        {
+          "name": "Lunala",
+          "level": 99
+        },
+        {
+          "name": "Diancie",
+          "level": 99
+        },
+        {
+          "name": "Lugia",
+          "level": 99
+        }
+      ]
+    },
+    {
+      "id": "champion3",
+      "name": "Champion Kade",
+      "title": "Pokemon League Champion",
+      "team": [
+        {
+          "name": "Zarude",
+          "level": 100
+        },
+        {
+          "name": "Koraidon",
+          "level": 100
+        },
+        {
+          "name": "Iron Boulder",
+          "level": 100
+        },
+        {
+          "name": "Iron Moth",
+          "level": 100
+        },
+        {
+          "name": "Terapagos-Terastal",
+          "level": 100
+        },
+        {
+          "name": "Golisopod",
+          "level": 100
+        }
+      ]
+    }
+  ]
+}
