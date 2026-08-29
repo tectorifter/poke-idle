@@ -18630,7 +18630,8 @@
     "spa": 60,
     "spd": 96,
     "spe": 110,
-    "exp": 341
+    "exp": 341,
+    "teraType": "Grass"
   },
   {
     "id": 1128,
@@ -18647,7 +18648,8 @@
     "spa": 60,
     "spd": 96,
     "spe": 110,
-    "exp": 341
+    "exp": 341,
+    "teraType": "Water"
   },
   {
     "id": 1129,
@@ -18664,7 +18666,8 @@
     "spa": 60,
     "spd": 96,
     "spe": 110,
-    "exp": 341
+    "exp": 341,
+    "teraType": "Fire"
   },
   {
     "id": 1130,
@@ -18681,7 +18684,8 @@
     "spa": 60,
     "spd": 96,
     "spe": 110,
-    "exp": 341
+    "exp": 341,
+    "teraType": "Rock"
   },
   {
     "id": 1131,
@@ -18799,7 +18803,8 @@
     "spa": 65,
     "spd": 85,
     "spe": 60,
-    "exp": 279
+    "exp": 279,
+    "teraType": "Normal"
   },
   {
     "id": 1138,
@@ -18815,13 +18820,14 @@
     "spa": 105,
     "spd": 110,
     "spe": 85,
-    "exp": 372
+    "exp": 372,
+    "teraType": "Normal"
   },
   {
     "id": 1139,
     "name": "Terapagos-Stellar",
     "types": [
-      "Stellar"
+      "Normal"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -18831,7 +18837,8 @@
     "spa": 130,
     "spd": 110,
     "spe": 85,
-    "exp": 434
+    "exp": 434,
+    "teraType": "Normal"
   },
   {
     "id": 1140,
@@ -19233,13 +19240,15 @@
     "spa": 154,
     "spd": 90,
     "spe": 130,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Psychic"
   },
   {
     "id": 1164,
     "name": "Tera Lugia",
     "types": [
-      "Psychic"
+      "Psychic",
+      "Flying"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19249,13 +19258,15 @@
     "spa": 90,
     "spd": 154,
     "spe": 110,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Psychic"
   },
   {
     "id": 1165,
     "name": "Tera Ho-Oh",
     "types": [
-      "Fire"
+      "Fire",
+      "Flying"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19265,13 +19276,15 @@
     "spa": 110,
     "spd": 154,
     "spe": 90,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Fire"
   },
   {
     "id": 1166,
     "name": "Tera Rayquaza",
     "types": [
-      "Dragon"
+      "Dragon",
+      "Flying"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19281,13 +19294,15 @@
     "spa": 150,
     "spd": 90,
     "spe": 95,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Dragon"
   },
   {
     "id": 1167,
     "name": "Tera Dialga",
     "types": [
-      "Steel"
+      "Steel",
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19297,13 +19312,15 @@
     "spa": 150,
     "spd": 100,
     "spe": 90,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Steel"
   },
   {
     "id": 1168,
     "name": "Tera Palkia",
     "types": [
-      "Water"
+      "Water",
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19313,13 +19330,15 @@
     "spa": 150,
     "spd": 120,
     "spe": 100,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Water"
   },
   {
     "id": 1169,
     "name": "Tera Giratina",
     "types": [
-      "Ghost"
+      "Ghost",
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19329,13 +19348,15 @@
     "spa": 100,
     "spd": 120,
     "spe": 90,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Ghost"
   },
   {
     "id": 1170,
     "name": "Tera Reshiram",
     "types": [
-      "Dragon"
+      "Dragon",
+      "Fire"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19345,13 +19366,15 @@
     "spa": 150,
     "spd": 120,
     "spe": 90,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Dragon"
   },
   {
     "id": 1171,
     "name": "Tera Zekrom",
     "types": [
-      "Dragon"
+      "Dragon",
+      "Electric"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19361,7 +19384,8 @@
     "spa": 120,
     "spd": 100,
     "spe": 90,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Dragon"
   },
   {
     "id": 1172,
@@ -19377,13 +19401,15 @@
     "spa": 131,
     "spd": 98,
     "spe": 99,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Fairy"
   },
   {
     "id": 1173,
     "name": "Tera Yveltal",
     "types": [
-      "Dark"
+      "Dark",
+      "Flying"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19393,13 +19419,15 @@
     "spa": 131,
     "spd": 98,
     "spe": 99,
-    "exp": 306
+    "exp": 306,
+    "teraType": "Dark"
   },
   {
     "id": 1174,
     "name": "Tera Solgaleo",
     "types": [
-      "Psychic"
+      "Psychic",
+      "Steel"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19409,13 +19437,15 @@
     "spa": 113,
     "spd": 89,
     "spe": 97,
-    "exp": 136
+    "exp": 136,
+    "teraType": "Psychic"
   },
   {
     "id": 1175,
     "name": "Tera Lunala",
     "types": [
-      "Psychic"
+      "Psychic",
+      "Ghost"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19425,7 +19455,8 @@
     "spa": 137,
     "spd": 107,
     "spe": 97,
-    "exp": 136
+    "exp": 136,
+    "teraType": "Psychic"
   },
   {
     "id": 1176,
@@ -19441,7 +19472,8 @@
     "spa": 80,
     "spd": 115,
     "spe": 138,
-    "exp": 409
+    "exp": 409,
+    "teraType": "Fairy"
   },
   {
     "id": 1177,
@@ -19457,13 +19489,15 @@
     "spa": 80,
     "spd": 115,
     "spe": 138,
-    "exp": 409
+    "exp": 409,
+    "teraType": "Fighting"
   },
   {
     "id": 1178,
     "name": "Tera Eternatus",
     "types": [
-      "Poison"
+      "Poison",
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19473,13 +19507,15 @@
     "spa": 145,
     "spd": 95,
     "spe": 130,
-    "exp": 428
+    "exp": 428,
+    "teraType": "Poison"
   },
   {
     "id": 1179,
     "name": "Tera Koraidon",
     "types": [
-      "Fighting"
+      "Fighting",
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19489,13 +19525,15 @@
     "spa": 85,
     "spd": 100,
     "spe": 135,
-    "exp": 415
+    "exp": 415,
+    "teraType": "Fighting"
   },
   {
     "id": 1180,
     "name": "Tera Miraidon",
     "types": [
-      "Electric"
+      "Electric",
+      "Dragon"
     ],
     "catch": 3,
     "growth": "Slow",
@@ -19505,7 +19543,8 @@
     "spa": 135,
     "spd": 115,
     "spe": 135,
-    "exp": 415
+    "exp": 415,
+    "teraType": "Electric"
   },
   {
     "id": 1181,

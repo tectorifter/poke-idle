@@ -38,21 +38,43 @@ export const TYPE_COLOR: Record<string, string> = {
   Dark: "#705848",
   Steel: "#b8b8d0",
   Fairy: "#ee99ac",
-  Stellar: "#40b5a5",
 };
 
-// Any attacking/defending type absent from TYPE_CHART (namely Stellar — Terapagos-Stellar's
-// signature tera type) falls through the ?? 1 / !chart checks below to a flat 1x, matching
-// the real mechanic of Stellar dealing and taking neutral damage across the board.
-export function typeMultiplier(atkTypes: string[], defTypes: string[]): number {
-  const effectiveness = (atk: string, defs: string[]) => {
-    const chart = TYPE_CHART[atk];
-    if (!chart) return 1;
-    const a = chart[defs[0]] ?? 1;
-    const b = defs[1] ? (chart[defs[1]] ?? 1) : 1;
-    return a * b;
-  };
-  const first = effectiveness(atkTypes[0], defTypes);
-  const second = atkTypes[1] ? effectiveness(atkTypes[1], defTypes) : 0;
+// Rounds an additive multiplier adjustment to 2 decimals, clearing the float
+// imprecision that (m - 0.2) / (m + 0.2) style arithmetic can introduce.
+function roundDown2(v: number): number {
+  return Math.floor(v * 100) / 100;
+}
+
+/** A single attacking type against a (mono or dual) defending type list.
+ *  Same-direction dual defense is no longer a straight product of both
+ *  factors: a double resist subtracts an extra flat 20 percentage points
+ *  from the leading type's own reduction instead of compounding, and a
+ *  double weakness adds an extra flat 20 percentage points the same way.
+ *  Mixed (one resists, one is weak/neutral) and single-type cases are
+ *  unchanged — still a straight product. */
+function defenseMultiplier(atkType: string, defTypes: string[]): number {
+  const chart = TYPE_CHART[atkType];
+  if (!chart) return 1;
+  const m1 = chart[defTypes[0]] ?? 1;
+  if (!defTypes[1]) return m1;
+  const m2 = chart[defTypes[1]] ?? 1;
+  if (m1 === 0 || m2 === 0) return 0;
+  if (m1 < 1 && m2 < 1) return Math.max(0, roundDown2(m1 - 0.2));
+  if (m1 > 1 && m2 > 1) return roundDown2(m1 + 0.2);
+  return m1 * m2;
+}
+
+/** `teraType`, when passed, forces offense to that single type only — no
+ *  picking the better of two attacking types, since a terastallized
+ *  Pokemon's attacks all carry its (one) tera type in this simplified model.
+ *  Without it, the attacker still picks whichever of its own two types deals
+ *  more damage, same as before. Defense is untouched by tera status either
+ *  way — `defTypes` should always be the defender's original (pre-tera)
+ *  typing. */
+export function typeMultiplier(atkTypes: string[], defTypes: string[], teraType?: string): number {
+  if (teraType) return defenseMultiplier(teraType, defTypes);
+  const first = defenseMultiplier(atkTypes[0], defTypes);
+  const second = atkTypes[1] ? defenseMultiplier(atkTypes[1], defTypes) : 0;
   return Math.max(first, second);
 }

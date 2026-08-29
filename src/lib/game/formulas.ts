@@ -135,7 +135,9 @@ export function levelDamageBonus(level: number, prestige: number, multiplier: nu
 export function attackDamage(attacker: OwnedPoke, defender: OwnedPoke): { damage: number; multiplier: number } {
   const a = combatStats(attacker);
   const d = combatStats(defender);
-  const multiplier = typeMultiplier(a.types, d.types);
+  const attackerSpec = speciesByName(attacker.name);
+  const teraType = isTeraName(attacker.name) ? attackerSpec?.teraType : undefined;
+  const multiplier = typeMultiplier(a.types, d.types, teraType);
   const bonus = levelDamageBonus(levelOf(attacker), attacker.prestige, multiplier);
   let damage = rollDamage(a.avgAtk, d.avgDef, multiplier, bonus);
   if (damage > 0) {

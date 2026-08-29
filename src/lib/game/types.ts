@@ -4,6 +4,9 @@ export type Species = {
   id: number;
   name: string;
   types: string[];
+  /** Set only on tera-flagged species — always one of `types`. Used for offense
+   *  only; defense always uses the full `types` array regardless. */
+  teraType?: string;
   catch: number;
   growth: GrowthRate;
   hp: number;
