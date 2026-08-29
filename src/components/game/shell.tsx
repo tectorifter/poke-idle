@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { BookOpen, Map, Package, Swords, Users } from "lucide-react";
+import { BookOpen, Map, Package, Swords, Trophy, Users } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import type { TabId } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 import { BagView } from "./bag-view";
 import { BattleView } from "./battle";
 import { DexView } from "./dex-view";
+import { LeagueView } from "./league-view";
 import { MapView } from "./map-view";
 import { StarterSelect } from "./starter";
 import { TeamView } from "./team-view";
@@ -13,6 +14,7 @@ import { TeamView } from "./team-view";
 const TABS: { id: TabId; label: string; icon: typeof Swords }[] = [
   { id: "battle", label: "Battle", icon: Swords },
   { id: "map", label: "Map", icon: Map },
+  { id: "league", label: "League", icon: Trophy },
   { id: "team", label: "Team", icon: Users },
   { id: "dex", label: "Dex", icon: BookOpen },
   { id: "bag", label: "Bag", icon: Package },
@@ -83,11 +85,12 @@ export function GameShell() {
         <main className="min-h-0 flex-1">
           {tab === "battle" && <BattleView />}
           {tab === "map" && <MapView />}
+          {tab === "league" && <LeagueView />}
           {tab === "team" && <TeamView />}
           {tab === "dex" && <DexView />}
           {tab === "bag" && <BagView />}
         </main>
-        <nav className="grid h-[4.25rem] shrink-0 grid-cols-5 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
+        <nav className="grid h-[4.25rem] shrink-0 grid-cols-6 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
           {TABS.map((t) => {
             const Icon = t.icon;
             const on = tab === t.id;

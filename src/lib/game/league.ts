@@ -12,7 +12,7 @@
 // resolve one trainer fight, and the ball-reward bonus.
 
 import { LEAGUE, speciesByName } from "./dex";
-import { attackDamage, combatStats, makeOwned } from "./formulas";
+import { attackDamage, combatStats, levelOf, makeOwned } from "./formulas";
 import type { BallKind, EliteFourDef, GymDef, LeagueProgress, OwnedPoke, TrainerDef } from "./types";
 
 export type LeagueStage =
@@ -81,6 +81,57 @@ export function resolveTurn(player: OwnedPoke, enemy: OwnedPoke): BattleTurnResu
 export function leagueBallReward(baseAmount: number, ball: BallKind): number {
   void ball;
   return Math.round(baseAmount * (1 + LEAGUE.ballBonusPercent / 100));
+}
+
+export type LeagueBattleOutcome = {
+  playerWon: boolean;
+  log: string[];
+  team: OwnedPoke[];
+};
+
+/**
+ * Resolves an entire trainer fight instantly (no real-time pacing needed —
+ * unlike wild-route grinding, a gym/E4/champion match is a discrete event).
+ * Player's team fights the trainer's team pokemon-by-pokemon in order,
+ * switching to the next living team member on faint. Does not mutate the
+ * team passed in; returns the post-battle team (HP applied, not yet healed —
+ * winStage()/loseStage() handle healing and progression on top of this).
+ */
+export function simulateLeagueBattle(playerTeam: OwnedPoke[], trainer: TrainerDef): LeagueBattleOutcome {
+  const team = playerTeam.map((p) => ({ ...p }));
+  const enemyTeam = buildTrainerTeam(trainer);
+  const log: string[] = [];
+  let active = team.findIndex((p) => p.hp > 0);
+  if (active < 0) {
+    return { playerWon: false, log: ["Your whole team is fainted — heal up first."], team };
+  }
+
+  for (const enemy of enemyTeam) {
+    log.push(`${trainer.name} sends out ${enemy.name} (Lv. ${levelOf(enemy)}).`);
+    while (enemy.hp > 0) {
+      if (active < 0 || team[active].hp <= 0) {
+        active = team.findIndex((p) => p.hp > 0);
+        if (active < 0) {
+          log.push("Your team has no Pokemon left standing!");
+          return { playerWon: false, log, team };
+        }
+        log.push(`Go, ${team[active].name}!`);
+      }
+      const turn = resolveTurn(team[active], enemy);
+      log.push(`${team[active].name} hits ${enemy.name} for ${turn.playerDamage}.`);
+      if (turn.enemyFainted) {
+        log.push(`${enemy.name} fainted!`);
+        break;
+      }
+      log.push(`${enemy.name} hits ${team[active].name} for ${turn.enemyDamage}.`);
+      if (turn.playerFainted) {
+        log.push(`${team[active].name} fainted!`);
+        active = team.findIndex((p) => p.hp > 0);
+      }
+    }
+  }
+  log.push(`Defeated ${trainer.name}!`);
+  return { playerWon: true, log, team };
 }
 
 export function isLeagueUnlockedFor(highestOwnedLevel: number): boolean {

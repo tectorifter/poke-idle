@@ -28,7 +28,7 @@ export type BallKind = "pokeball" | "greatball" | "ultraball";
 
 export type CatchMode = "off" | "new" | "all";
 
-export type TabId = "battle" | "map" | "team" | "dex" | "bag";
+export type TabId = "battle" | "map" | "team" | "dex" | "bag" | "league";
 
 export type LogLine = {
   id: number;
