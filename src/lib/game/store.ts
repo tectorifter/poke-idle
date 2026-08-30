@@ -5,6 +5,7 @@ import { useLeague } from "./league-store";
 import {
   attackDamage,
   BENCH_EXP_SHARE,
+  STORAGE_EXP_SHARE,
   catchChancePercent,
   combatStats,
   expAtLevel,
@@ -422,6 +423,16 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
           log = pushLog(log, `${p.name} grew to Lv. ${levelOf(p)}!`, "level");
         }
       }
+      // PC storage gets 30% of the kill exp
+      storage = storage.map((p) => {
+        const before = levelOf(p);
+        const nextPoke = { ...p, exp: p.exp + fullReward * STORAGE_EXP_SHARE };
+        if (levelOf(nextPoke) > before) {
+          nextPoke.hp = combatStats(nextPoke).maxHp;
+          log = pushLog(log, `${nextPoke.name} grew to Lv. ${levelOf(nextPoke)}!`, "level");
+        }
+        return nextPoke;
+      });
 
       const next = spawnEnemy(s.region, s.route, anomalyCleared);
       if (next) {
