@@ -156,7 +156,8 @@ export function catchChancePercent(catchRate: number, ball: BallKind): number {
 }
 
 /** Full exp reward for a kill. The active Pokemon gets all of this;
- *  benched teammates get BENCH_EXP_SHARE of it (see store.ts). */
+ *  benched teammates get BENCH_EXP_SHARE of it;
+ *  PC storage gets STORAGE_EXP_SHARE of it (see store.ts). */
 export function expReward(enemy: OwnedPoke): number {
   const spec = speciesByName(enemy.name);
   const base = spec?.exp ?? 50;
@@ -165,6 +166,7 @@ export function expReward(enemy: OwnedPoke): number {
 }
 
 export const BENCH_EXP_SHARE = 0.6;
+export const STORAGE_EXP_SHARE = 0.3;
 
 export function eligibleEvolutions(poke: OwnedPoke) {
   const lvl = levelOf(poke);
