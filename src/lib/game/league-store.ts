@@ -49,8 +49,8 @@ export const LEAGUE_CHEER_MULT = 1.25;
  *  damage remains after every other modifier (type, level bonus, mega/tera, etc). */
 export const LEAGUE_RESIST_TAKEN_MULT = 0.9;
 export const LEAGUE_HEAL_TICK_MS = 1_000;
-export const LEAGUE_HEAL_TICKS = 5; // 4 * 3s = 12s total
-export const LEAGUE_HEAL_TICK_PERCENT = 0.02;
+export const LEAGUE_HEAL_TICKS = 1; // 4 * 3s = 12s total
+export const LEAGUE_HEAL_TICK_PERCENT = 0.98;
 
 type LeagueBuffs = {
   cheerUntil: number;
