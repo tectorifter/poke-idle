@@ -1,4 +1,5 @@
 import { Heart, Pause, Play } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { speciesByName } from "@/lib/game/dex";
 import { combatStats, HEAL_COOLDOWN_MS, levelOf, nextLevelExp, thisLevelExp } from "@/lib/game/formulas";
 import { ROUTES, useGame } from "@/lib/game/store";
@@ -13,6 +14,48 @@ const BALLS: { id: BallKind; label: string }[] = [
   { id: "greatball", label: "Great" },
   { id: "ultraball", label: "Ultra" },
 ];
+
+/** Makes horizontal overflow-x work reliably inside a vertical overflow-y parent on mobile. */
+function useHorizontalScroll(ref: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    let startX = 0;
+    let startY = 0;
+    let locking: "h" | "v" | null = null;
+
+    const onStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      locking = null;
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if (!e.touches[0] || locking === "v") return;
+
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      const dy = Math.abs(e.touches[0].clientY - startY);
+
+      if (locking === null && (dx > 6 || dy > 6)) {
+        locking = dx > dy ? "h" : "v";
+      }
+
+      if (locking === "h") {
+        // Stop the parent vertical scroller from stealing the gesture
+        e.stopPropagation();
+      }
+    };
+
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+    };
+  }, [ref]);
+}
 
 export function BattleView() {
   const enemy = useGame((s) => s.enemy);
@@ -39,6 +82,9 @@ export function BattleView() {
   const healLeft = Math.max(0, HEAL_COOLDOWN_MS - (now - lastHeal));
   const canHeal = healLeft <= 0;
   const allDown = team.every((p) => p.hp <= 0);
+
+  const teamScrollRef = useRef<HTMLDivElement>(null);
+  useHorizontalScroll(teamScrollRef);
 
   return (
     <div className="flex h-auto min-h-full flex-col gap-3 overflow-y-auto px-4 pb-12 pt-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -69,8 +115,12 @@ export function BattleView() {
 
       {player && <FighterCard poke={player} hitAt={playerHit} side="you" />}
 
-      {/* Team strip – touch-pan-x + overscroll-x-contain fix nested scroll on mobile */}
-      <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-1 touch-pan-x overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+      {/* Team strip – custom touch handler + CSS to beat nested vertical scroll on mobile */}
+      <div
+        ref={teamScrollRef}
+        className="flex flex-nowrap gap-1.5 overflow-x-auto overflow-y-hidden pb-1 touch-pan-x overscroll-x-contain [-webkit-overflow-scrolling:touch]"
+        style={{ touchAction: "pan-x" }}
+      >
         {team.map((p, i) => {
           const stats = combatStats(p);
           return (
@@ -79,7 +129,7 @@ export function BattleView() {
               type="button"
               onClick={() => setActive(i)}
               className={cn(
-                "flex min-w-[72px] flex-col items-center rounded-2xl bg-surface px-2 py-2 shadow-border",
+                "flex min-w-[72px] flex-shrink-0 flex-col items-center rounded-2xl bg-surface px-2 py-2 shadow-border",
                 i === active && "ring-1 ring-accent",
                 p.hp <= 0 && "opacity-40",
               )}
