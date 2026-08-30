@@ -69,7 +69,8 @@ export function BattleView() {
 
       {player && <FighterCard poke={player} hitAt={playerHit} side="you" />}
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+      {/* Team strip – touch-pan-x + overscroll-x-contain fix nested scroll on mobile */}
+      <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-1 touch-pan-x overscroll-x-contain [-webkit-overflow-scrolling:touch]">
         {team.map((p, i) => {
           const stats = combatStats(p);
           return (
