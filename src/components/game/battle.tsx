@@ -41,7 +41,7 @@ export function BattleView() {
   const allDown = team.every((p) => p.hp <= 0);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto px-4 pb-8 pt-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex h-auto min-h-full flex-col gap-3 overflow-y-auto px-4 pb-12 pt-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{region}</p>
