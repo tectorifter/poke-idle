@@ -74,6 +74,33 @@ function freshBuffs(): LeagueBuffs {
   };
 }
 
+/** One heal-over-time application across the whole team: fainted members
+ *  revive to full HP outright, living ones recover 2% of their own current
+ *  missing HP. Shared by the immediate on-press application and the
+ *  subsequent tick-driven ones so both behave identically. */
+function applyHealTick(team: OwnedPoke[]): { team: OwnedPoke[]; revived: number; healedAny: boolean } {
+  let revived = 0;
+  let healedAny = false;
+  const next = team.map((p) => {
+    const stats = combatStats(p);
+    if (p.hp <= 0) {
+      revived += 1;
+      return { ...p, hp: stats.maxHp };
+    }
+    const missing = stats.maxHp - p.hp;
+    const restore = Math.floor(missing * LEAGUE_HEAL_TICK_PERCENT);
+    if (restore > 0) healedAny = true;
+    return restore > 0 ? { ...p, hp: Math.min(stats.maxHp, p.hp + restore) } : p;
+  });
+  return { team: next, revived, healedAny };
+}
+
+function healLogLine(revived: number, healedAny: boolean): string | null {
+  if (revived > 0) return `${revived} Pokemon revived!`;
+  if (healedAny) return "Your team recovers some HP.";
+  return null;
+}
+
 export type LeagueBattleSession = {
   trainer: TrainerDef;
   enemyTeam: OwnedPoke[];
@@ -172,16 +199,24 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     if (!b || b.result !== "fighting") return;
     const now = Date.now();
     if (now < b.buffs.healCooldownUntil) return;
+
+    // First application fires immediately on press; the remaining ticks
+    // follow the normal 3s cadence from here.
+    const gs = useGame.getState();
+    const { team, revived, healedAny } = applyHealTick(gs.team);
+    useGame.setState({ team });
+    const line = healLogLine(revived, healedAny);
+
     set({
       battle: {
         ...b,
         buffs: {
           ...b.buffs,
           healCooldownUntil: now + HEAL_COOLDOWN_MS,
-          healTicksLeft: LEAGUE_HEAL_TICKS,
+          healTicksLeft: LEAGUE_HEAL_TICKS - 1,
           nextHealTickAt: now + LEAGUE_HEAL_TICK_MS,
         },
-        log: [...b.log, "Healing over time!"],
+        log: line ? [...b.log, "Healing over time!", line] : [...b.log, "Healing over time!"],
       },
     });
   },
@@ -201,21 +236,10 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     // their own current missing HP — recomputed fresh each tick, applied
     // before the "whole team down" check so a pending tick can save a run.
     if (buffs.healTicksLeft > 0 && now >= buffs.nextHealTickAt) {
-      let revived = 0;
-      let healedAny = false;
-      team = team.map((p) => {
-        const stats = combatStats(p);
-        if (p.hp <= 0) {
-          revived += 1;
-          return { ...p, hp: stats.maxHp };
-        }
-        const missing = stats.maxHp - p.hp;
-        const restore = Math.floor(missing * LEAGUE_HEAL_TICK_PERCENT);
-        if (restore > 0) healedAny = true;
-        return restore > 0 ? { ...p, hp: Math.min(stats.maxHp, p.hp + restore) } : p;
-      });
-      if (revived > 0) log = [...log, `${revived} Pokemon revived!`];
-      else if (healedAny) log = [...log, "Your team recovers some HP."];
+      const result = applyHealTick(team);
+      team = result.team;
+      const line = healLogLine(result.revived, result.healedAny);
+      if (line) log = [...log, line];
       buffs.healTicksLeft -= 1;
       buffs.nextHealTickAt = now + LEAGUE_HEAL_TICK_MS;
     }

@@ -8,7 +8,11 @@ export const BALL_RNG: Record<BallKind, number> = {
   ultraball: 2,
 };
 
-export const HEAL_COOLDOWN_MS = 30_000;
+export const HEAL_COOLDOWN_MS = 15_000;
+/** Flat per-turn pacing for wild-route combat — independent of any Pokemon's
+ *  speed stat (that stat still matters for combatStats().speedMs, which the
+ *  league's own pacing derives from — this constant only governs routes). */
+export const ROUTE_TURN_MS = 1_000;
 export const SHINY_ODDS = 1 / 8192;
 export const TEAM_SIZE = 6;
 

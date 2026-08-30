@@ -14,6 +14,7 @@ import {
   makeOwned,
   pickWeighted,
   randomLevel,
+  ROUTE_TURN_MS,
   SHINY_ODDS,
   TEAM_SIZE,
 } from "./formulas";
@@ -272,6 +273,17 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const living = team.findIndex((p) => p.hp > 0);
     if (living < 0) {
+      if (now - s.lastHeal >= HEAL_COOLDOWN_MS) {
+        const healedTeam = team.map((p) => ({ ...p, hp: combatStats(p).maxHp }));
+        set({
+          team: healedTeam,
+          lastHeal: now,
+          log: pushLog(s.log, "Your team fainted and was auto-healed.", "system"),
+          now,
+        });
+        persist({ ...get() });
+        return;
+      }
       if (uiAcc > 0.2) {
         uiAcc = 0;
         set({ now });
@@ -427,8 +439,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     playerTimer += dt * 1000;
     enemyTimer += dt * 1000;
-    const pSpeed = combatStats(team[activeIndex]).speedMs;
-    const eSpeed = combatStats(enemy).speedMs;
+    // Route combat runs on a flat 1s-per-turn cadence regardless of speed stat —
+    // deliberately independent of combatStats().speedMs, which League's own
+    // pacing (leagueSpeedMs) still derives from, so this doesn't touch that.
+    const pSpeed = ROUTE_TURN_MS;
+    const eSpeed = ROUTE_TURN_MS;
 
     let guard = 0;
     while (playerTimer >= pSpeed && guard++ < 8) {
