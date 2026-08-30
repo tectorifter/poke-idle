@@ -128,28 +128,41 @@ export function healTeam(team: OwnedPoke[]): OwnedPoke[] {
 
 export const LEAGUE_PRESTIGE_REWARD = 1;
 
-/** How much prestige the league's own trainer mons carry, scaled by full clears —
- *  this is what "keeps up with the player's strength" across repeat runs. Anomaly
- *  wild encounters follow this same value (see store.ts's spawnEnemy). */
+/** How much prestige the league's own trainer mons carry, scaled by full clears.
+ *  This value advances only when the entire league is beaten (final Champion).
+ *  The Anomalies route reads the same value, but retains its existing delayed
+ *  per-route unlock before applying it to anomaly encounters. */
 export const LEAGUE_ENEMY_PRESTIGE_PER_RUN = 8;
 
 export function leagueEnemyPrestige(progress: LeagueProgress): number {
   return progress.runsCompleted * LEAGUE_ENEMY_PRESTIGE_PER_RUN;
 }
 
-/** Call after the player's team clears the current stage's trainer. Every win grants
- *  +LEAGUE_PRESTIGE_REWARD prestige to the whole team (gym, Elite Four, or Champion —
- *  any league beat counts), applied before healing so the full heal lands at the new,
- *  higher max HP. */
+/** Call after the player's team clears the current stage's trainer.
+ *  Normal leader / Elite Four / Champion wins do NOT award player prestige.
+ *  The +1 player prestige is reserved for the final Champion, i.e. the moment
+ *  the whole league has been beaten. The +8 enemy prestige tier is advanced at
+ *  that same moment via runsCompleted. */
 export function winStage(progress: LeagueProgress, team: OwnedPoke[]): { progress: LeagueProgress; team: OwnedPoke[] } {
-  const boosted = team.map((p) => ({ ...p, prestige: p.prestige + LEAGUE_PRESTIGE_REWARD }));
-  const healed = healTeam(boosted);
   const wasLastStage = progress.stageIndex >= STAGE_COUNT - 1;
+
   if (wasLastStage) {
-    // Beat the final champion: loop back to gym 1, tally the clear.
-    return { progress: { stageIndex: 0, runsCompleted: progress.runsCompleted + 1 }, team: healed };
+    const boosted = team.map((p) => ({ ...p, prestige: p.prestige + LEAGUE_PRESTIGE_REWARD }));
+    const healed = healTeam(boosted);
+
+    return {
+      progress: {
+        stageIndex: 0,
+        runsCompleted: progress.runsCompleted + 1,
+      },
+      team: healed,
+    };
   }
-  return { progress: { ...progress, stageIndex: progress.stageIndex + 1 }, team: healed };
+
+  return {
+    progress: { ...progress, stageIndex: progress.stageIndex + 1 },
+    team: healTeam(team),
+  };
 }
 
 /** Call when the player's whole team faints against the current stage's trainer. */
