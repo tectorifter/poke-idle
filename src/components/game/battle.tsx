@@ -41,7 +41,7 @@ export function BattleView() {
   const allDown = team.every((p) => p.hp <= 0);
 
   return (
-    <div className="flex h-full flex-col gap-3 overflow-y-auto px-4 pb-4 pt-3">
+    <div className="flex min-h-full flex-col gap-3 overflow-y-auto px-4 pb-4 pt-3">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{region}</p>
@@ -90,7 +90,7 @@ export function BattleView() {
         })}
       </div>
 
-      <div className="rounded-3xl bg-surface p-4 shadow-border">
+      <div className="mt-6 rounded-3xl bg-surface p-4 shadow-border">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Catch</p>
           <div className="flex rounded-full bg-surface-2 p-0.5">
