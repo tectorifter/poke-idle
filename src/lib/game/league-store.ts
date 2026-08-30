@@ -48,8 +48,8 @@ export const LEAGUE_CHEER_MULT = 1.25;
 /** "Resist" reduces damage taken by 10% -- the player takes 90% of whatever
  *  damage remains after every other modifier (type, level bonus, mega/tera, etc). */
 export const LEAGUE_RESIST_TAKEN_MULT = 0.9;
-export const LEAGUE_HEAL_TICK_MS = 3_000;
-export const LEAGUE_HEAL_TICKS = 4; // 4 * 3s = 12s total
+export const LEAGUE_HEAL_TICK_MS = 1_000;
+export const LEAGUE_HEAL_TICKS = 5; // 4 * 3s = 12s total
 export const LEAGUE_HEAL_TICK_PERCENT = 0.02;
 
 type LeagueBuffs = {
@@ -81,17 +81,25 @@ function freshBuffs(): LeagueBuffs {
 function applyHealTick(team: OwnedPoke[]): { team: OwnedPoke[]; revived: number; healedAny: boolean } {
   let revived = 0;
   let healedAny = false;
+
   const next = team.map((p) => {
     const stats = combatStats(p);
+
     if (p.hp <= 0) {
       revived += 1;
       return { ...p, hp: stats.maxHp };
     }
+
     const missing = stats.maxHp - p.hp;
     const restore = Math.floor(missing * LEAGUE_HEAL_TICK_PERCENT);
+
     if (restore > 0) healedAny = true;
-    return restore > 0 ? { ...p, hp: Math.min(stats.maxHp, p.hp + restore) } : p;
+
+    return restore > 0
+      ? { ...p, hp: Math.min(stats.maxHp, p.hp + restore) }
+      : p;
   });
+
   return { team: next, revived, healedAny };
 }
 
