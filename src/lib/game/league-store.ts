@@ -1,16 +1,19 @@
 import { create } from "zustand";
+import { combatStats, attackDamage, HEAL_COOLDOWN_MS } from "./formulas";
 import {
   anomalyInfusionFraction,
+  buildTrainerTeam,
   currentStage,
   initialLeagueProgress,
   leagueEnemyPrestige,
+  leagueOrder,
+  leagueSpeedMs,
   loseStage,
-  simulateLeagueBattle,
   trainerOf,
   winStage,
-  type LeagueStage,
 } from "./league";
-import type { LeagueProgress, OwnedPoke } from "./types";
+import { useGame } from "./store";
+import type { LeagueProgress, OwnedPoke, TrainerDef } from "./types";
 
 const SAVE_KEY = "pokeidle-league-v1";
 
@@ -36,46 +39,284 @@ function persist(progress: LeagueProgress) {
   }
 }
 
+// --- League-exclusive abilities -------------------------------------------
+// These only exist inside a league battle -- route combat's Heal button is
+// untouched (instant full heal there; here it's a heal-over-time instead).
+export const LEAGUE_BUFF_DURATION_MS = 10_000;
+export const LEAGUE_BUFF_COOLDOWN_MS = 40_000;
+export const LEAGUE_CHEER_MULT = 1.25;
+/** "Resist" reduces damage taken by 10% -- the player takes 90% of whatever
+ *  damage remains after every other modifier (type, level bonus, mega/tera, etc). */
+export const LEAGUE_RESIST_TAKEN_MULT = 0.9;
+export const LEAGUE_HEAL_TICK_MS = 3_000;
+export const LEAGUE_HEAL_TICKS = 4; // 4 * 3s = 12s total
+export const LEAGUE_HEAL_TICK_PERCENT = 0.02;
+
+type LeagueBuffs = {
+  cheerUntil: number;
+  cheerCooldownUntil: number;
+  resistUntil: number;
+  resistCooldownUntil: number;
+  healCooldownUntil: number;
+  healTicksLeft: number;
+  nextHealTickAt: number;
+};
+
+function freshBuffs(): LeagueBuffs {
+  return {
+    cheerUntil: 0,
+    cheerCooldownUntil: 0,
+    resistUntil: 0,
+    resistCooldownUntil: 0,
+    healCooldownUntil: 0,
+    healTicksLeft: 0,
+    nextHealTickAt: 0,
+  };
+}
+
+export type LeagueBattleSession = {
+  trainer: TrainerDef;
+  enemyTeam: OwnedPoke[];
+  enemyIndex: number;
+  /** Per-slot faint flags for the trainer's team, for the grayed-out silhouette display. */
+  enemyFainted: boolean[];
+  playerTimer: number;
+  enemyTimer: number;
+  buffs: LeagueBuffs;
+  log: string[];
+  result: "fighting" | "win" | "lose";
+};
+
 export type LeagueBattleState = {
   progress: LeagueProgress;
-  log: string[];
-  lastResult: "none" | "win" | "lose";
+  battle: LeagueBattleSession | null;
   rehydrate: () => void;
-  /** Runs the current stage's fight against the given team; returns the post-battle team
-   *  (healed on a win) so the caller can write it back into the main game store. */
-  challenge: (team: OwnedPoke[]) => OwnedPoke[];
+  startChallenge: () => void;
+  tick: (dt: number) => void;
+  cheerUp: () => void;
+  resist: () => void;
+  healOverTime: () => void;
+  clearBattle: () => void;
 };
 
 export const useLeague = create<LeagueBattleState>((set, get) => ({
   progress: initialLeagueProgress(),
-  log: [],
-  lastResult: "none",
+  battle: null,
 
   rehydrate: () => {
     set({ progress: loadProgress() });
   },
 
-  challenge: (team) => {
-    const stage: LeagueStage | null = currentStage(get().progress);
-    if (!stage) return team;
+  startChallenge: () => {
+    const stage = currentStage(get().progress);
+    if (!stage) return;
     const trainer = trainerOf(stage);
-    const outcome = simulateLeagueBattle(
-      team,
+    const enemyTeam = buildTrainerTeam(
       trainer,
       leagueEnemyPrestige(get().progress),
       anomalyInfusionFraction(get().progress.runsCompleted),
     );
+    set({
+      battle: {
+        trainer,
+        enemyTeam,
+        enemyIndex: 0,
+        enemyFainted: enemyTeam.map(() => false),
+        playerTimer: 0,
+        enemyTimer: 0,
+        buffs: freshBuffs(),
+        log: [`${trainer.name} wants to battle!`],
+        result: "fighting",
+      },
+    });
+    // Freeze the wild-route loop for the duration -- both loops would otherwise
+    // fight over the same team/HP state at once.
+    useGame.setState({ paused: true });
+  },
 
-    if (outcome.playerWon) {
-      const { progress, team: healed } = winStage(get().progress, outcome.team);
+  clearBattle: () => {
+    set({ battle: null });
+    useGame.setState({ paused: false });
+  },
+
+  cheerUp: () => {
+    const b = get().battle;
+    if (!b || b.result !== "fighting") return;
+    const now = Date.now();
+    if (now < b.buffs.cheerCooldownUntil) return;
+    set({
+      battle: {
+        ...b,
+        buffs: { ...b.buffs, cheerUntil: now + LEAGUE_BUFF_DURATION_MS, cheerCooldownUntil: now + LEAGUE_BUFF_COOLDOWN_MS },
+        log: [...b.log, "Cheer up! Damage boosted!"],
+      },
+    });
+  },
+
+  resist: () => {
+    const b = get().battle;
+    if (!b || b.result !== "fighting") return;
+    const now = Date.now();
+    if (now < b.buffs.resistCooldownUntil) return;
+    set({
+      battle: {
+        ...b,
+        buffs: { ...b.buffs, resistUntil: now + LEAGUE_BUFF_DURATION_MS, resistCooldownUntil: now + LEAGUE_BUFF_COOLDOWN_MS },
+        log: [...b.log, "Resist! Damage taken reduced!"],
+      },
+    });
+  },
+
+  healOverTime: () => {
+    const b = get().battle;
+    if (!b || b.result !== "fighting") return;
+    const now = Date.now();
+    if (now < b.buffs.healCooldownUntil) return;
+    set({
+      battle: {
+        ...b,
+        buffs: {
+          ...b.buffs,
+          healCooldownUntil: now + HEAL_COOLDOWN_MS,
+          healTicksLeft: LEAGUE_HEAL_TICKS,
+          nextHealTickAt: now + LEAGUE_HEAL_TICK_MS,
+        },
+        log: [...b.log, "Healing over time!"],
+      },
+    });
+  },
+
+  tick: (dt) => {
+    const b = get().battle;
+    if (!b || b.result !== "fighting") return;
+    const now = Date.now();
+
+    const gs = useGame.getState();
+    const team = gs.team.map((p) => ({ ...p }));
+    let activeIndex = gs.active;
+    if (!team[activeIndex] || team[activeIndex].hp <= 0) {
+      const living = team.findIndex((p) => p.hp > 0);
+      activeIndex = living;
+    }
+    if (activeIndex < 0) {
+      const progress = loseStage(get().progress);
       persist(progress);
-      set({ progress, log: outcome.log, lastResult: "win" });
-      return healed;
+      set({ progress, battle: { ...b, result: "lose", log: [...b.log, "Your team has no Pokemon left!"] } });
+      useGame.setState({ paused: false });
+      return;
     }
 
-    const progress = loseStage(get().progress);
-    persist(progress);
-    set({ progress, log: outcome.log, lastResult: "lose" });
-    return outcome.team;
+    let player = team[activeIndex];
+    const enemyTeam = b.enemyTeam.map((p) => ({ ...p }));
+    let enemyIndex = b.enemyIndex;
+    let enemy = enemyTeam[enemyIndex];
+    let enemyFainted = b.enemyFainted;
+    let log = b.log;
+    const buffs = { ...b.buffs };
+
+    // Heal-over-time: 2% of *current* missing HP every 3s, recomputed fresh each tick.
+    if (buffs.healTicksLeft > 0 && now >= buffs.nextHealTickAt) {
+      const stats = combatStats(player);
+      const missing = stats.maxHp - player.hp;
+      const restore = Math.floor(missing * LEAGUE_HEAL_TICK_PERCENT);
+      if (restore > 0) {
+        player = { ...player, hp: Math.min(stats.maxHp, player.hp + restore) };
+        log = [...log, `${player.name} recovers ${restore} HP.`];
+      }
+      buffs.healTicksLeft -= 1;
+      buffs.nextHealTickAt = now + LEAGUE_HEAL_TICK_MS;
+    }
+
+    const playerSpeed = leagueSpeedMs(combatStats(player).speedMs);
+    const enemySpeed = leagueSpeedMs(combatStats(enemy).speedMs);
+    let playerTimer = b.playerTimer + dt * 1000;
+    let enemyTimer = b.enemyTimer + dt * 1000;
+
+    let guard = 0;
+    while (playerTimer >= playerSpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
+      playerTimer -= playerSpeed;
+      const { damage, multiplier } = attackDamage(player, enemy);
+      const dmg = now < buffs.cheerUntil ? Math.round(damage * LEAGUE_CHEER_MULT) : damage;
+      enemy = { ...enemy, hp: Math.max(0, enemy.hp - dmg) };
+      if (multiplier >= 2) log = [...log, `Super effective! ${dmg} dmg`];
+      else if (multiplier > 0 && multiplier <= 0.5) log = [...log, `Not very effective... ${dmg}`];
+      else log = [...log, `${player.name} hits ${enemy.name} for ${dmg}.`];
+
+      if (enemy.hp <= 0) {
+        enemyFainted = enemyFainted.map((f, i) => (i === enemyIndex ? true : f));
+        log = [...log, `${enemy.name} fainted!`];
+        enemyIndex += 1;
+        playerTimer = 0;
+        enemyTimer = 0;
+        if (enemyIndex >= enemyTeam.length) {
+          const { progress, team: healed } = winStage(get().progress, team);
+          persist(progress);
+          team[activeIndex] = player;
+          useGame.setState({ team: healed, active: 0 });
+          set({
+            progress,
+            battle: {
+              ...b,
+              enemyTeam,
+              enemyIndex,
+              enemyFainted,
+              buffs,
+              log: [...log, `Defeated ${b.trainer.name}! +1 prestige for the team.`],
+              result: "win",
+            },
+          });
+          useGame.setState({ paused: false });
+          return;
+        }
+        enemy = enemyTeam[enemyIndex];
+        break;
+      }
+    }
+
+    guard = 0;
+    while (enemyTimer >= enemySpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
+      enemyTimer -= enemySpeed;
+      const { damage } = attackDamage(enemy, player);
+      const dmg = now < buffs.resistUntil ? Math.round(damage * LEAGUE_RESIST_TAKEN_MULT) : damage;
+      player = { ...player, hp: Math.max(0, player.hp - dmg) };
+      log = [...log, `${enemy.name} hits ${player.name} for ${dmg}.`];
+      if (player.hp <= 0) {
+        log = [...log, `${player.name} fainted!`];
+        team[activeIndex] = player;
+        const nextLiving = team.findIndex((p) => p.hp > 0);
+        if (nextLiving >= 0) {
+          activeIndex = nextLiving;
+          player = team[activeIndex];
+          log = [...log, `Go, ${player.name}!`];
+        }
+        break;
+      }
+    }
+    team[activeIndex] = player;
+
+    if (team.every((p) => p.hp <= 0)) {
+      const progress = loseStage(get().progress);
+      persist(progress);
+      useGame.setState({ team, active: activeIndex });
+      set({ progress, battle: { ...b, enemyTeam, enemyIndex, enemyFainted, buffs, log: [...log, "Your team is down!"], result: "lose" } });
+      useGame.setState({ paused: false });
+      return;
+    }
+
+    useGame.setState({ team, active: activeIndex });
+    set({
+      battle: {
+        ...b,
+        enemyTeam,
+        enemyIndex,
+        enemyFainted,
+        playerTimer,
+        enemyTimer,
+        buffs,
+        log: log.length > 40 ? log.slice(-40) : log,
+      },
+    });
   },
 }));
+
+export { leagueOrder };
