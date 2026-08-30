@@ -162,7 +162,7 @@ export function expReward(enemy: OwnedPoke): number {
   const spec = speciesByName(enemy.name);
   const base = spec?.exp ?? 50;
   const lvl = levelOf(enemy);
-  return base / 16 + lvl * 7;
+  return base / 16 + lvl * 14;
 }
 
 export const BENCH_EXP_SHARE = 0.6;
