@@ -238,6 +238,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       const { damage, multiplier } = attackDamage(player, enemy);
       const dmg = now < buffs.cheerUntil ? Math.round(damage * LEAGUE_CHEER_MULT) : damage;
       enemy = { ...enemy, hp: Math.max(0, enemy.hp - dmg) };
+      enemyTeam[enemyIndex] = enemy;
       if (multiplier >= 2) log = [...log, `Super effective! ${dmg} dmg`];
       else if (multiplier > 0 && multiplier <= 0.5) log = [...log, `Not very effective... ${dmg}`];
       else log = [...log, `${player.name} hits ${enemy.name} for ${dmg}.`];
