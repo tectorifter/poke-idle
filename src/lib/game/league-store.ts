@@ -192,7 +192,34 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     const now = Date.now();
 
     const gs = useGame.getState();
-    const team = gs.team.map((p) => ({ ...p }));
+    let team = gs.team.map((p) => ({ ...p }));
+    let log = b.log;
+    const buffs = { ...b.buffs };
+
+    // Heal-over-time now covers the whole team, not just whoever's active:
+    // fainted members are revived to full HP outright, living ones get 2% of
+    // their own current missing HP — recomputed fresh each tick, applied
+    // before the "whole team down" check so a pending tick can save a run.
+    if (buffs.healTicksLeft > 0 && now >= buffs.nextHealTickAt) {
+      let revived = 0;
+      let healedAny = false;
+      team = team.map((p) => {
+        const stats = combatStats(p);
+        if (p.hp <= 0) {
+          revived += 1;
+          return { ...p, hp: stats.maxHp };
+        }
+        const missing = stats.maxHp - p.hp;
+        const restore = Math.floor(missing * LEAGUE_HEAL_TICK_PERCENT);
+        if (restore > 0) healedAny = true;
+        return restore > 0 ? { ...p, hp: Math.min(stats.maxHp, p.hp + restore) } : p;
+      });
+      if (revived > 0) log = [...log, `${revived} Pokemon revived!`];
+      else if (healedAny) log = [...log, "Your team recovers some HP."];
+      buffs.healTicksLeft -= 1;
+      buffs.nextHealTickAt = now + LEAGUE_HEAL_TICK_MS;
+    }
+
     let activeIndex = gs.active;
     if (!team[activeIndex] || team[activeIndex].hp <= 0) {
       const living = team.findIndex((p) => p.hp > 0);
@@ -201,7 +228,8 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     if (activeIndex < 0) {
       const progress = loseStage(get().progress);
       persist(progress);
-      set({ progress, battle: { ...b, buffs: freshBuffs(), result: "lose", log: [...b.log, "Your team has no Pokemon left!"] } });
+      useGame.setState({ team });
+      set({ progress, battle: { ...b, buffs: freshBuffs(), result: "lose", log: [...log, "Your team has no Pokemon left!"] } });
       useGame.setState({ paused: false });
       return;
     }
@@ -211,21 +239,6 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     let enemyIndex = b.enemyIndex;
     let enemy = enemyTeam[enemyIndex];
     let enemyFainted = b.enemyFainted;
-    let log = b.log;
-    const buffs = { ...b.buffs };
-
-    // Heal-over-time: 2% of *current* missing HP every 3s, recomputed fresh each tick.
-    if (buffs.healTicksLeft > 0 && now >= buffs.nextHealTickAt) {
-      const stats = combatStats(player);
-      const missing = stats.maxHp - player.hp;
-      const restore = Math.floor(missing * LEAGUE_HEAL_TICK_PERCENT);
-      if (restore > 0) {
-        player = { ...player, hp: Math.min(stats.maxHp, player.hp + restore) };
-        log = [...log, `${player.name} recovers ${restore} HP.`];
-      }
-      buffs.healTicksLeft -= 1;
-      buffs.nextHealTickAt = now + LEAGUE_HEAL_TICK_MS;
-    }
 
     const playerSpeed = leagueSpeedMs(combatStats(player).speedMs);
     const enemySpeed = leagueSpeedMs(combatStats(enemy).speedMs);
