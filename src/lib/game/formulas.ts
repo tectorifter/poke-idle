@@ -3,9 +3,9 @@ import { typeMultiplier } from "./type-chart";
 import type { BallKind, GrowthRate, OwnedPoke, Species } from "./types";
 
 export const BALL_RNG: Record<BallKind, number> = {
-  pokeball: 1,
-  greatball: 1.5,
-  ultraball: 2,
+  pokeball: 1.2,
+  greatball: 1.7,
+  ultraball: 2.2,
 };
 
 export const HEAL_COOLDOWN_MS = 15_000;
