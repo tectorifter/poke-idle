@@ -201,7 +201,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     if (activeIndex < 0) {
       const progress = loseStage(get().progress);
       persist(progress);
-      set({ progress, battle: { ...b, result: "lose", log: [...b.log, "Your team has no Pokemon left!"] } });
+      set({ progress, battle: { ...b, buffs: freshBuffs(), result: "lose", log: [...b.log, "Your team has no Pokemon left!"] } });
       useGame.setState({ paused: false });
       return;
     }
@@ -261,7 +261,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
               enemyTeam,
               enemyIndex,
               enemyFainted,
-              buffs,
+              buffs: freshBuffs(),
               log: [...log, `Defeated ${b.trainer.name}! +1 prestige for the team.`],
               result: "win",
             },
@@ -299,7 +299,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       const progress = loseStage(get().progress);
       persist(progress);
       useGame.setState({ team, active: activeIndex });
-      set({ progress, battle: { ...b, enemyTeam, enemyIndex, enemyFainted, buffs, log: [...log, "Your team is down!"], result: "lose" } });
+      set({ progress, battle: { ...b, enemyTeam, enemyIndex, enemyFainted, buffs: freshBuffs(), log: [...log, "Your team is down!"], result: "lose" } });
       useGame.setState({ paused: false });
       return;
     }
