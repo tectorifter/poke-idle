@@ -81,6 +81,9 @@ let enemyTimer = 0;
 let uiAcc = 0;
 let saveAcc = 0;
 let lastManualTap = 0;
+/** Timestamp (ms) when the next wild encounter may spawn. 0 = ready now. */
+let respawnAt = 0;
+const RESPAWN_DELAY_MS = 200;
 
 export type GameState = {
   started: boolean;
@@ -270,6 +273,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     playerTimer = 0;
     enemyTimer = 0;
     lastManualTap = 0;
+    respawnAt = 0;
     set(next);
   },
 
@@ -297,6 +301,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     playerTimer = 0;
     enemyTimer = 0;
     lastManualTap = 0;
+    respawnAt = 0;
     set(next);
   },
 
@@ -305,32 +310,30 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (!s.started || s.paused) return;
     const now = Date.now();
     if (now - lastManualTap < 50) return;
+    // Don't attack during respawn gap
+    if (now < respawnAt || !s.enemy || s.enemy.hp <= 0) return;
     lastManualTap = now;
 
     const team = s.team.map((p) => ({ ...p }));
     const activeIndex = s.active;
     const atkPoke = team[activeIndex];
-    if (!atkPoke || atkPoke.hp <= 0 || !s.enemy || s.enemy.hp <= 0) return;
+    if (!atkPoke || atkPoke.hp <= 0) return;
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
     let enemy = { ...s.enemy };
-    const { damage, multiplier } = attackDamage(atkPoke, enemy, {
+    const { damage } = attackDamage(atkPoke, enemy, {
       attackerIsPlayer: true,
       playerPrestige: s.playerPrestige,
       uniqueBonus,
     });
     enemy.hp = Math.max(0, enemy.hp - damage);
-    let stats = { ...s.stats, damage: s.stats.damage + damage };
-    let log = s.log;
-    if (multiplier >= 2) log = pushLog(log, `Super effective! ${damage} dmg`, "hit");
-    else if (multiplier <= 0.5 && multiplier > 0)
-      log = pushLog(log, `Not very effective… ${damage}`, "hit");
+    const stats = { ...s.stats, damage: s.stats.damage + damage };
 
+    // Let the next step() frame run onEnemyFaint when hp hit 0
     set({
       team,
       enemy,
       stats,
-      log,
       enemyHit: now,
       now,
     });
@@ -377,11 +380,14 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let activeIndex = s.active;
     if (active.hp <= 0) activeIndex = living;
 
-    const spawned = s.enemy
-      ? { ...s.enemy }
-      : spawnEnemy(s.region, s.route, s.anomalyCleared);
-    if (!spawned) return;
-    let enemy: OwnedPoke = spawned;
+    // Respawn gate: wait RESPAWN_DELAY_MS after a faint before the next wild mon
+    if (respawnAt > 0 && now < respawnAt) {
+      if (uiAcc > 0.05) {
+        uiAcc = 0;
+        set({ now, enemy: null });
+      }
+      return;
+    }
 
     let log = s.log;
     let dex = s.dex;
@@ -396,10 +402,33 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(dex));
 
+    // Pending manual-tap kill (hp already 0, rewards not applied yet)
+    const pendingFaint = !!(s.enemy && s.enemy.hp <= 0 && respawnAt === 0);
+
+    let enemy: OwnedPoke;
+    if (s.enemy && s.enemy.hp > 0) {
+      enemy = { ...s.enemy };
+    } else if (pendingFaint && s.enemy) {
+      enemy = { ...s.enemy }; // dead; onEnemyFaint will process below
+    } else {
+      const spawned = spawnEnemy(s.region, s.route, s.anomalyCleared);
+      if (!spawned) return;
+      enemy = spawned;
+      respawnAt = 0;
+      dex = markDex(dex, enemy.name, enemy.shiny ? 2 : 1);
+      if (enemy.shiny) {
+        stats = { ...stats, shinySeen: stats.shinySeen + 1 };
+        log = pushLog(log, `A Shiny ${enemy.name} appeared!`, "shiny");
+      } else {
+        stats = { ...stats, seen: stats.seen + 1 };
+      }
+      dirty = true;
+    }
+
     const playerAtk = () => {
       const atkPoke = team[activeIndex];
       if (!atkPoke || atkPoke.hp <= 0 || enemy.hp <= 0) return;
-      const { damage, multiplier } = attackDamage(atkPoke, enemy, {
+      const { damage } = attackDamage(atkPoke, enemy, {
         attackerIsPlayer: true,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
@@ -408,9 +437,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       stats = { ...stats, damage: stats.damage + damage };
       enemyHit = now;
       dirty = true;
-      if (multiplier >= 2) log = pushLog(log, `Super effective! ${damage} dmg`, "hit");
-      else if (multiplier <= 0.5 && multiplier > 0)
-        log = pushLog(log, `Not very effective… ${damage}`, "hit");
+      // No per-hit damage log — pokeyen on faint is what matters
     };
 
     const enemyAtk = () => {
@@ -442,15 +469,15 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       if (s.region === "Anomalies" && !anomalyCleared[s.route]) {
         anomalyCleared = { ...anomalyCleared, [s.route]: true };
       }
-      log = pushLog(
-        log,
-        `Felled ${fallen.shiny ? "Shiny " : ""}${fallen.name}!`,
-        fallen.shiny ? "shiny" : "neutral",
-      );
 
-      // Pokeyen: base 25 + 3.5 per enemy level
+      // Pokeyen: base 25 + 3.5 per enemy level — primary combat feedback
       const yenGain = pokeyenReward(levelOf(fallen));
       pokeyen += yenGain;
+      log = pushLog(
+        log,
+        `+¥${yenGain} · ${fallen.shiny ? "Shiny " : ""}${fallen.name}`,
+        fallen.shiny ? "shiny" : "neutral",
+      );
 
       // Catch is ALWAYS on — only filtered by catchMode (new / all)
       const wantCatch =
@@ -524,19 +551,18 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         return nextPoke;
       });
 
-      const next = spawnEnemy(s.region, s.route, anomalyCleared);
-      if (next) {
-        enemy = next;
-        dex = markDex(dex, next.name, next.shiny ? 2 : 1);
-        if (next.shiny) {
-          stats = { ...stats, shinySeen: stats.shinySeen + 1 };
-          log = pushLog(log, `A Shiny ${next.name} appeared!`, "shiny");
-        } else {
-          stats = { ...stats, seen: stats.seen + 1 };
-        }
-      }
+      // Clear enemy and schedule next spawn in 200ms
+      enemy = { ...fallen, hp: 0 };
+      respawnAt = now + RESPAWN_DELAY_MS;
       dirty = true;
     };
+
+    // Process a kill that came from manualTap on the previous frame
+    if (pendingFaint) {
+      onEnemyFaint();
+      playerTimer = 0;
+      enemyTimer = 0;
+    }
 
     // ── Auto-tap ──────────────────────────────────────────────────────────
     const autoMs = autoTapMsFromLevel(s.autoTapLevel);
@@ -689,6 +715,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       return;
     playerTimer = 0;
     enemyTimer = 0;
+    respawnAt = 0;
     const enemy = spawnEnemy(region, route, get().anomalyCleared);
     let dex = get().dex;
     let stats = get().stats;
