@@ -1,7 +1,7 @@
 {
   "minLevel": 50,
   "maxLevel": 100,
-  "ballBonusPercent": 20,
+  "ballBonusPercent": 100,
   "gyms": [
     {
       "id": "gym1",
@@ -16,15 +16,27 @@
         "title": "Grass-type Gym Leader",
         "team": [
           {
-            "name": "Brute-Bonnet",
+            "name": "Brute Bonnet",
             "level": 50
           },
           {
-            "name": "Iron-Leaves",
+            "name": "Iron Leaves",
             "level": 50
           },
           {
             "name": "Kartana",
+            "level": 50
+          },
+          {
+            "name": "Zarude",
+            "level": 50
+          },
+          {
+            "name": "M-Sceptile",
+            "level": 50
+          },
+          {
+            "name": "Ogerpon",
             "level": 50
           }
         ]
@@ -44,7 +56,7 @@
         "title": "Fire-type Gym Leader",
         "team": [
           {
-            "name": "Chandelure",
+            "name": "P-Groudon",
             "level": 51
           },
           {
@@ -52,7 +64,19 @@
             "level": 51
           },
           {
-            "name": "P-Groudon",
+            "name": "Entei",
+            "level": 51
+          },
+          {
+            "name": "M-Charizard Y",
+            "level": 51
+          },
+          {
+            "name": "M-Charizard X",
+            "level": 51
+          },
+          {
+            "name": "M-Houndoom",
             "level": 51
           }
         ]
@@ -72,7 +96,7 @@
         "title": "Water-type Gym Leader",
         "team": [
           {
-            "name": "Keldeo",
+            "name": "P-Kyogre",
             "level": 53
           },
           {
@@ -80,7 +104,19 @@
             "level": 53
           },
           {
-            "name": "P-Kyogre",
+            "name": "Keldeo",
+            "level": 53
+          },
+          {
+            "name": "Suicune",
+            "level": 53
+          },
+          {
+            "name": "M-Blastoise",
+            "level": 53
+          },
+          {
+            "name": "M-Swampert",
             "level": 53
           }
         ]
@@ -110,6 +146,18 @@
           {
             "name": "Iron Thorns",
             "level": 54
+          },
+          {
+            "name": "Raikou",
+            "level": 54
+          },
+          {
+            "name": "Regieleki",
+            "level": 54
+          },
+          {
+            "name": "M-Manectric",
+            "level": 54
           }
         ]
       },
@@ -137,6 +185,18 @@
           },
           {
             "name": "Slither Wing",
+            "level": 55
+          },
+          {
+            "name": "Genesect",
+            "level": 55
+          },
+          {
+            "name": "Pheromosa",
+            "level": 55
+          },
+          {
+            "name": "M-Beedrill",
             "level": 55
           }
         ]
@@ -166,6 +226,18 @@
           {
             "name": "M-Kangaskhan",
             "level": 57
+          },
+          {
+            "name": "M-Pidgeot",
+            "level": 57
+          },
+          {
+            "name": "Meloetta",
+            "level": 57
+          },
+          {
+            "name": "Silvally",
+            "level": 57
           }
         ]
       },
@@ -188,11 +260,23 @@
             "level": 58
           },
           {
+            "name": "Galarian Zapdos",
+            "level": 58
+          },
+          {
+            "name": "Galarian Moltres",
+            "level": 58
+          },
+          {
             "name": "M-Pinsir",
             "level": 58
           },
           {
             "name": "Yveltal",
+            "level": 58
+          },
+          {
+            "name": "Tornadus-T",
             "level": 58
           }
         ]
@@ -222,6 +306,18 @@
           {
             "name": "Munkidori",
             "level": 59
+          },
+          {
+            "name": "Okidogi",
+            "level": 59
+          },
+          {
+            "name": "Fezandipiti",
+            "level": 59
+          },
+          {
+            "name": "Naganadel",
+            "level": 59
           }
         ]
       },
@@ -244,11 +340,23 @@
             "level": 61
           },
           {
-            "name": "P-Groudon",
+            "name": "Landorus-T",
             "level": 61
           },
           {
-            "name": "Landorus-T",
+            "name": "Great Tusk",
+            "level": 61
+          },
+          {
+            "name": "Iron Treads",
+            "level": 61
+          },
+          {
+            "name": "Groudon",
+            "level": 61
+          },
+          {
+            "name": "Ting-Lu",
             "level": 61
           }
         ]
@@ -278,6 +386,18 @@
           {
             "name": "Iron Boulder",
             "level": 62
+          },
+          {
+            "name": "Regirock",
+            "level": 62
+          },
+          {
+            "name": "Terrakion",
+            "level": 62
+          },
+          {
+            "name": "Stakataka",
+            "level": 62
           }
         ]
       },
@@ -304,7 +424,19 @@
             "level": 63
           },
           {
-            "name": "Galarian Zapdos",
+            "name": "Virizion",
+            "level": 63
+          },
+          {
+            "name": "Cobalion",
+            "level": 63
+          },
+          {
+            "name": "Marshadow",
+            "level": 63
+          },
+          {
+            "name": "Urshifu",
             "level": 63
           }
         ]
@@ -334,6 +466,18 @@
           {
             "name": "Tera Mewtwo",
             "level": 64
+          },
+          {
+            "name": "M-Alakazam",
+            "level": 64
+          },
+          {
+            "name": "M-Gardevoir",
+            "level": 64
+          },
+          {
+            "name": "Mewtwo",
+            "level": 64
           }
         ]
       },
@@ -362,6 +506,18 @@
           {
             "name": "Flutter Mane",
             "level": 66
+          },
+          {
+            "name": "Spectrier",
+            "level": 66
+          },
+          {
+            "name": "Giratina-O",
+            "level": 66
+          },
+          {
+            "name": "Darkrai",
+            "level": 66
           }
         ]
       },
@@ -384,11 +540,23 @@
             "level": 67
           },
           {
-            "name": "W-Kyurem",
+            "name": "Chien-Pao",
             "level": 67
           },
           {
-            "name": "W-Kyurem",
+            "name": "Glastrier",
+            "level": 67
+          },
+          {
+            "name": "Regice",
+            "level": 67
+          },
+          {
+            "name": "M-Glalie",
+            "level": 67
+          },
+          {
+            "name": "M-Abomasnow",
             "level": 67
           }
         ]
@@ -408,15 +576,27 @@
         "title": "Steel-type Gym Leader",
         "team": [
           {
-            "name": "Zamazenta-Crowned",
+            "name": "M-Metagross",
             "level": 68
           },
           {
-            "name": "Zamazenta-Crowned",
+            "name": "M-Aggron",
             "level": 68
           },
           {
-            "name": "Zamazenta-Crowned",
+            "name": "M-Steelix",
+            "level": 68
+          },
+          {
+            "name": "M-Lucario",
+            "level": 68
+          },
+          {
+            "name": "M-Mawile",
+            "level": 68
+          },
+          {
+            "name": "Jirachi",
             "level": 68
           }
         ]
@@ -436,15 +616,27 @@
         "title": "Dragon-type Gym Leader",
         "team": [
           {
-            "name": "Eternatus-Eternamax",
+            "name": "M-Rayquaza",
             "level": 70
           },
           {
-            "name": "Eternatus-Eternamax",
+            "name": "M-Salamence",
             "level": 70
           },
           {
-            "name": "Eternatus-Eternamax",
+            "name": "M-Garchomp",
+            "level": 70
+          },
+          {
+            "name": "M-Latios",
+            "level": 70
+          },
+          {
+            "name": "M-Latias",
+            "level": 70
+          },
+          {
+            "name": "Rayquaza",
             "level": 70
           }
         ]
@@ -464,15 +656,27 @@
         "title": "Dark-type Gym Leader",
         "team": [
           {
-            "name": "Yveltal",
+            "name": "Hoopa-U",
             "level": 71
           },
           {
-            "name": "Yveltal",
+            "name": "Wo-Chien",
             "level": 71
           },
           {
-            "name": "Yveltal",
+            "name": "M-Absol",
+            "level": 71
+          },
+          {
+            "name": "Chi-Yu",
+            "level": 71
+          },
+          {
+            "name": "Roaring Moon",
+            "level": 71
+          },
+          {
+            "name": "Dynamax Yveltal",
             "level": 71
           }
         ]
@@ -496,11 +700,23 @@
             "level": 72
           },
           {
-            "name": "Zacian-Crowned",
+            "name": "Xerneas",
             "level": 72
           },
           {
-            "name": "Zacian-Crowned",
+            "name": "Tapu Koko",
+            "level": 72
+          },
+          {
+            "name": "Tapu Lele",
+            "level": 72
+          },
+          {
+            "name": "Tapu Bulu",
+            "level": 72
+          },
+          {
+            "name": "Tapu Fini",
             "level": 72
           }
         ]
@@ -520,19 +736,27 @@
         "title": "Grass-type Gym Leader",
         "team": [
           {
-            "name": "Zarude",
+            "name": "Ogerpon-Wellspring",
             "level": 74
           },
           {
-            "name": "Zarude",
+            "name": "Ogerpon-Hearthflame",
             "level": 74
           },
           {
-            "name": "Zarude",
+            "name": "Shaymin-S",
             "level": 74
           },
           {
-            "name": "Zarude",
+            "name": "Celebi",
+            "level": 74
+          },
+          {
+            "name": "Walking Wake",
+            "level": 74
+          },
+          {
+            "name": "M-Venusaur",
             "level": 74
           }
         ]
@@ -552,19 +776,27 @@
         "title": "Fire-type Gym Leader",
         "team": [
           {
-            "name": "P-Groudon",
+            "name": "M-Blaziken",
             "level": 75
           },
           {
-            "name": "P-Groudon",
+            "name": "M-Camerupt",
             "level": 75
           },
           {
-            "name": "P-Groudon",
+            "name": "Volcanion",
             "level": 75
           },
           {
-            "name": "P-Groudon",
+            "name": "Gouging Fire",
+            "level": 75
+          },
+          {
+            "name": "Reshiram",
+            "level": 75
+          },
+          {
+            "name": "Ho-Oh",
             "level": 75
           }
         ]
@@ -584,19 +816,27 @@
         "title": "Water-type Gym Leader",
         "team": [
           {
-            "name": "P-Kyogre",
+            "name": "M-Gyarados",
             "level": 76
           },
           {
-            "name": "P-Kyogre",
+            "name": "M-Sharpedo",
             "level": 76
           },
           {
-            "name": "P-Kyogre",
+            "name": "M-Slowbro",
             "level": 76
           },
           {
-            "name": "P-Kyogre",
+            "name": "Kyogre",
+            "level": 76
+          },
+          {
+            "name": "Manaphy",
+            "level": 76
+          },
+          {
+            "name": "Phione",
             "level": 76
           }
         ]
@@ -616,19 +856,27 @@
         "title": "Electric-type Gym Leader",
         "team": [
           {
-            "name": "Zekrom",
+            "name": "Thundurus-T",
             "level": 78
           },
           {
-            "name": "Zekrom",
+            "name": "Xurkitree",
             "level": 78
           },
           {
-            "name": "Zekrom",
+            "name": "M-Ampharos",
             "level": 78
           },
           {
-            "name": "Zekrom",
+            "name": "Tera Zekrom",
+            "level": 78
+          },
+          {
+            "name": "Dynamax Zekrom",
+            "level": 78
+          },
+          {
+            "name": "Zapdos",
             "level": 78
           }
         ]
@@ -648,19 +896,27 @@
         "title": "Bug-type Gym Leader",
         "team": [
           {
-            "name": "Genesect",
+            "name": "M-Heracross",
             "level": 79
           },
           {
-            "name": "Genesect",
+            "name": "Iron Valiant",
             "level": 79
           },
           {
-            "name": "Genesect",
+            "name": "Volcarona",
             "level": 79
           },
           {
-            "name": "Genesect",
+            "name": "Arceus",
+            "level": 79
+          },
+          {
+            "name": "Ash-Greninja",
+            "level": 79
+          },
+          {
+            "name": "Azelf",
             "level": 79
           }
         ]
@@ -680,19 +936,27 @@
         "title": "Normal-type Gym Leader",
         "team": [
           {
-            "name": "Arceus",
+            "name": "Terapagos-Stellar",
             "level": 80
           },
           {
-            "name": "Arceus",
+            "name": "Meloetta-P",
             "level": 80
           },
           {
-            "name": "Arceus",
+            "name": "Scream Tail",
             "level": 80
           },
           {
-            "name": "Arceus",
+            "name": "Type: Null",
+            "level": 80
+          },
+          {
+            "name": "Terapagos",
+            "level": 80
+          },
+          {
+            "name": "Calyrex",
             "level": 80
           }
         ]
@@ -710,24 +974,28 @@
           "title": "Elite Four - Ice specialist",
           "team": [
             {
-              "name": "Piloswine",
-              "level": 82
+              "name": "B-Kyurem",
+              "level": 90
             },
             {
-              "name": "Froslass",
-              "level": 82
+              "name": "Kyurem",
+              "level": 90
             },
             {
-              "name": "Mr. Rime",
-              "level": 82
+              "name": "Articuno",
+              "level": 90
             },
             {
-              "name": "Chien-Pao",
-              "level": 82
+              "name": "Celesteela",
+              "level": 90
             },
             {
-              "name": "W-Kyurem",
-              "level": 82
+              "name": "Cresselia",
+              "level": 90
+            },
+            {
+              "name": "Deoxys",
+              "level": 90
             }
           ]
         },
@@ -737,24 +1005,28 @@
           "title": "Elite Four - Dragon specialist",
           "team": [
             {
-              "name": "Noivern",
-              "level": 83
+              "name": "Dynamax Rayquaza",
+              "level": 90
             },
             {
-              "name": "Latios",
-              "level": 83
+              "name": "Tera Rayquaza",
+              "level": 90
+            },
+            {
+              "name": "Regidrago",
+              "level": 90
             },
             {
               "name": "Palkia",
-              "level": 83
+              "level": 90
             },
             {
-              "name": "Eternatus-Eternamax",
-              "level": 83
+              "name": "Dialga",
+              "level": 90
             },
             {
-              "name": "Eternatus-Eternamax",
-              "level": 83
+              "name": "Koraidon",
+              "level": 90
             }
           ]
         },
@@ -764,24 +1036,28 @@
           "title": "Elite Four - Dark specialist",
           "team": [
             {
-              "name": "Mandibuzz",
-              "level": 84
+              "name": "Tera Yveltal",
+              "level": 90
             },
             {
-              "name": "Chien-Pao",
-              "level": 84
+              "name": "Deoxys-A",
+              "level": 90
             },
             {
-              "name": "Yveltal",
-              "level": 84
+              "name": "Deoxys-D",
+              "level": 90
             },
             {
-              "name": "Yveltal",
-              "level": 84
+              "name": "Deoxys-S",
+              "level": 90
             },
             {
-              "name": "Yveltal",
-              "level": 84
+              "name": "Diancie",
+              "level": 90
+            },
+            {
+              "name": "Dynamax Dialga",
+              "level": 90
             }
           ]
         },
@@ -791,24 +1067,28 @@
           "title": "Elite Four - Ghost specialist",
           "team": [
             {
-              "name": "Spectrier",
-              "level": 86
+              "name": "Dynamax Giratina",
+              "level": 90
             },
             {
-              "name": "Calyrex-Shadow",
-              "level": 86
+              "name": "Giratina",
+              "level": 90
             },
             {
-              "name": "Calyrex-Shadow",
-              "level": 86
+              "name": "Dynamax Eternatus",
+              "level": 90
             },
             {
-              "name": "Calyrex-Shadow",
-              "level": 86
+              "name": "Dynamax Ho-Oh",
+              "level": 90
             },
             {
-              "name": "Calyrex-Shadow",
-              "level": 86
+              "name": "Dynamax Koraidon",
+              "level": 90
+            },
+            {
+              "name": "Dynamax Lugia",
+              "level": 90
             }
           ]
         }
@@ -823,24 +1103,28 @@
           "title": "Elite Four - Fighting specialist",
           "team": [
             {
-              "name": "Hitmontop",
-              "level": 87
+              "name": "Dynamax Zamazenta",
+              "level": 95
             },
             {
-              "name": "Paldean Tauros-Aqua",
-              "level": 87
+              "name": "Tera Zamazenta",
+              "level": 95
             },
             {
-              "name": "Chesnaught",
-              "level": 87
+              "name": "Urshifu-Rapid",
+              "level": 95
             },
             {
-              "name": "Virizion",
-              "level": 87
+              "name": "Dynamax Lunala",
+              "level": 95
             },
             {
-              "name": "Zamazenta-Crowned",
-              "level": 87
+              "name": "Dynamax Mewtwo",
+              "level": 95
+            },
+            {
+              "name": "Dynamax Miraidon",
+              "level": 95
             }
           ]
         },
@@ -850,24 +1134,28 @@
           "title": "Elite Four - Steel specialist",
           "team": [
             {
-              "name": "Escavalier",
-              "level": 88
+              "name": "Dynamax Solgaleo",
+              "level": 95
             },
             {
-              "name": "Probopass",
-              "level": 88
+              "name": "Tera Solgaleo",
+              "level": 95
             },
             {
-              "name": "Metagross",
-              "level": 88
+              "name": "Solgaleo",
+              "level": 95
             },
             {
-              "name": "Zamazenta-Crowned",
-              "level": 88
+              "name": "Magearna",
+              "level": 95
             },
             {
-              "name": "Zamazenta-Crowned",
-              "level": 88
+              "name": "Dynamax Palkia",
+              "level": 95
+            },
+            {
+              "name": "Dynamax Reshiram",
+              "level": 95
             }
           ]
         },
@@ -877,24 +1165,28 @@
           "title": "Elite Four - Rock specialist",
           "team": [
             {
-              "name": "Carracosta",
-              "level": 89
+              "name": "Dynamax Xerneas",
+              "level": 95
             },
             {
-              "name": "Aggron",
-              "level": 89
+              "name": "Dynamax Zacian",
+              "level": 95
             },
             {
-              "name": "Diancie",
-              "level": 89
+              "name": "Eternatus",
+              "level": 95
             },
             {
-              "name": "Diancie",
-              "level": 89
+              "name": "Guzzlord",
+              "level": 95
             },
             {
-              "name": "Diancie",
-              "level": 89
+              "name": "Hoopa",
+              "level": 95
+            },
+            {
+              "name": "Iron Crown",
+              "level": 95
             }
           ]
         },
@@ -904,24 +1196,28 @@
           "title": "Elite Four - Ground specialist",
           "team": [
             {
-              "name": "Rhyperior",
-              "level": 91
+              "name": "Zygarde",
+              "level": 95
             },
             {
-              "name": "P-Groudon",
-              "level": 91
+              "name": "Landorus",
+              "level": 95
             },
             {
-              "name": "P-Groudon",
-              "level": 91
+              "name": "Iron Jugulis",
+              "level": 95
             },
             {
-              "name": "P-Groudon",
-              "level": 91
+              "name": "Iron Moth",
+              "level": 95
             },
             {
-              "name": "P-Groudon",
-              "level": 91
+              "name": "Keldeo-R",
+              "level": 95
+            },
+            {
+              "name": "Latias",
+              "level": 95
             }
           ]
         }
@@ -936,24 +1232,28 @@
           "title": "Elite Four - Psychic specialist",
           "team": [
             {
-              "name": "Chimecho",
-              "level": 92
+              "name": "M-Mewtwo X",
+              "level": 98
             },
             {
-              "name": "A-Raichu",
-              "level": 92
+              "name": "M-Mewtwo Y",
+              "level": 98
             },
             {
-              "name": "Farigiraf",
-              "level": 92
+              "name": "Necrozma",
+              "level": 98
             },
             {
-              "name": "Deoxys",
-              "level": 92
+              "name": "Latios",
+              "level": 98
             },
             {
-              "name": "Calyrex-Shadow",
-              "level": 92
+              "name": "Lugia",
+              "level": 98
+            },
+            {
+              "name": "Lunala",
+              "level": 98
             }
           ]
         },
@@ -963,24 +1263,28 @@
           "title": "Elite Four - Fairy specialist",
           "team": [
             {
-              "name": "Ribombee",
-              "level": 93
+              "name": "Tera Zacian",
+              "level": 98
             },
             {
-              "name": "Tinkaton",
-              "level": 93
+              "name": "M-Aerodactyl",
+              "level": 98
             },
             {
-              "name": "Tapu Fini",
-              "level": 93
+              "name": "M-Altaria",
+              "level": 98
             },
             {
-              "name": "Zacian-Crowned",
-              "level": 93
+              "name": "M-Audino",
+              "level": 98
             },
             {
-              "name": "Zacian-Crowned",
-              "level": 93
+              "name": "M-Banette",
+              "level": 98
+            },
+            {
+              "name": "M-Gallade",
+              "level": 98
             }
           ]
         },
@@ -990,24 +1294,28 @@
           "title": "Elite Four - Flying specialist",
           "team": [
             {
-              "name": "Hawlucha",
-              "level": 95
+              "name": "Tera Lugia",
+              "level": 98
             },
             {
-              "name": "Tornadus",
-              "level": 95
+              "name": "M-Gengar",
+              "level": 98
             },
             {
-              "name": "Yveltal",
-              "level": 95
+              "name": "M-Lopunny",
+              "level": 98
             },
             {
-              "name": "Yveltal",
-              "level": 95
+              "name": "M-Medicham",
+              "level": 98
             },
             {
-              "name": "Yveltal",
-              "level": 95
+              "name": "M-Rotom",
+              "level": 98
+            },
+            {
+              "name": "M-Sableye",
+              "level": 98
             }
           ]
         },
@@ -1017,24 +1325,28 @@
           "title": "Elite Four - Bug specialist",
           "team": [
             {
-              "name": "Leavanny",
-              "level": 96
+              "name": "M-Tyranitar",
+              "level": 98
             },
             {
-              "name": "Genesect",
-              "level": 96
+              "name": "Mesprit",
+              "level": 98
             },
             {
-              "name": "Genesect",
-              "level": 96
+              "name": "Mew",
+              "level": 98
             },
             {
-              "name": "Genesect",
-              "level": 96
+              "name": "Miraidon",
+              "level": 98
             },
             {
-              "name": "Genesect",
-              "level": 96
+              "name": "Pecharunt",
+              "level": 98
+            },
+            {
+              "name": "Raging Bolt",
+              "level": 98
             }
           ]
         }
@@ -1048,28 +1360,28 @@
       "title": "Pokemon League Champion",
       "team": [
         {
-          "name": "Eternatus-Eternamax",
-          "level": 97
+          "name": "Tera Eternatus",
+          "level": 100
         },
         {
-          "name": "Reshiram",
-          "level": 97
+          "name": "Registeel",
+          "level": 100
         },
         {
-          "name": "Ho-Oh",
-          "level": 97
+          "name": "Sandygast",
+          "level": 100
         },
         {
-          "name": "Hydreigon",
-          "level": 97
+          "name": "Shaymin",
+          "level": 100
         },
         {
-          "name": "Zygarde",
-          "level": 97
+          "name": "Tera Dialga",
+          "level": 100
         },
         {
-          "name": "Magearna",
-          "level": 97
+          "name": "Tera Ho-Oh",
+          "level": 100
         }
       ]
     },
@@ -1079,28 +1391,28 @@
       "title": "Pokemon League Champion",
       "team": [
         {
-          "name": "P-Kyogre",
-          "level": 99
+          "name": "Tera Miraidon",
+          "level": 100
         },
         {
-          "name": "Miraidon",
-          "level": 99
+          "name": "Tera Koraidon",
+          "level": 100
         },
         {
-          "name": "Calyrex-Ice",
-          "level": 99
+          "name": "Tera Lunala",
+          "level": 100
         },
         {
-          "name": "Lunala",
-          "level": 99
+          "name": "Tera Palkia",
+          "level": 100
         },
         {
-          "name": "Diancie",
-          "level": 99
+          "name": "Tera Reshiram",
+          "level": 100
         },
         {
-          "name": "Lugia",
-          "level": 99
+          "name": "Tera Xerneas",
+          "level": 100
         }
       ]
     },
@@ -1110,27 +1422,27 @@
       "title": "Pokemon League Champion",
       "team": [
         {
-          "name": "Zarude",
+          "name": "Thundurus",
           "level": 100
         },
         {
-          "name": "Koraidon",
+          "name": "Tornadus",
           "level": 100
         },
         {
-          "name": "Iron Boulder",
+          "name": "Uxie",
           "level": 100
         },
         {
-          "name": "Iron Moth",
+          "name": "Victini",
           "level": 100
         },
         {
-          "name": "Terapagos-Terastal",
+          "name": "Zacian",
           "level": 100
         },
         {
-          "name": "Golisopod",
+          "name": "Zamazenta",
           "level": 100
         }
       ]
