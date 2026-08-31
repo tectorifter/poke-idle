@@ -224,7 +224,7 @@ export function BattleView() {
   );
 }
 
-function FighterCard({
+export function FighterCard({
   poke,
   hitAt,
   side,

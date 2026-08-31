@@ -24,10 +24,10 @@ import {
   CATCH_TIER_ORDER,
   pokeyenReward,
   uniqueCaughtBonus,
-  type CatchTier,
 } from "./formulas";
 import type {
   CatchMode,
+  CatchTier,
   DexFlag,
   LogLine,
   OwnedPoke,
