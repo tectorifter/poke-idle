@@ -330,7 +330,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   manualTap: () => {
     const s = get();
-    // Strictly disable player manual tap if player is fainted
     if (!s.started || s.paused || s.playerHp <= 0) return;
     const now = Date.now();
     if (now - lastManualTap < 50) return;
@@ -392,7 +391,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       dirty = true;
     }
 
-    // Freeze action while fainted & clear tap accumulators
     if (playerHp <= 0) {
       playerTimer = 0;
       enemyTimer = 0;
@@ -474,7 +472,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       playerHit = now;
       dirty = true;
 
-      // On faint: set lastHeal to current time so you must wait 15 seconds for the next timer tick
       if (playerHp <= 0) {
         lastHeal = now;
         log = pushLog(log, "You fainted! Auto-healing in 15 seconds...", "escape");
@@ -496,11 +493,15 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         fallen.shiny ? "shiny" : "neutral",
       );
 
+      // ── Refined Catch Trigger Condition ────────────────────────────────
+      // - Shinies are ALWAYS attempted (regardless of mode or dex status)
+      // - 'all' mode attempts every wild encounter
+      // - 'new' mode attempts only Pokémon unregistered in the Pokédex (flag < 5)
+      const isUnregisteredInDex = (dex[fallen.name] ?? 0) < 5;
       const wantCatch =
+        fallen.shiny ||
         s.catchMode === "all" ||
-        (s.catchMode === "new" &&
-          !hasPokemon(team, storage, fallen.name, false)) ||
-        fallen.shiny;
+        (s.catchMode === "new" && isUnregisteredInDex);
 
       if (wantCatch) {
         const spec = speciesByName(fallen.name);
@@ -576,7 +577,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       enemyTimer = 0;
     }
 
-    // ── Auto-tap ──────────────────────────────────────────────────────────
     const autoMs = autoTapMsFromLevel(s.autoTapLevel);
     playerTimer += dt * 1000;
     enemyTimer += dt * 1000;
