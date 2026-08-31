@@ -23,15 +23,18 @@ export type OwnedPoke = {
   name: string;
   exp: number;
   shiny: boolean;
+  /** Kept for anomaly identification / display; no longer used for per-mon prestige. */
   prestige: number;
   hp: number;
 };
 
-export type BallKind = "pokeball" | "greatball" | "ultraball";
+/** Permanent catch-power tiers (no consumable balls). */
+export type CatchTier = "pokeball" | "greatball" | "ultraball" | "masterball";
 
-export type CatchMode = "off" | "new" | "all";
+/** Catch behaviour is always available; the store only toggles which filter is active. */
+export type CatchMode = "new" | "all";
 
-export type TabId = "battle" | "map" | "team" | "dex" | "bag" | "league";
+export type TabId = "battle" | "map" | "team" | "dex" | "store" | "league";
 
 export type LogLine = {
   id: number;
@@ -87,7 +90,6 @@ export type EliteFourDef = {
   members: TrainerDef[];
 };
 
-/** Persisted separately from SaveBlob's wild-encounter fields — merge in wherever you save. */
 export type LeagueProgress = {
   stageIndex: number;
   runsCompleted: number;
@@ -107,15 +109,18 @@ export type SaveBlob = {
   team: OwnedPoke[];
   storage: OwnedPoke[];
   active: number;
-  balls: Record<BallKind, number>;
-  selectedBall: BallKind;
+  pokeyen: number;
+  /** Global player prestige (only the player prestiged now). */
+  playerPrestige: number;
+  autoTapLevel: number; // 0–25
+  catchTier: CatchTier;
+  catchLevel: number; // 1–10 inside current tier
   catchMode: CatchMode;
   region: string;
   route: string;
   dex: Record<string, DexFlag>;
   stats: Stats;
   lastHeal: number;
-  autoPrestige: boolean;
   started: boolean;
   anomalyCleared: Record<string, boolean>;
 };
