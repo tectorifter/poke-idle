@@ -6,7 +6,7 @@ import type { CatchTier, GrowthRate, OwnedPoke, Species } from "./types";
 export const BASE_AUTO_MS = 3000;
 export const MIN_AUTO_MS = 500;
 export const AUTO_STEP_MS = 100; // −100 ms per level
-export const MAX_AUTO_LEVEL = 27; // 3000 → 300
+export const MAX_AUTO_LEVEL = 29; // 3000 → 100
 
 export const MIN_MANUAL_MS = 50;
 
