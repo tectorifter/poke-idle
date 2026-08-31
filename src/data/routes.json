@@ -4819,7 +4819,10 @@
         "M-Lopunny",
         "M-Salamence",
         "M-Beedrill",
-        "M-Rotom"
+        "M-Rotom",
+        "P-Kyogre",
+        "P-Groudon",
+        "P-Rayquaza"
       ],
       "minLevel": 60,
       "maxLevel": 70,
