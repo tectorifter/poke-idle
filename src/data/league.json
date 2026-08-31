@@ -76,7 +76,7 @@
             "level": 53
           },
           {
-            "name": "Iron-Bundle",
+            "name": "Iron Bundle",
             "level": 53
           },
           {
@@ -104,11 +104,11 @@
             "level": 54
           },
           {
-            "name": "Sandy-Shocks",
+            "name": "Sandy Shocks",
             "level": 54
           },
           {
-            "name": "Iron-Thorns",
+            "name": "Iron Thorns",
             "level": 54
           }
         ]
@@ -136,7 +136,7 @@
             "level": 55
           },
           {
-            "name": "Slither-Wing",
+            "name": "Slither Wing",
             "level": 55
           }
         ]
@@ -300,11 +300,11 @@
             "level": 63
           },
           {
-            "name": "Zamazenta-Crowned",
+            "name": "Iron Hands",
             "level": 63
           },
           {
-            "name": "Zamazenta-Crowned",
+            "name": "Galarian Zapdos",
             "level": 63
           }
         ]
@@ -328,11 +328,11 @@
             "level": 64
           },
           {
-            "name": "Calyrex-Shadow",
+            "name": "Calyrex-Ice",
             "level": 64
           },
           {
-            "name": "Calyrex-Shadow",
+            "name": "Tera Mewtwo",
             "level": 64
           }
         ]
@@ -352,15 +352,15 @@
         "title": "Ghost-type Gym Leader",
         "team": [
           {
-            "name": "Calyrex-Shadow",
+            "name": "Tera Giratina",
             "level": 66
           },
           {
-            "name": "Calyrex-Shadow",
+            "name": "Blacephalon",
             "level": 66
           },
           {
-            "name": "Calyrex-Shadow",
+            "name": "Flutter Mane",
             "level": 66
           }
         ]
