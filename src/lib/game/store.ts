@@ -134,7 +134,6 @@ type GameActions = {
   buyCatchUpgrade: () => void;
   /** Prestige the player (global). Requires at least one mon at Lv.100. */
   prestigePlayer: () => void;
-  heal: () => void;
   evolve: (uid: string, to: string) => void;
   moveToStorage: (uid: string) => void;
   moveToTeam: (uid: string) => void;
@@ -375,24 +374,29 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     let playerHp = s.playerHp;
     let playerExp = s.playerExp;
+    let lastHeal = s.lastHeal;
+    let log = s.log;
+    let dirty = false;
 
-    if (playerHp <= 0) {
-      if (now - s.lastHeal >= HEAL_COOLDOWN_MS) {
-        const playerLvl = playerLevelOf(s.playerExp);
-        const maxHp = playerMaxHp(playerLvl, s.playerPrestige);
-        set({
-          playerHp: maxHp,
-          lastHeal: now,
-          log: pushLog(s.log, "You fainted and were auto-healed.", "system"),
-          now,
-        });
-        persist({ ...get() });
-        return;
+    // ── Passive Auto-Heal (Every 15s) ──────────────────────────────────
+    if (now - lastHeal >= HEAL_COOLDOWN_MS) {
+      const playerLvl = playerLevelOf(playerExp);
+      playerHp = playerMaxHp(playerLvl, s.playerPrestige);
+
+      for (let i = 0; i < team.length; i++) {
+        team[i].hp = combatStats(team[i]).maxHp;
       }
 
-      if (uiAcc > 0.2) {
+      lastHeal = now;
+      log = pushLog(log, "Auto-heal restored you and your party.", "system");
+      dirty = true;
+    }
+
+    // Stop combat execution while fainted until the next 15s auto-heal tick
+    if (playerHp <= 0) {
+      if (dirty || uiAcc > 0.2) {
         uiAcc = 0;
-        set({ now });
+        set({ now, playerHp, team, lastHeal, log });
       }
       return;
     }
@@ -408,7 +412,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       return;
     }
 
-    let log = s.log;
     let dex = s.dex;
     let stats = s.stats;
     let storage = s.storage;
@@ -417,7 +420,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let playerHit = s.playerHit;
     let enemyHit = s.enemyHit;
     let lastCatch: GameState["lastCatch"] = "none";
-    let dirty = false;
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(dex));
 
@@ -456,7 +458,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       stats = { ...stats, damage: stats.damage + damage };
       enemyHit = now;
       dirty = true;
-      // No per-hit damage log — pokeyen on faint is what matters
     };
 
     const enemyAtk = () => {
@@ -474,7 +475,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       dirty = true;
 
       if (playerHp <= 0) {
-        log = pushLog(log, "You fainted! Heal to continue.", "escape");
+        log = pushLog(log, "You fainted! Auto-healing soon...", "escape");
       }
     };
 
@@ -485,7 +486,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         anomalyCleared = { ...anomalyCleared, [s.route]: true };
       }
 
-      // Pokeyen: base 25 + 3.5 per enemy level — primary combat feedback
       const yenGain = pokeyenReward(levelOf(fallen));
       pokeyen += yenGain;
       log = pushLog(
@@ -494,7 +494,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         fallen.shiny ? "shiny" : "neutral",
       );
 
-      // Catch is ALWAYS on — only filtered by catchMode (new / all)
       const wantCatch =
         s.catchMode === "all" ||
         (s.catchMode === "new" &&
@@ -565,13 +564,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         return nextPoke;
       });
 
-      // Clear enemy and schedule next spawn in 200ms
       enemy = { ...fallen, hp: 0 };
       respawnAt = now + RESPAWN_DELAY_MS;
       dirty = true;
     };
 
-    // Process a kill that came from manualTap on the previous frame
     if (pendingFaint) {
       onEnemyFaint();
       playerTimer = 0;
@@ -595,7 +592,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       }
     }
 
-    // Enemy attacks on a fixed 1 s cadence
     const eSpeed = 1000;
     guard = 0;
     while (enemyTimer >= eSpeed && guard++ < 8 && enemy.hp > 0) {
@@ -614,6 +610,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         pokeyen,
         playerHp,
         playerExp,
+        lastHeal,
         dex,
         stats,
         log,
@@ -657,7 +654,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     if (nextLevel > 10) {
       const idx = CATCH_TIER_ORDER.indexOf(s.catchTier);
-      if (idx >= CATCH_TIER_ORDER.length - 1) return; // already master 10
+      if (idx >= CATCH_TIER_ORDER.length - 1) return;
       nextTier = CATCH_TIER_ORDER[idx + 1];
       nextLevel = 1;
     }
@@ -677,7 +674,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   prestigePlayer: () => {
     const s = get();
-    // Require at least one team mon at Lv.100
     const ready = s.team.some((p) => levelOf(p) >= 100);
     if (!ready) {
       set({
@@ -689,7 +685,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       });
       return;
     }
-    // Reset all team/storage exp to Lv.1, keep names/shinies, bump player prestige
     const reset = (list: OwnedPoke[]) =>
       list.map((p) => {
         const spec = speciesByName(p.name);
@@ -728,7 +723,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (caught < need) return;
     const def = ROUTES[region]?.[route];
     if (!def) return;
-    // Region unlock still uses total prestige-like check via playerPrestige if needed
     if (def.requiredPrestige != null && get().playerPrestige < def.requiredPrestige)
       return;
     playerTimer = 0;
@@ -761,31 +755,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     persist({ ...get() });
   },
 
-  heal: () => {
-    const s = get();
-    if (Date.now() - s.lastHeal < HEAL_COOLDOWN_MS) return;
-
-    const playerLvl = playerLevelOf(s.playerExp);
-    const maxHp = playerMaxHp(playerLvl, s.playerPrestige);
-
-  // Map through team and set each Pokémon's HP to their combat maxHp
-    const healedTeam = s.team.map((pokemon) => {
-      const stats = combatStats(pokemon);
-      return {
-        ...pokemon,
-        hp: stats.maxHp,
-      };
-    });
-
-    set({
-      playerHp: maxHp,
-      team: healedTeam,
-      lastHeal: Date.now(),
-      log: pushLog(s.log, "You and your team were healed.", "system"),
-    });
-
-    persist({ ...get() });
-  },
   evolve: (uid, to) => {
     const s = get();
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
