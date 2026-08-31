@@ -164,7 +164,7 @@ function emptyState(): GameState {
     route: "route",
     dex: {},
     stats: defaultStats(),
-    lastHeal: 0,
+    lastHeal: Date.now(),
     anomalyCleared: {},
     log: [],
     paused: false,
@@ -272,7 +272,7 @@ function hydrate(): GameState {
     route,
     dex: saved.dex ?? {},
     stats: { ...defaultStats(), ...saved.stats },
-    lastHeal: saved.lastHeal ?? 0,
+    lastHeal: saved.lastHeal ?? Date.now(),
     anomalyCleared: saved.anomalyCleared ?? {},
     enemy: spawnEnemy(region, route, saved.anomalyCleared ?? {}),
     now: Date.now(),
@@ -316,6 +316,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       stats,
       playerExp: 0,
       playerHp: playerMaxHp(1, 0),
+      lastHeal: Date.now(),
       log: pushLog([], `Go, ${name}! Route 1 awaits.`, "system"),
       now: Date.now(),
     };
@@ -329,17 +330,17 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   manualTap: () => {
     const s = get();
-    if (!s.started || s.paused) return;
+    // Strictly disable player manual tap if player is fainted
+    if (!s.started || s.paused || s.playerHp <= 0) return;
     const now = Date.now();
     if (now - lastManualTap < 50) return;
-    // Don't attack during respawn gap
     if (now < respawnAt || !s.enemy || s.enemy.hp <= 0) return;
     lastManualTap = now;
 
     const team = s.team.map((p) => ({ ...p }));
     const activeIndex = s.active;
     const atkPoke = team[activeIndex];
-    if (!atkPoke || s.playerHp <= 0) return;
+    if (!atkPoke) return;
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
     let enemy = { ...s.enemy };
@@ -351,7 +352,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     enemy.hp = Math.max(0, enemy.hp - damage);
     const stats = { ...s.stats, damage: s.stats.damage + damage };
 
-    // Let the next step() frame run onEnemyFaint when hp hit 0
     set({
       team,
       enemy,
@@ -378,7 +378,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let log = s.log;
     let dirty = false;
 
-    // ── Passive Auto-Heal (Every 15s) ──────────────────────────────────
+    // ── Timed Auto-Heal (Triggers strictly at 15s timer) ─────────────────
     if (now - lastHeal >= HEAL_COOLDOWN_MS) {
       const playerLvl = playerLevelOf(playerExp);
       playerHp = playerMaxHp(playerLvl, s.playerPrestige);
@@ -392,8 +392,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       dirty = true;
     }
 
-    // Stop combat execution while fainted until the next 15s auto-heal tick
+    // Freeze action while fainted & clear tap accumulators
     if (playerHp <= 0) {
+      playerTimer = 0;
+      enemyTimer = 0;
       if (dirty || uiAcc > 0.2) {
         uiAcc = 0;
         set({ now, playerHp, team, lastHeal, log });
@@ -403,7 +405,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     let activeIndex = s.active;
 
-    // Respawn gate: wait RESPAWN_DELAY_MS after a faint before the next wild mon
     if (respawnAt > 0 && now < respawnAt) {
       if (uiAcc > 0.05) {
         uiAcc = 0;
@@ -423,14 +424,13 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(dex));
 
-    // Pending manual-tap kill (hp already 0, rewards not applied yet)
     const pendingFaint = !!(s.enemy && s.enemy.hp <= 0 && respawnAt === 0);
 
     let enemy: OwnedPoke;
     if (s.enemy && s.enemy.hp > 0) {
       enemy = { ...s.enemy };
     } else if (pendingFaint && s.enemy) {
-      enemy = { ...s.enemy }; // dead; onEnemyFaint will process below
+      enemy = { ...s.enemy };
     } else {
       const spawned = spawnEnemy(s.region, s.route, s.anomalyCleared);
       if (!spawned) return;
@@ -474,8 +474,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       playerHit = now;
       dirty = true;
 
+      // On faint: set lastHeal to current time so you must wait 15 seconds for the next timer tick
       if (playerHp <= 0) {
-        log = pushLog(log, "You fainted! Auto-healing soon...", "escape");
+        lastHeal = now;
+        log = pushLog(log, "You fainted! Auto-healing in 15 seconds...", "escape");
       }
     };
 
@@ -535,7 +537,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       const afterPlayerLvl = playerLevelOf(playerExp);
       if (afterPlayerLvl > beforePlayerLvl) {
         log = pushLog(log, `You grew to Lv. ${afterPlayerLvl}!`, "level");
-        playerHp = playerMaxHp(afterPlayerLvl, s.playerPrestige);
       }
 
       if (atkPoke) {
