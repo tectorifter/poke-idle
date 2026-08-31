@@ -5,8 +5,8 @@ import { TypeBadge } from "./type-badge";
 
 const BLURBS: Record<string, string> = {
   Bulbasaur: "Steady grass starter. Strong early, grows into a wall.",
-  Charmander: "Glass cannon. Slow start, devastating late firepower.",
-  Squirtle: "Balanced tank. Forgives mistakes while you learn the routes.",
+  Litten: "Glass cannon. Slow start, devastating late firepower.",
+  Mudkip: "Balanced tank. Forgives mistakes while you learn the routes.",
 };
 
 export function StarterSelect() {
