@@ -6,13 +6,13 @@ import type { CatchTier, GrowthRate, OwnedPoke, Species } from "./types";
 export const BASE_AUTO_MS = 3000;
 export const MIN_AUTO_MS = 500;
 export const AUTO_STEP_MS = 100; // −100 ms per level
-export const MAX_AUTO_LEVEL = 25; // 3000 → 500
+export const MAX_AUTO_LEVEL = 27; // 3000 → 300
 
 export const MIN_MANUAL_MS = 50;
 
 /** Cost for the next auto-tap level (currentLevel is 0-based). */
 export function autoTapCost(currentLevel: number): number {
-  return 5000 + 2000 * currentLevel;
+   return Math.floor(5000 * Math.pow(1.20, currentLevel - 1));
 }
 
 export function autoTapMsFromLevel(level: number): number {
