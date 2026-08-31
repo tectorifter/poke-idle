@@ -3,9 +3,9 @@ import { typeMultiplier } from "./type-chart";
 import type { BallKind, GrowthRate, OwnedPoke, Species } from "./types";
 
 export const BALL_RNG: Record<BallKind, number> = {
-  pokeball: 1.2,
-  greatball: 1.7,
-  ultraball: 2.2,
+  pokeball: 2.5,
+  greatball: 3.5,
+  ultraball: 5,
 };
 
 export const HEAL_COOLDOWN_MS = 15_000;
@@ -162,7 +162,7 @@ export function expReward(enemy: OwnedPoke): number {
   const spec = speciesByName(enemy.name);
   const base = spec?.exp ?? 50;
   const lvl = levelOf(enemy);
-  return base / 16 + lvl * 14;
+  return base / 15 + lvl * 28;
 }
 
 export const BENCH_EXP_SHARE = 0.6;
