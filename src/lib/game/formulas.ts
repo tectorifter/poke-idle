@@ -1,18 +1,95 @@
 import { EXP_TABLE, EVOLUTIONS, speciesByName } from "./dex";
 import { typeMultiplier } from "./type-chart";
-import type { BallKind, GrowthRate, OwnedPoke, Species } from "./types";
+import type { CatchTier, GrowthRate, OwnedPoke, Species } from "./types";
 
-export const BALL_RNG: Record<BallKind, number> = {
-  pokeball: 2.5,
-  greatball: 3.5,
-  ultraball: 5,
+// ─── Auto-tap & store constants ───────────────────────────────────────────
+export const BASE_AUTO_MS = 3000;
+export const MIN_AUTO_MS = 500;
+export const AUTO_STEP_MS = 100; // −100 ms per level
+export const MAX_AUTO_LEVEL = 25; // 3000 → 500
+
+export const MIN_MANUAL_MS = 50;
+
+/** Cost for the next auto-tap level (currentLevel is 0-based). */
+export function autoTapCost(currentLevel: number): number {
+  return 5000 + 2000 * currentLevel;
+}
+
+export function autoTapMsFromLevel(level: number): number {
+  return Math.max(MIN_AUTO_MS, BASE_AUTO_MS - level * AUTO_STEP_MS);
+}
+
+// ─── Catch tiers (permanent power, no consumables) ────────────────────────
+export const CATCH_TIER_ORDER: CatchTier[] = [
+  "pokeball",
+  "greatball",
+  "ultraball",
+  "masterball",
+];
+
+const TIER_BASE_MULT: Record<CatchTier, number> = {
+  pokeball: 1,
+  greatball: 1.5,
+  ultraball: 2,
+  masterball: 5,
 };
 
+/** Final catch multiplier for a given tier + level (1–10). Caps at 50. */
+export function catchMultiplier(tier: CatchTier, level: number): number {
+  const lvl = Math.max(1, Math.min(10, level));
+  if (tier === "masterball") {
+    // Linear from 5 → 50 across 10 levels
+    return Math.min(50, 5 + (lvl - 1) * 5);
+  }
+  const base = TIER_BASE_MULT[tier];
+  return base * (1 + (lvl - 1) * 0.15);
+}
+
+/** Same cost curve as auto-tap for each catch level (level is 1-based). */
+export function catchUpgradeCost(currentLevel: number): number {
+  return 5000 + 2000 * (currentLevel - 1);
+}
+
+/** Chance % using permanent catch power (always available, no balls consumed). */
+export function catchChancePercentPermanent(
+  catchRate: number,
+  tier: CatchTier,
+  level: number,
+): number {
+  return (catchRate * catchMultiplier(tier, level)) / 3;
+}
+
+// ─── Pokeyen reward ───────────────────────────────────────────────────────
+/** Base 25 + 3.5 per enemy level. */
+export function pokeyenReward(enemyLevel: number): number {
+  return Math.floor(25 + 3.5 * enemyLevel);
+}
+
+// ─── Unique-caught bonus ──────────────────────────────────────────────────
+/** Every 30 unique species caught grants +1 Atk and +1 Def to the player. */
+export function uniqueCaughtBonus(uniqueCount: number): number {
+  return Math.floor(uniqueCount / 30);
+}
+
+// ─── Player prestige ──────────────────────────────────────────────────────
+/** Global player prestige multiplies combat stats the same way old per-mon prestige did. */
+export function playerPrestigeMult(prestige: number): number {
+  return 1 + prestige / 100;
+}
+
+// ─── Anomaly detection ────────────────────────────────────────────────────
+/** Anomaly forms are identified by name prefix / region flag. */
+export function isAnomalyName(name: string): boolean {
+  return (
+    name.startsWith("M-") ||
+    name.startsWith("Dynamax ") ||
+    name.startsWith("Tera ") ||
+    name.includes("Anomaly")
+  );
+}
+
+// ─── Existing combat helpers (adapted) ────────────────────────────────────
 export const HEAL_COOLDOWN_MS = 15_000;
-/** Flat per-turn pacing for wild-route combat — independent of any Pokemon's
- *  speed stat (that stat still matters for combatStats().speedMs, which the
- *  league's own pacing derives from — this constant only governs routes). */
-export const ROUTE_TURN_MS = 1_000;
 export const SHINY_ODDS = 1 / 8192;
 export const TEAM_SIZE = 6;
 
@@ -51,13 +128,6 @@ export function nextLevelExp(poke: OwnedPoke): number {
   return table[Math.min(100, lvl)] ?? table[table.length - 1];
 }
 
-function prestigeMult(prestige: number): number {
-  return 1 + prestige / 100;
-}
-
-// Permanent flavor bonuses for anomaly-caught Pokemon — derived from the name itself
-// (which never changes once caught), so no extra save data is needed for these to
-// persist forever on a caught mon, whether it's actively battling or just owned.
 const MEGA_STAT_MULT = 1.05;
 const MEGA_DAMAGE_MULT = 1.02;
 const DYNAMAX_HP_MULT = 1.5;
@@ -83,31 +153,68 @@ export function isTeraName(name: string): boolean {
   return name.startsWith("Tera ") || TERA_EXCLUSIVE_NAMES.has(name);
 }
 
-export function statValue(raw: number, level: number, prestige: number): number {
-  return Math.floor((((raw + 50) * level) / 150) * prestigeMult(prestige));
-}
-
-export function maxHpOf(spec: Species, level: number, prestige: number): number {
-  const base = Math.max(3, Math.floor(((spec.hp * level) / 40) * prestigeMult(prestige)) * 3);
-  return base;
-}
-
-export function combatStats(poke: OwnedPoke) {
+/**
+ * Combat stats for a Pokémon.
+ * - playerPrestige: global player prestige (only the player can prestige)
+ * - uniqueBonus: floor(uniqueCaught / 30) → flat +Atk/+Def
+ * - anomalyEquipped: when the active mon is an anomaly, its form mults also apply to the player side
+ */
+export function combatStats(
+  poke: OwnedPoke,
+  opts: {
+    playerPrestige?: number;
+    uniqueBonus?: number;
+    /** When true, treat this mon as the player's active fighter (apply global bonuses). */
+    isPlayer?: boolean;
+  } = {},
+) {
   const spec = speciesByName(poke.name);
   if (!spec) {
-    return { maxHp: 10, atk: 1, def: 1, spa: 1, spd: 1, spe: 1, avgAtk: 1, avgDef: 1, speedMs: 800, types: ["Normal"] as string[] };
+    return {
+      maxHp: 10,
+      atk: 1,
+      def: 1,
+      spa: 1,
+      spd: 1,
+      spe: 1,
+      avgAtk: 1,
+      avgDef: 1,
+      speedMs: 800,
+      types: ["Normal"] as string[],
+    };
   }
+
   const lvl = levelOf(poke);
+  const prestige = opts.isPlayer ? (opts.playerPrestige ?? 0) : 0;
+  const unique = opts.isPlayer ? (opts.uniqueBonus ?? 0) : 0;
+  const pMult = playerPrestigeMult(prestige);
+
   const mega = isMegaName(poke.name);
-  const statMult = mega ? MEGA_STAT_MULT : 1;
-  const atk = Math.floor(statValue(spec.atk, lvl, poke.prestige) * statMult);
-  const def = Math.floor(statValue(spec.def, lvl, poke.prestige) * statMult);
-  const spa = Math.floor(statValue(spec.spa, lvl, poke.prestige) * statMult);
-  const spd = Math.floor(statValue(spec.spd, lvl, poke.prestige) * statMult);
-  const spe = Math.floor(statValue(spec.spe, lvl, poke.prestige) * statMult);
+  const formStatMult = mega ? MEGA_STAT_MULT : 1;
+
+  // Anomaly form bonuses also apply to the player when an anomaly is equipped
+  const anomalyActive = opts.isPlayer && isAnomalyName(poke.name);
+  const effectiveFormMult = anomalyActive || mega ? formStatMult : 1;
+
+  const atk =
+    Math.floor(
+      ((((spec.atk + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique,
+    );
+  const def =
+    Math.floor(
+      ((((spec.def + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique,
+    );
+  const spa = Math.floor((((spec.spa + 50) * lvl) / 150) * pMult * effectiveFormMult);
+  const spd = Math.floor((((spec.spd + 50) * lvl) / 150) * pMult * effectiveFormMult);
+  const spe = Math.floor((((spec.spe + 50) * lvl) / 150) * pMult);
+
   const speed = Math.floor((1000 / (500 + spe)) * 800);
-  let maxHp = Math.floor(maxHpOf(spec, lvl, poke.prestige) * statMult);
-  if (isDynamaxName(poke.name)) maxHp = Math.floor(maxHp * DYNAMAX_HP_MULT);
+  let maxHp = Math.floor(((spec.hp * lvl) / 40) * pMult * 3 * effectiveFormMult);
+  maxHp = Math.max(3, maxHp);
+  if (isDynamaxName(poke.name) && (opts.isPlayer || anomalyActive)) {
+    maxHp = Math.floor(maxHp * DYNAMAX_HP_MULT);
+  }
+
   return {
     maxHp,
     atk,
@@ -122,27 +229,53 @@ export function combatStats(poke: OwnedPoke) {
   };
 }
 
-export function rollDamage(attackerAtk: number, defenderDef: number, multiplier: number, levelDmgBonus = 0): number {
+export function rollDamage(
+  attackerAtk: number,
+  defenderDef: number,
+  multiplier: number,
+  levelDmgBonus = 0,
+): number {
   const power = attackerAtk * multiplier;
   const raw = power - defenderDef / 10;
-  const base = raw <= 0 ? 0 : Math.ceil(raw * ((Math.random() + 0.1) * 2) / 100);
+  const base = raw <= 0 ? 0 : Math.ceil((raw * ((Math.random() + 0.1) * 2)) / 100);
   return base + levelDmgBonus;
 }
 
-/** Extra flat damage from the attacker's level, scaled by their prestige and by
- *  how effective the hit is — so a super-effective, highly-prestiged, high-level
- *  hit visibly outpaces a neutral low-level one instead of both rounding to 1. */
-export function levelDamageBonus(level: number, prestige: number, multiplier: number): number {
-  return Math.floor((level / 10) * 1.5 * prestigeMult(prestige) * multiplier);
+export function levelDamageBonus(
+  level: number,
+  prestige: number,
+  multiplier: number,
+): number {
+  return Math.floor((level / 10) * 1.5 * playerPrestigeMult(prestige) * multiplier);
 }
 
-export function attackDamage(attacker: OwnedPoke, defender: OwnedPoke): { damage: number; multiplier: number } {
-  const a = combatStats(attacker);
-  const d = combatStats(defender);
+export function attackDamage(
+  attacker: OwnedPoke,
+  defender: OwnedPoke,
+  opts: {
+    attackerIsPlayer?: boolean;
+    playerPrestige?: number;
+    uniqueBonus?: number;
+  } = {},
+): { damage: number; multiplier: number } {
+  const a = combatStats(attacker, {
+    isPlayer: opts.attackerIsPlayer,
+    playerPrestige: opts.playerPrestige,
+    uniqueBonus: opts.uniqueBonus,
+  });
+  const d = combatStats(defender, {
+    isPlayer: !opts.attackerIsPlayer,
+    playerPrestige: opts.attackerIsPlayer ? 0 : opts.playerPrestige,
+    uniqueBonus: opts.attackerIsPlayer ? 0 : opts.uniqueBonus,
+  });
+
   const attackerSpec = speciesByName(attacker.name);
   const teraType = isTeraName(attacker.name) ? attackerSpec?.teraType : undefined;
   const multiplier = typeMultiplier(a.types, d.types, teraType);
-  const bonus = levelDamageBonus(levelOf(attacker), attacker.prestige, multiplier);
+
+  const prestigeForBonus = opts.attackerIsPlayer ? (opts.playerPrestige ?? 0) : 0;
+  const bonus = levelDamageBonus(levelOf(attacker), prestigeForBonus, multiplier);
+
   let damage = rollDamage(a.avgAtk, d.avgDef, multiplier, bonus);
   if (damage > 0) {
     if (isMegaName(attacker.name)) damage = Math.round(damage * MEGA_DAMAGE_MULT);
@@ -151,13 +284,6 @@ export function attackDamage(attacker: OwnedPoke, defender: OwnedPoke): { damage
   return { damage, multiplier };
 }
 
-export function catchChancePercent(catchRate: number, ball: BallKind): number {
-  return (catchRate * BALL_RNG[ball]) / 3;
-}
-
-/** Full exp reward for a kill. The active Pokemon gets all of this;
- *  benched teammates get BENCH_EXP_SHARE of it;
- *  PC storage gets STORAGE_EXP_SHARE of it (see store.ts). */
 export function expReward(enemy: OwnedPoke): number {
   const spec = speciesByName(enemy.name);
   const base = spec?.exp ?? 50;
@@ -173,7 +299,12 @@ export function eligibleEvolutions(poke: OwnedPoke) {
   return (EVOLUTIONS[poke.name] ?? []).filter((e) => lvl >= e.level);
 }
 
-export function makeOwned(name: string, level: number, shiny = false, prestige = 0): OwnedPoke {
+export function makeOwned(
+  name: string,
+  level: number,
+  shiny = false,
+  prestige = 0,
+): OwnedPoke {
   const spec = speciesByName(name);
   const growth = (spec?.growth ?? "Medium Fast") as GrowthRate;
   const poke: OwnedPoke = {
