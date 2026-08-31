@@ -16,11 +16,11 @@
         "title": "Grass-type Gym Leader",
         "team": [
           {
-            "name": "Nuzleaf",
+            "name": "Brute-Bonnet",
             "level": 50
           },
           {
-            "name": "Flapple",
+            "name": "Iron-Leaves",
             "level": 50
           },
           {
@@ -76,7 +76,7 @@
             "level": 53
           },
           {
-            "name": "P-Kyogre",
+            "name": "Iron-Bundle",
             "level": 53
           },
           {
@@ -104,11 +104,11 @@
             "level": 54
           },
           {
-            "name": "Zekrom",
+            "name": "Sandy-Shocks",
             "level": 54
           },
           {
-            "name": "Zekrom",
+            "name": "Iron-Thorns",
             "level": 54
           }
         ]
@@ -128,15 +128,15 @@
         "title": "Bug-type Gym Leader",
         "team": [
           {
-            "name": "Genesect",
+            "name": "M-Scizor",
             "level": 55
           },
           {
-            "name": "Genesect",
+            "name": "Buzzwole",
             "level": 55
           },
           {
-            "name": "Genesect",
+            "name": "Slither-Wing",
             "level": 55
           }
         ]
@@ -156,15 +156,15 @@
         "title": "Normal-type Gym Leader",
         "team": [
           {
-            "name": "Arceus",
+            "name": "Regigigas",
             "level": 57
           },
           {
-            "name": "Arceus",
+            "name": "Terapagos-Terastal",
             "level": 57
           },
           {
-            "name": "Arceus",
+            "name": "M-Kangaskhan",
             "level": 57
           }
         ]
@@ -184,11 +184,11 @@
         "title": "Flying-type Gym Leader",
         "team": [
           {
-            "name": "Yveltal",
+            "name": "Galarian Articuno",
             "level": 58
           },
           {
-            "name": "Yveltal",
+            "name": "M-Pinsir",
             "level": 58
           },
           {
@@ -212,7 +212,7 @@
         "title": "Poison-type Gym Leader",
         "team": [
           {
-            "name": "Eternatus-Eternamax",
+            "name": "Nihilego",
             "level": 59
           },
           {
@@ -220,7 +220,7 @@
             "level": 59
           },
           {
-            "name": "Eternatus-Eternamax",
+            "name": "Munkidori",
             "level": 59
           }
         ]
@@ -240,7 +240,7 @@
         "title": "Ground-type Gym Leader",
         "team": [
           {
-            "name": "P-Groudon",
+            "name": "Zygarde-C",
             "level": 61
           },
           {
@@ -248,7 +248,7 @@
             "level": 61
           },
           {
-            "name": "P-Groudon",
+            "name": "Landorus-T",
             "level": 61
           }
         ]
@@ -268,15 +268,15 @@
         "title": "Rock-type Gym Leader",
         "team": [
           {
-            "name": "Diancie",
+            "name": "M-Diancie",
             "level": 62
           },
           {
-            "name": "Diancie",
+            "name": "Ogerpon-Cornerstone",
             "level": 62
           },
           {
-            "name": "Diancie",
+            "name": "Iron Boulder",
             "level": 62
           }
         ]
