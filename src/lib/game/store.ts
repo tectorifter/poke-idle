@@ -647,7 +647,13 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   buyCatchUpgrade: () => {
     const s = get();
-    const cost = catchUpgradeCost(s.catchLevel);
+
+  // Guard against purchasing past the absolute max tier/level
+    const isMaxTier = CATCH_TIER_ORDER.indexOf(s.catchTier) === CATCH_TIER_ORDER.length - 1;
+    if (isMaxTier && s.catchLevel >= 10) return;
+
+  // Calculate cost using both the level within tier and current tier
+    const cost = catchUpgradeCost(s.catchLevel, s.catchTier);
     if (s.pokeyen < cost) return;
 
     let nextTier = s.catchTier;
@@ -655,7 +661,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     if (nextLevel > 10) {
       const idx = CATCH_TIER_ORDER.indexOf(s.catchTier);
-      if (idx >= CATCH_TIER_ORDER.length - 1) return;
       nextTier = CATCH_TIER_ORDER[idx + 1];
       nextLevel = 1;
     }
