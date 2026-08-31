@@ -34,6 +34,13 @@ const TIER_BASE_MULT: Record<CatchTier, number> = {
   masterball: 5,
 };
 
+const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
+  pokeball: 0,    // Level 1:   0 + 1 = 1
+  greatball: 10,  // Level 1:  10 + 1 = 11
+  ultraball: 20,  // Level 1:  20 + 1 = 21
+  masterball: 30, // Level 1:  30 + 1 = 31
+};
+
 /** Final catch multiplier for a given tier + level (1–10). Caps at 50. */
 export function catchMultiplier(tier: CatchTier, level: number): number {
   const lvl = Math.max(1, Math.min(10, level));
@@ -46,8 +53,10 @@ export function catchMultiplier(tier: CatchTier, level: number): number {
 }
 
 /** Same cost curve as auto-tap for each catch level (level is 1-based). */
-export function catchUpgradeCost(currentLevel: number): number {
-  return 5000 + 2000 * (currentLevel - 1);
+export function catchUpgradeCost(currentLevel: number, tier: CatchTier = "pokeball"): number {
+  const totalLevel = TIER_LEVEL_OFFSET[tier] + currentLevel;
+  // Scales by 15% compounded each level continuously
+  return Math.floor(5000 * Math.pow(1.15, totalLevel - 1));
 }
 
 /** Chance % using permanent catch power (always available, no balls consumed). */
