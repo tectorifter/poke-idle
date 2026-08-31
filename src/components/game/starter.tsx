@@ -5,8 +5,11 @@ import { TypeBadge } from "./type-badge";
 
 const BLURBS: Record<string, string> = {
   Bulbasaur: "Steady grass starter. Strong early, grows into a wall.",
-  Litten: "Glass cannon. Slow start, devastating late firepower.",
+  Litten: "Well-rounded with devastating late firepower.",
   Mudkip: "Balanced tank. Forgives mistakes while you learn the routes.",
+  Fenekin: "A magical fox that will devastate them with glamour.",
+  Grookey: "A devastating rhythmical menace.",
+  Quaxly: "A water starter that will make you a master of the seas and flamboyant kicks.",
 };
 
 export function StarterSelect() {
