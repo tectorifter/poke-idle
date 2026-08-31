@@ -768,15 +768,24 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const playerLvl = playerLevelOf(s.playerExp);
     const maxHp = playerMaxHp(playerLvl, s.playerPrestige);
 
+  // Map through team and set each Pokémon's HP to their combat maxHp
+    const healedTeam = s.team.map((pokemon) => {
+      const stats = combatStats(pokemon);
+      return {
+        ...pokemon,
+        hp: stats.maxHp,
+      };
+    });
+
     set({
       playerHp: maxHp,
+      team: healedTeam,
       lastHeal: Date.now(),
-      log: pushLog(s.log, "You were healed.", "system"),
+      log: pushLog(s.log, "You and your team were healed.", "system"),
     });
 
     persist({ ...get() });
   },
-
   evolve: (uid, to) => {
     const s = get();
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
