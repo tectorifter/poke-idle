@@ -1,5 +1,5 @@
 import { Pause, Play } from "lucide-react";
-import { speciesByName, POKEDEX } from "@/lib/game/dex";
+import { speciesByName } from "@/lib/game/dex";
 import {
   combatStats,
   levelOf,
@@ -7,6 +7,7 @@ import {
   thisLevelExp,
   autoTapMsFromLevel,
   uniqueCaughtBonus,
+  playerMaxHp,
 } from "@/lib/game/formulas";
 import { ROUTES, useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ export function BattleView() {
   const pokeyen = useGame((s) => s.pokeyen);
   const autoTapLevel = useGame((s) => s.autoTapLevel);
   const playerPrestige = useGame((s) => s.playerPrestige);
+  const playerHp = useGame((s) => s.playerHp);
   const dex = useGame((s) => s.dex);
   const playerHit = useGame((s) => s.playerHit);
   const enemyHit = useGame((s) => s.enemyHit);
@@ -34,7 +36,8 @@ export function BattleView() {
   const player = team[active];
   const routeName = ROUTES[region]?.[route]?.name ?? route;
   const owned = uniqueCaught(dex);
-  const totalSpecies = POKEDEX.length;
+  const routePokes = ROUTES[region]?.[route]?.pokes ?? [];
+  const routeOwned = routePokes.filter((name) => (dex[name] ?? 0) >= 5).length;
   const autoMs = autoTapMsFromLevel(autoTapLevel);
   const uniqueBonus = uniqueCaughtBonus(owned);
 
@@ -46,6 +49,7 @@ export function BattleView() {
       })
     : null;
   const pLvl = player ? levelOf(player) : 1;
+  const playerMax = playerMaxHp(pLvl, playerPrestige);
   const xp0 = player ? thisLevelExp(player) : 0;
   const xp1 = player ? nextLevelExp(player) : 1;
 
@@ -104,12 +108,12 @@ export function BattleView() {
                 <div className="flex justify-between font-mono text-[10px] tabular-nums text-muted">
                   <span>HP</span>
                   <span>
-                    {Math.max(0, Math.floor(player.hp))} / {pStats.maxHp}
+                    {Math.max(0, Math.floor(playerHp))} / {playerMax}
                   </span>
                 </div>
                 <Meter
-                  value={player.hp}
-                  max={pStats.maxHp}
+                  value={playerHp}
+                  max={playerMax}
                   tone="hp"
                   className="h-2.5 mt-1"
                 />
@@ -136,7 +140,7 @@ export function BattleView() {
               <div className="flex justify-between pt-1 font-mono text-xs tabular-nums">
                 <span className="text-warn">¥ {pokeyen.toLocaleString()}</span>
                 <span className="text-muted">
-                  Caught {owned}/{totalSpecies}
+                  Caught {routeOwned}/{routePokes.length}
                 </span>
               </div>
 

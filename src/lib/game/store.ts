@@ -36,8 +36,9 @@ import type {
   TabId,
 } from "./types";
 
-const SAVE_KEY = "pokeidle-save-v3";
-const SAVE_VERSION = 3;
+const SAVE_KEY = "pokeidle-save-v4";
+const LEGACY_SAVE_KEY = "pokeidle-save-v3";
+const SAVE_VERSION = 4;
 const MAX_LOG = 24;
 
 const defaultStats = (): Stats => ({
@@ -67,7 +68,10 @@ function hasPokemon(
 
 function loadSave(): Partial<SaveBlob> | null {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw =
+      localStorage.getItem(SAVE_KEY) ??
+      localStorage.getItem(LEGACY_SAVE_KEY);
+
     if (!raw) return null;
     return JSON.parse(raw) as SaveBlob;
   } catch {
@@ -95,6 +99,7 @@ export type GameState = {
   pokeyen: number;
   /** Global player prestige — only the player prestiged now. */
   playerPrestige: number;
+  playerHp: number;
   autoTapLevel: number; // 0–25
   catchTier: CatchTier;
   catchLevel: number; // 1–10
@@ -147,6 +152,7 @@ function emptyState(): GameState {
     enemy: null,
     pokeyen: 0,
     playerPrestige: 0,
+    playerHp: 10,
     autoTapLevel: 0,
     catchTier: "pokeball",
     catchLevel: 1,
@@ -174,6 +180,7 @@ function persist(state: GameState) {
     active: state.active,
     pokeyen: state.pokeyen,
     playerPrestige: state.playerPrestige,
+    playerHp: state.playerHp,
     autoTapLevel: state.autoTapLevel,
     catchTier: state.catchTier,
     catchLevel: state.catchLevel,
@@ -236,14 +243,23 @@ function hydrate(): GameState {
     ...p,
     hp: Math.min(p.hp, combatStats(p).maxHp),
   }));
+  const activeIndex = Math.min(
+    saved.active ?? 0,
+    Math.max(0, team.length - 1),
+  );
+  const activePoke = team[activeIndex];
+  const maxHp = activePoke
+    ? playerMaxHp(levelOf(activePoke), saved.playerPrestige ?? 0)
+    : 10;
   const state: GameState = {
     ...base,
     started: true,
     team,
     storage: saved.storage ?? [],
-    active: Math.min(saved.active ?? 0, Math.max(0, team.length - 1)),
+    active: activeIndex,
     pokeyen: saved.pokeyen ?? 0,
     playerPrestige: saved.playerPrestige ?? 0,
+    playerHp: Math.min(saved.playerHp ?? maxHp, maxHp),
     autoTapLevel: Math.min(MAX_AUTO_LEVEL, saved.autoTapLevel ?? 0),
     catchTier: saved.catchTier ?? "pokeball",
     catchLevel: Math.max(1, Math.min(10, saved.catchLevel ?? 1)),
@@ -294,6 +310,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       enemy,
       dex,
       stats,
+      playerHp: playerMaxHp(levelOf(starter), 0),
       log: pushLog([], `Go, ${name}! Route 1 awaits.`, "system"),
       now: Date.now(),
     };
@@ -317,7 +334,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const team = s.team.map((p) => ({ ...p }));
     const activeIndex = s.active;
     const atkPoke = team[activeIndex];
-    if (!atkPoke || atkPoke.hp <= 0) return;
+    if (!atkPoke || s.playerHp <= 0) return;
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
     let enemy = { ...s.enemy };
@@ -350,35 +367,29 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const active = team[s.active];
     if (!active) return;
 
-    const living = team.findIndex((p) => p.hp > 0);
-    if (living < 0) {
+    let playerHp = s.playerHp;
+
+    if (playerHp <= 0) {
       if (now - s.lastHeal >= HEAL_COOLDOWN_MS) {
-        const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
-        const healedTeam = team.map((p) => ({
-          ...p,
-          hp: combatStats(p, {
-            isPlayer: true,
-            playerPrestige: s.playerPrestige,
-            uniqueBonus,
-          }).maxHp,
-        }));
+        const maxHp = playerMaxHp(levelOf(active), s.playerPrestige);
         set({
-          team: healedTeam,
+          playerHp: maxHp,
           lastHeal: now,
-          log: pushLog(s.log, "Your team fainted and was auto-healed.", "system"),
+          log: pushLog(s.log, "You fainted and were auto-healed.", "system"),
           now,
         });
         persist({ ...get() });
         return;
       }
+
       if (uiAcc > 0.2) {
         uiAcc = 0;
         set({ now });
       }
       return;
     }
+
     let activeIndex = s.active;
-    if (active.hp <= 0) activeIndex = living;
 
     // Respawn gate: wait RESPAWN_DELAY_MS after a faint before the next wild mon
     if (respawnAt > 0 && now < respawnAt) {
@@ -427,7 +438,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const playerAtk = () => {
       const atkPoke = team[activeIndex];
-      if (!atkPoke || atkPoke.hp <= 0 || enemy.hp <= 0) return;
+      if (!atkPoke || playerHp <= 0 || enemy.hp <= 0) return;
       const { damage } = attackDamage(atkPoke, enemy, {
         attackerIsPlayer: true,
         playerPrestige: s.playerPrestige,
@@ -442,24 +453,20 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const enemyAtk = () => {
       const defPoke = team[activeIndex];
-      if (!defPoke || defPoke.hp <= 0 || enemy.hp <= 0) return;
+      if (!defPoke || playerHp <= 0 || enemy.hp <= 0) return;
+
       const { damage } = attackDamage(enemy, defPoke, {
         attackerIsPlayer: false,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
       });
-      defPoke.hp = Math.max(0, defPoke.hp - damage);
+
+      playerHp = Math.max(0, playerHp - damage);
       playerHit = now;
       dirty = true;
-      if (defPoke.hp <= 0) {
-        log = pushLog(log, `${defPoke.name} fainted!`, "escape");
-        const nextLiving = team.findIndex((p) => p.hp > 0);
-        if (nextLiving >= 0) {
-          activeIndex = nextLiving;
-          log = pushLog(log, `Go, ${team[nextLiving].name}!`, "system");
-        } else {
-          log = pushLog(log, "Your team is down. Heal to continue.", "system");
-        }
+
+      if (playerHp <= 0) {
+        log = pushLog(log, "You fainted! Heal to continue.", "escape");
       }
     };
 
@@ -520,11 +527,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         atkPoke.exp += fullReward;
         const after = levelOf(atkPoke);
         if (after > before) {
-          atkPoke.hp = combatStats(atkPoke, {
-            isPlayer: true,
-            playerPrestige: s.playerPrestige,
-            uniqueBonus: uniqueCaughtBonus(uniqueCaught(dex)),
-          }).maxHp;
+          playerHp = playerMaxHp(after, s.playerPrestige);
           log = pushLog(log, `${atkPoke.name} grew to Lv. ${after}!`, "level");
         }
       }
@@ -533,11 +536,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         const before = levelOf(p);
         p.exp += fullReward * BENCH_EXP_SHARE;
         if (levelOf(p) > before) {
-          p.hp = combatStats(p, {
-            isPlayer: true,
-            playerPrestige: s.playerPrestige,
-            uniqueBonus: uniqueCaughtBonus(uniqueCaught(dex)),
-          }).maxHp;
           log = pushLog(log, `${p.name} grew to Lv. ${levelOf(p)}!`, "level");
         }
       }
@@ -572,7 +570,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let guard = 0;
     while (playerTimer >= autoMs && guard++ < 12) {
       playerTimer -= autoMs;
-      if (enemy.hp > 0 && team[activeIndex].hp > 0) playerAtk();
+      if (enemy.hp > 0 && playerHp > 0) playerAtk();
       if (enemy.hp <= 0) {
         onEnemyFaint();
         playerTimer = 0;
@@ -586,7 +584,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     guard = 0;
     while (enemyTimer >= eSpeed && guard++ < 8 && enemy.hp > 0) {
       enemyTimer -= eSpeed;
-      if (team[activeIndex].hp > 0) enemyAtk();
+      if (playerHp > 0) enemyAtk();
     }
 
     const shouldUi = dirty || uiAcc > 0.08;
@@ -598,6 +596,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         active: activeIndex,
         enemy,
         pokeyen,
+        playerHp,
         dex,
         stats,
         log,
@@ -691,6 +690,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     set({
       playerPrestige: s.playerPrestige + 1,
+      playerHp: playerMaxHp(1, s.playerPrestige + 1),
       team: reset(s.team),
       storage: reset(s.storage),
       log: pushLog(
@@ -733,7 +733,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   setActive: (index) => {
     const team = get().team;
-    if (!team[index] || team[index].hp <= 0) return;
+    if (!team[index]) return;
     playerTimer = 0;
     set({ active: index });
   },
@@ -746,20 +746,18 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
   heal: () => {
     const s = get();
     if (Date.now() - s.lastHeal < HEAL_COOLDOWN_MS) return;
-    const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
-    const team = s.team.map((p) => ({
-      ...p,
-      hp: combatStats(p, {
-        isPlayer: true,
-        playerPrestige: s.playerPrestige,
-        uniqueBonus,
-      }).maxHp,
-    }));
+
+    const active = s.team[s.active] ?? s.team[0];
+    const maxHp = active
+      ? playerMaxHp(levelOf(active), s.playerPrestige)
+      : 10;
+
     set({
-      team,
+      playerHp: maxHp,
       lastHeal: Date.now(),
-      log: pushLog(s.log, "Your team was healed.", "system"),
+      log: pushLog(s.log, "You were healed.", "system"),
     });
+
     persist({ ...get() });
   },
 

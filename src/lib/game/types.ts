@@ -112,6 +112,8 @@ export type SaveBlob = {
   pokeyen: number;
   /** Global player prestige (only the player prestiged now). */
   playerPrestige: number;
+  /** Current wild-combat HP pool (not per-mon). */
+  playerHp: number;
   autoTapLevel: number; // 0–25
   catchTier: CatchTier;
   catchLevel: number; // 1–10 inside current tier

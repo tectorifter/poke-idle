@@ -249,6 +249,12 @@ export function levelDamageBonus(
   return Math.floor((level / 10) * 1.5 * playerPrestigeMult(prestige) * multiplier);
 }
 
+/** Wild-route player HP pool. Independent of equipped mon; scales with level + prestige. */
+export function playerMaxHp(level: number, prestige: number): number {
+  const lvl = Math.max(1, Math.min(100, level));
+  return Math.max(10, Math.floor(((50 * lvl) / 40) * playerPrestigeMult(prestige) * 3));
+}
+
 export function attackDamage(
   attacker: OwnedPoke,
   defender: OwnedPoke,
