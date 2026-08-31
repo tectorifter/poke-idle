@@ -3,7 +3,7 @@ import { BookOpen, Map, Package, Swords, Trophy, Users } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import type { TabId } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
-import { BagView } from "./bag-view";
+import { StoreView } from "./store-view";
 import { BattleView } from "./battle";
 import { DexView } from "./dex-view";
 import { LeagueView } from "./league-view";
@@ -17,7 +17,7 @@ const TABS: { id: TabId; label: string; icon: typeof Swords }[] = [
   { id: "league", label: "League", icon: Trophy },
   { id: "team", label: "Team", icon: Users },
   { id: "dex", label: "Dex", icon: BookOpen },
-  { id: "bag", label: "Bag", icon: Package },
+  { id: "store", label: "Store", icon: Package },
 ];
 
 export function GameShell() {
@@ -25,7 +25,8 @@ export function GameShell() {
   const tab = useGame((s) => s.tab);
   const setTab = useGame((s) => s.setTab);
   const step = useGame((s) => s.step);
-  const balls = useGame((s) => s.balls);
+  const pokeyen = useGame((s) => s.pokeyen);
+  const playerPrestige = useGame((s) => s.playerPrestige);
   const dex = useGame((s) => s.dex);
   const rehydrate = useGame((s) => s.rehydrate);
   const owned = Object.values(dex).filter((f) => f >= 5).length;
@@ -74,12 +75,15 @@ export function GameShell() {
     <div className="flex min-h-dvh justify-center bg-bg text-fg">
       <div className="relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-bg shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
         <header className="flex h-12 shrink-0 items-center justify-between px-4 pt-[env(safe-area-inset-top)]">
-          <div className="font-display text-base font-semibold tracking-tight">PokeIdle</div>
+          <div className="font-display text-base font-semibold tracking-tight">
+            PokeIdle
+          </div>
           <div className="flex items-center gap-3 font-mono text-[11px] tabular-nums text-muted">
             <span>Dex {owned}</span>
-            <span>P {balls.pokeball}</span>
-            <span>G {balls.greatball}</span>
-            <span>U {balls.ultraball}</span>
+            {playerPrestige > 0 && (
+              <span className="text-accent">+{playerPrestige}%</span>
+            )}
+            <span className="text-warn">¥ {pokeyen.toLocaleString()}</span>
           </div>
         </header>
         <main className="min-h-0 flex-1">
@@ -88,7 +92,7 @@ export function GameShell() {
           {tab === "league" && <LeagueView />}
           {tab === "team" && <TeamView />}
           {tab === "dex" && <DexView />}
-          {tab === "bag" && <BagView />}
+          {tab === "store" && <StoreView />}
         </main>
         <nav className="grid h-[4.25rem] shrink-0 grid-cols-6 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
           {TABS.map((t) => {
