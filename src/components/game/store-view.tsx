@@ -38,8 +38,11 @@ export function StoreView() {
   const uniqueBonus = uniqueCaughtBonus(owned);
   const autoCost = autoTapCost(autoTapLevel);
   const autoMaxed = autoTapLevel >= MAX_AUTO_LEVEL;
-  const catchCost = catchUpgradeCost(catchLevel);
+  
+  // Updated to pass catchTier into formula:
+  const catchCost = catchUpgradeCost(catchLevel, catchTier);
   const catchMaxed = catchTier === "masterball" && catchLevel >= 10;
+  
   const mult = catchMultiplier(catchTier, catchLevel);
   const canPrestige = team.some((p) => levelOf(p) >= 100);
 
