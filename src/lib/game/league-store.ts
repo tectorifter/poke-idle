@@ -297,10 +297,15 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         playerTimer = 0;
         enemyTimer = 0;
         if (enemyIndex >= enemyTeam.length) {
+          const prevRuns = get().progress.runsCompleted;
           const { progress, team: healed } = winStage(get().progress, team);
           persist(progress);
           team[activeIndex] = player;
           useGame.setState({ team: healed, active: 0 });
+          const fullClear = progress.runsCompleted > prevRuns;
+          const winMsg = fullClear
+            ? `Defeated ${b.trainer.name}! League cleared — team +1 prestige, enemy prestige +8.`
+            : `Defeated ${b.trainer.name}!`;
           set({
             progress,
             battle: {
@@ -309,7 +314,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
               enemyIndex,
               enemyFainted,
               buffs: freshBuffs(),
-              log: [...log, `Defeated ${b.trainer.name}! +1 prestige for the team.`],
+              log: [...log, winMsg],
               result: "win",
             },
           });
