@@ -24,6 +24,8 @@ import {
   CATCH_TIER_ORDER,
   pokeyenReward,
   uniqueCaughtBonus,
+  playerMaxHp,
+  playerLevelOf,
 } from "./formulas";
 import type {
   CatchMode,
@@ -100,6 +102,7 @@ export type GameState = {
   /** Global player prestige — only the player prestiged now. */
   playerPrestige: number;
   playerHp: number;
+  playerExp: number;
   autoTapLevel: number; // 0–25
   catchTier: CatchTier;
   catchLevel: number; // 1–10
@@ -153,6 +156,7 @@ function emptyState(): GameState {
     pokeyen: 0,
     playerPrestige: 0,
     playerHp: 10,
+    playerExp: 0,
     autoTapLevel: 0,
     catchTier: "pokeball",
     catchLevel: 1,
@@ -181,6 +185,7 @@ function persist(state: GameState) {
     pokeyen: state.pokeyen,
     playerPrestige: state.playerPrestige,
     playerHp: state.playerHp,
+    playerExp: state.playerExp,
     autoTapLevel: state.autoTapLevel,
     catchTier: state.catchTier,
     catchLevel: state.catchLevel,
@@ -247,10 +252,9 @@ function hydrate(): GameState {
     saved.active ?? 0,
     Math.max(0, team.length - 1),
   );
-  const activePoke = team[activeIndex];
-  const maxHp = activePoke
-    ? playerMaxHp(levelOf(activePoke), saved.playerPrestige ?? 0)
-    : 10;
+  const playerExp = saved.playerExp ?? 0;
+  const playerLvl = playerLevelOf(playerExp);
+  const maxHp = playerMaxHp(playerLvl, saved.playerPrestige ?? 0);
   const state: GameState = {
     ...base,
     started: true,
@@ -260,6 +264,7 @@ function hydrate(): GameState {
     pokeyen: saved.pokeyen ?? 0,
     playerPrestige: saved.playerPrestige ?? 0,
     playerHp: Math.min(saved.playerHp ?? maxHp, maxHp),
+    playerExp,
     autoTapLevel: Math.min(MAX_AUTO_LEVEL, saved.autoTapLevel ?? 0),
     catchTier: saved.catchTier ?? "pokeball",
     catchLevel: Math.max(1, Math.min(10, saved.catchLevel ?? 1)),
@@ -310,7 +315,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       enemy,
       dex,
       stats,
-      playerHp: playerMaxHp(levelOf(starter), 0),
+      playerExp: 0,
+      playerHp: playerMaxHp(1, 0),
       log: pushLog([], `Go, ${name}! Route 1 awaits.`, "system"),
       now: Date.now(),
     };
@@ -368,10 +374,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (!active) return;
 
     let playerHp = s.playerHp;
+    let playerExp = s.playerExp;
 
     if (playerHp <= 0) {
       if (now - s.lastHeal >= HEAL_COOLDOWN_MS) {
-        const maxHp = playerMaxHp(levelOf(active), s.playerPrestige);
+        const playerLvl = playerLevelOf(s.playerExp);
+        const maxHp = playerMaxHp(playerLvl, s.playerPrestige);
         set({
           playerHp: maxHp,
           lastHeal: now,
@@ -522,12 +530,20 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
       const atkPoke = team[activeIndex];
       const fullReward = expReward(fallen);
+
+      const beforePlayerLvl = playerLevelOf(playerExp);
+      playerExp += fullReward;
+      const afterPlayerLvl = playerLevelOf(playerExp);
+      if (afterPlayerLvl > beforePlayerLvl) {
+        log = pushLog(log, `You grew to Lv. ${afterPlayerLvl}!`, "level");
+        playerHp = playerMaxHp(afterPlayerLvl, s.playerPrestige);
+      }
+
       if (atkPoke) {
         const before = levelOf(atkPoke);
         atkPoke.exp += fullReward;
         const after = levelOf(atkPoke);
         if (after > before) {
-          playerHp = playerMaxHp(after, s.playerPrestige);
           log = pushLog(log, `${atkPoke.name} grew to Lv. ${after}!`, "level");
         }
       }
@@ -597,6 +613,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         enemy,
         pokeyen,
         playerHp,
+        playerExp,
         dex,
         stats,
         log,
@@ -691,6 +708,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     set({
       playerPrestige: s.playerPrestige + 1,
       playerHp: playerMaxHp(1, s.playerPrestige + 1),
+      playerExp: 0,
       team: reset(s.team),
       storage: reset(s.storage),
       log: pushLog(
@@ -747,10 +765,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const s = get();
     if (Date.now() - s.lastHeal < HEAL_COOLDOWN_MS) return;
 
-    const active = s.team[s.active] ?? s.team[0];
-    const maxHp = active
-      ? playerMaxHp(levelOf(active), s.playerPrestige)
-      : 10;
+    const playerLvl = playerLevelOf(s.playerExp);
+    const maxHp = playerMaxHp(playerLvl, s.playerPrestige);
 
     set({
       playerHp: maxHp,

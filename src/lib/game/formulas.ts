@@ -255,6 +255,24 @@ export function playerMaxHp(level: number, prestige: number): number {
   return Math.max(10, Math.floor(((50 * lvl) / 40) * playerPrestigeMult(prestige) * 3));
 }
 
+export function playerLevelOf(exp: number): number {
+  const table = EXP_TABLE["Slow"];
+  let lvl = 0;
+  for (let i = 0; i < table.length; i++) {
+    if (table[i] <= exp) lvl = i + 1;
+    else break;
+  }
+  return Math.max(1, Math.min(100, lvl));
+}
+
+export function playerThisLevelExp(level: number): number {
+  return EXP_TABLE["Slow"][level - 1] ?? 1;
+}
+
+export function playerNextLevelExp(level: number): number {
+  return EXP_TABLE["Slow"][Math.min(100, level)] ?? EXP_TABLE["Slow"][EXP_TABLE["Slow"].length - 1];
+}
+
 export function attackDamage(
   attacker: OwnedPoke,
   defender: OwnedPoke,

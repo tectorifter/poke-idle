@@ -124,7 +124,14 @@ function showdownSlug(name: string): string {
     .replace(/\s+/g, "-");
 }
 
+/** Returns true for any "Tera Foo" named Pokémon (but NOT Terapagos). */
+export function isTeraSpriteName(name: string): boolean {
+  return name.startsWith("Tera ") && !name.startsWith("Terapagos");
+}
+
 export function spriteUrl(name: string, shiny: boolean, animated = false): string {
+  // Tera forms use the base Pokémon sprite — the crystal overlay is handled in <Sprite>
+  if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, animated);
   const spec = speciesByName(name);
   const id = spec?.id ?? 0;
   const isForm = /^(M-|A-|P-|B-|W-|H-|F-|Fan-)/.test(name) || name.includes("-");

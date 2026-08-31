@@ -3,11 +3,12 @@ import { speciesByName } from "@/lib/game/dex";
 import {
   combatStats,
   levelOf,
-  nextLevelExp,
-  thisLevelExp,
   autoTapMsFromLevel,
   uniqueCaughtBonus,
   playerMaxHp,
+  playerLevelOf,
+  playerThisLevelExp,
+  playerNextLevelExp,
 } from "@/lib/game/formulas";
 import { ROUTES, useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ export function BattleView() {
   const autoTapLevel = useGame((s) => s.autoTapLevel);
   const playerPrestige = useGame((s) => s.playerPrestige);
   const playerHp = useGame((s) => s.playerHp);
+  const playerExp = useGame((s) => s.playerExp);
   const dex = useGame((s) => s.dex);
   const playerHit = useGame((s) => s.playerHit);
   const enemyHit = useGame((s) => s.enemyHit);
@@ -48,10 +50,10 @@ export function BattleView() {
         uniqueBonus,
       })
     : null;
-  const pLvl = player ? levelOf(player) : 1;
-  const playerMax = playerMaxHp(pLvl, playerPrestige);
-  const xp0 = player ? thisLevelExp(player) : 0;
-  const xp1 = player ? nextLevelExp(player) : 1;
+  const playerLvl = playerLevelOf(playerExp);
+  const playerMax = playerMaxHp(playerLvl, playerPrestige);
+  const xp0 = playerThisLevelExp(playerLvl);
+  const xp1 = playerNextLevelExp(playerLvl);
 
   return (
     <div className="flex h-full flex-col select-none">
@@ -122,14 +124,14 @@ export function BattleView() {
               {/* EXP */}
               <div>
                 <div className="flex justify-between font-mono text-[10px] tabular-nums text-muted">
-                  <span>XP</span>
+                  <span>Player Lv. {playerLvl}</span>
                   <span>
-                    {Math.max(0, Math.floor(player.exp - xp0))} /{" "}
+                    {Math.max(0, Math.floor(playerExp - xp0))} /{" "}
                     {Math.max(1, Math.floor(xp1 - xp0))}
                   </span>
                 </div>
                 <Meter
-                  value={player.exp - xp0}
+                  value={playerExp - xp0}
                   max={xp1 - xp0}
                   tone="xp"
                   className="mt-1"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { spriteUrl } from "@/lib/game/dex";
+import { spriteUrl, isTeraSpriteName } from "@/lib/game/dex";
 import { cn } from "@/lib/utils";
 
 export function Sprite({
@@ -19,6 +19,7 @@ export function Sprite({
 }) {
   const [failed, setFailed] = useState(false);
   const src = spriteUrl(name, !!shiny, !!animated);
+  const isTera = isTeraSpriteName(name);
 
   if (failed) {
     return (
@@ -35,7 +36,7 @@ export function Sprite({
     );
   }
 
-  return (
+  const imgEl = (
     <img
       src={src}
       alt={name}
@@ -45,11 +46,60 @@ export function Sprite({
         "object-contain pixelated drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)]",
         facing === "back" && "scale-x-[-1]",
         shiny && "brightness-110 contrast-110",
-        className,
+        isTera && "brightness-110 saturate-50 hue-rotate-180",
+        !isTera && className,
       )}
       style={{ width: size, height: size, imageRendering: "pixelated" }}
       onError={() => setFailed(true)}
       draggable={false}
     />
+  );
+
+  if (!isTera) return imgEl;
+
+  // Tera: base sprite tinted + crystal facet overlay composited via mix-blend-mode
+  return (
+    <div
+      className={cn("relative shrink-0 inline-flex", className)}
+      style={{ width: size, height: size }}
+      aria-label={name}
+    >
+      {/* base sprite with cool crystalline tint */}
+      {imgEl}
+      {/* crystal overlay — scaled to match sprite, blended over the silhouette */}
+      <img
+        src="/tera-crystal.jpg"
+        alt=""
+        aria-hidden
+        draggable={false}
+        className={cn(
+          "absolute inset-0 rounded-sm pointer-events-none",
+          facing === "back" && "scale-x-[-1]",
+        )}
+        style={{
+          width: size,
+          height: size,
+          objectFit: "cover",
+          mixBlendMode: "overlay",
+          opacity: 0.55,
+          imageRendering: "pixelated",
+        }}
+      />
+      {/* subtle iridescent shimmer rim */}
+      <div
+        aria-hidden
+        className={cn(
+          "absolute inset-0 rounded-sm pointer-events-none",
+          facing === "back" && "scale-x-[-1]",
+        )}
+        style={{
+          width: size,
+          height: size,
+          background:
+            "radial-gradient(ellipse at 30% 25%, rgba(180,220,255,0.28) 0%, rgba(120,180,255,0.12) 40%, transparent 70%)",
+          mixBlendMode: "screen",
+        }}
+      />
+    </div>
   );
 }
