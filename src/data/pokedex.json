@@ -2357,7 +2357,7 @@
       "Ice",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 85,
@@ -2374,7 +2374,7 @@
       "Electric",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 90,
@@ -2391,7 +2391,7 @@
       "Fire",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 100,
@@ -2456,7 +2456,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 110,
@@ -3987,7 +3987,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 85,
@@ -4003,7 +4003,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 115,
     "atk": 115,
@@ -4019,7 +4019,7 @@
     "types": [
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 75,
@@ -4087,7 +4087,7 @@
       "Psychic",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 90,
@@ -4104,7 +4104,7 @@
       "Fire",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 130,
@@ -6149,7 +6149,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 40,
     "atk": 55,
@@ -6166,7 +6166,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 60,
     "atk": 75,
@@ -6183,7 +6183,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 135,
@@ -6199,7 +6199,7 @@
     "types": [
       "Rock"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 100,
@@ -6215,7 +6215,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 50,
@@ -6231,7 +6231,7 @@
     "types": [
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 75,
@@ -6248,7 +6248,7 @@
       "Dragon",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 80,
@@ -6265,7 +6265,7 @@
       "Dragon",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 90,
@@ -6314,7 +6314,7 @@
       "Dragon",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 150,
@@ -6331,7 +6331,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -6347,7 +6347,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 150,
@@ -7900,7 +7900,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 75,
     "atk": 75,
@@ -7916,7 +7916,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 105,
@@ -7932,7 +7932,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 75,
     "atk": 125,
@@ -7983,7 +7983,7 @@
       "Fire",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 90,
@@ -7999,7 +7999,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 110,
     "atk": 160,
@@ -8016,7 +8016,7 @@
       "Ghost",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 150,
     "atk": 100,
@@ -8032,7 +8032,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 120,
     "atk": 70,
@@ -8064,7 +8064,7 @@
     "types": [
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -8080,7 +8080,7 @@
     "types": [
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 90,
@@ -8112,7 +8112,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 120,
     "atk": 120,
@@ -8129,7 +8129,7 @@
       "Psychic",
       "Fire"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -10496,7 +10496,7 @@
       "Steel",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 90,
@@ -10513,7 +10513,7 @@
       "Rock",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 129,
@@ -10530,7 +10530,7 @@
       "Grass",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 90,
@@ -10546,7 +10546,7 @@
     "types": [
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 79,
     "atk": 115,
@@ -10563,7 +10563,7 @@
       "Electric",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 79,
     "atk": 115,
@@ -10614,7 +10614,7 @@
       "Ground",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 89,
     "atk": 125,
@@ -10631,7 +10631,7 @@
       "Dragon",
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 125,
     "atk": 130,
@@ -10648,7 +10648,7 @@
       "Water",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 72,
@@ -10665,7 +10665,7 @@
       "Normal",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 77,
@@ -10682,7 +10682,7 @@
       "Bug",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 71,
     "atk": 120,
@@ -11824,7 +11824,7 @@
       "Dragon",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 108,
     "atk": 100,
@@ -11841,7 +11841,7 @@
       "Rock",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 100,
@@ -11858,7 +11858,7 @@
       "Psychic",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 110,
@@ -11875,7 +11875,7 @@
       "Fire",
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 110,
@@ -12720,7 +12720,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 95,
     "atk": 95,
@@ -12736,7 +12736,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 95,
     "atk": 95,
@@ -12938,7 +12938,7 @@
       "Electric",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 115,
@@ -12955,7 +12955,7 @@
       "Psychic",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 85,
@@ -12972,7 +12972,7 @@
       "Grass",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 130,
@@ -12989,7 +12989,7 @@
       "Water",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 75,
@@ -13189,7 +13189,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 97,
     "atk": 107,
@@ -13206,7 +13206,7 @@
       "Steel",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 95,
@@ -13223,7 +13223,7 @@
       "Fighting",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 125,
@@ -13407,7 +13407,7 @@
       "Psychic",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 190,
@@ -13423,7 +13423,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 150,
@@ -13708,7 +13708,7 @@
       "Dragon",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 100,
@@ -13725,7 +13725,7 @@
       "Dragon",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 130,
@@ -13928,7 +13928,7 @@
       "Rock",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 160,
@@ -13945,7 +13945,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 145,
@@ -13962,7 +13962,7 @@
       "Dragon",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 180,
@@ -14046,7 +14046,7 @@
     "types": [
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 150,
@@ -14063,7 +14063,7 @@
       "Fire",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 180,
@@ -14414,7 +14414,7 @@
       "Dragon",
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 125,
     "atk": 170,
@@ -14431,7 +14431,7 @@
       "Dragon",
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 125,
     "atk": 120,
@@ -14533,7 +14533,7 @@
       "Ghost",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 150,
     "atk": 120,
@@ -14566,7 +14566,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 180,
@@ -14582,7 +14582,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 70,
@@ -14598,7 +14598,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 95,
@@ -14614,7 +14614,7 @@
     "types": [
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 79,
     "atk": 100,
@@ -14631,7 +14631,7 @@
       "Electric",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 79,
     "atk": 105,
@@ -14648,7 +14648,7 @@
       "Ground",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 89,
     "atk": 145,
@@ -14665,7 +14665,7 @@
       "Water",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 72,
@@ -14682,7 +14682,7 @@
       "Normal",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 128,
@@ -14733,7 +14733,7 @@
       "Dragon",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 54,
     "atk": 100,
@@ -14750,7 +14750,7 @@
       "Dragon",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 216,
     "atk": 100,
@@ -14767,7 +14767,7 @@
       "Psychic",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 160,
@@ -16113,7 +16113,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 120,
@@ -16130,7 +16130,7 @@
       "Fairy",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 150,
@@ -16146,7 +16146,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 120,
@@ -16163,7 +16163,7 @@
       "Fighting",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 120,
@@ -16180,7 +16180,7 @@
       "Poison",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 140,
     "atk": 85,
@@ -16197,7 +16197,7 @@
       "Poison",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 255,
     "atk": 115,
@@ -16213,7 +16213,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 60,
     "atk": 90,
@@ -16230,7 +16230,7 @@
       "Fighting",
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 130,
@@ -16247,7 +16247,7 @@
       "Fighting",
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 130,
@@ -16264,7 +16264,7 @@
       "Dark",
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 120,
@@ -16280,7 +16280,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 100,
@@ -16296,7 +16296,7 @@
     "types": [
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 200,
     "atk": 100,
@@ -16312,7 +16312,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 145,
@@ -16328,7 +16328,7 @@
     "types": [
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 65,
@@ -16345,7 +16345,7 @@
       "Psychic",
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 80,
@@ -16362,7 +16362,7 @@
       "Psychic",
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 165,
@@ -16379,7 +16379,7 @@
       "Psychic",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 85,
@@ -18047,7 +18047,7 @@
       "Ground",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 115,
     "atk": 131,
@@ -18064,7 +18064,7 @@
       "Fairy",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 115,
     "atk": 65,
@@ -18081,7 +18081,7 @@
       "Grass",
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 111,
     "atk": 127,
@@ -18098,7 +18098,7 @@
       "Ghost",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 55,
     "atk": 55,
@@ -18115,7 +18115,7 @@
       "Bug",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 85,
     "atk": 135,
@@ -18132,7 +18132,7 @@
       "Electric",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 85,
     "atk": 81,
@@ -18149,7 +18149,7 @@
       "Ground",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 112,
@@ -18166,7 +18166,7 @@
       "Ice",
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 56,
     "atk": 80,
@@ -18183,7 +18183,7 @@
       "Fighting",
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 154,
     "atk": 140,
@@ -18200,7 +18200,7 @@
       "Dark",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 94,
     "atk": 80,
@@ -18217,7 +18217,7 @@
       "Fire",
       "Poison"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 70,
@@ -18234,7 +18234,7 @@
       "Rock",
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 134,
@@ -18419,7 +18419,7 @@
       "Dragon",
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 139,
@@ -18436,7 +18436,7 @@
       "Fairy",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 74,
     "atk": 130,
@@ -18453,7 +18453,7 @@
       "Fighting",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 135,
@@ -18470,7 +18470,7 @@
       "Electric",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 85,
@@ -18487,7 +18487,7 @@
       "Water",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 99,
     "atk": 83,
@@ -18504,7 +18504,7 @@
       "Grass",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 130,
@@ -18572,7 +18572,7 @@
       "Poison",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 88,
     "atk": 128,
@@ -18589,7 +18589,7 @@
       "Poison",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 88,
     "atk": 75,
@@ -18606,7 +18606,7 @@
       "Poison",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 88,
     "atk": 91,
@@ -18622,7 +18622,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 120,
@@ -18640,7 +18640,7 @@
       "Grass",
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 120,
@@ -18658,7 +18658,7 @@
       "Grass",
       "Fire"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 120,
@@ -18676,7 +18676,7 @@
       "Grass",
       "Rock"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 120,
@@ -18694,7 +18694,7 @@
       "Steel",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 105,
@@ -18728,7 +18728,7 @@
       "Fire",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 115,
@@ -18745,7 +18745,7 @@
       "Electric",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 125,
     "atk": 73,
@@ -18762,7 +18762,7 @@
       "Rock",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 120,
@@ -18779,7 +18779,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 72,
@@ -18795,7 +18795,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 65,
@@ -18812,7 +18812,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 95,
     "atk": 95,
@@ -18829,7 +18829,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 160,
     "atk": 105,
@@ -18847,7 +18847,7 @@
       "Poison",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 88,
     "atk": 88,
@@ -18930,7 +18930,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 110,
@@ -18947,7 +18947,7 @@
       "Psychic",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 90,
@@ -18964,7 +18964,7 @@
       "Fire",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 130,
@@ -18981,7 +18981,7 @@
       "Dragon",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 150,
@@ -18998,7 +18998,7 @@
       "Steel",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 120,
@@ -19015,7 +19015,7 @@
       "Water",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 120,
@@ -19032,7 +19032,7 @@
       "Ghost",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 150,
     "atk": 100,
@@ -19049,7 +19049,7 @@
       "Dragon",
       "Fire"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 120,
@@ -19066,7 +19066,7 @@
       "Dragon",
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 150,
@@ -19082,7 +19082,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 126,
     "atk": 131,
@@ -19099,7 +19099,7 @@
       "Dark",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 126,
     "atk": 131,
@@ -19116,7 +19116,7 @@
       "Psychic",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 137,
     "atk": 137,
@@ -19133,7 +19133,7 @@
       "Psychic",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 137,
     "atk": 113,
@@ -19149,7 +19149,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 120,
@@ -19165,7 +19165,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 120,
@@ -19182,7 +19182,7 @@
       "Poison",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 140,
     "atk": 85,
@@ -19199,7 +19199,7 @@
       "Fighting",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 135,
@@ -19216,7 +19216,7 @@
       "Electric",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 85,
@@ -19232,7 +19232,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 110,
@@ -19250,7 +19250,7 @@
       "Psychic",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 90,
@@ -19268,7 +19268,7 @@
       "Fire",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 106,
     "atk": 130,
@@ -19286,7 +19286,7 @@
       "Dragon",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 150,
@@ -19304,7 +19304,7 @@
       "Steel",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 120,
@@ -19322,7 +19322,7 @@
       "Water",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 120,
@@ -19340,7 +19340,7 @@
       "Ghost",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 150,
     "atk": 100,
@@ -19358,7 +19358,7 @@
       "Dragon",
       "Fire"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 120,
@@ -19376,7 +19376,7 @@
       "Dragon",
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 150,
@@ -19393,7 +19393,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 126,
     "atk": 131,
@@ -19411,7 +19411,7 @@
       "Dark",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 126,
     "atk": 131,
@@ -19429,7 +19429,7 @@
       "Psychic",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 137,
     "atk": 137,
@@ -19447,7 +19447,7 @@
       "Psychic",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 137,
     "atk": 113,
@@ -19464,7 +19464,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 120,
@@ -19481,7 +19481,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 92,
     "atk": 120,
@@ -19499,7 +19499,7 @@
       "Poison",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 140,
     "atk": 85,
@@ -19517,7 +19517,7 @@
       "Fighting",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 135,
@@ -19535,7 +19535,7 @@
       "Electric",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 85,
@@ -19619,7 +19619,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -19637,7 +19637,7 @@
       "Psychic",
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -19654,7 +19654,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 85,
@@ -19671,7 +19671,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 115,
     "atk": 115,
@@ -19688,7 +19688,7 @@
     "types": [
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 75,
@@ -19705,7 +19705,7 @@
     "types": [
       "Rock"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 100,
@@ -19722,7 +19722,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 50,
@@ -19739,7 +19739,7 @@
     "types": [
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 75,
@@ -19757,7 +19757,7 @@
       "Dragon",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 80,
@@ -19775,7 +19775,7 @@
       "Dragon",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 90,
@@ -19792,7 +19792,7 @@
     "types": [
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -19809,7 +19809,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 150,
@@ -19827,7 +19827,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -19844,7 +19844,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 150,
@@ -19861,7 +19861,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 75,
     "atk": 75,
@@ -19878,7 +19878,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 105,
@@ -19895,7 +19895,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 75,
     "atk": 125,
@@ -19912,7 +19912,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 110,
     "atk": 160,
@@ -19930,7 +19930,7 @@
       "Fire",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 90,
@@ -19947,7 +19947,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 120,
     "atk": 70,
@@ -19964,7 +19964,7 @@
     "types": [
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -19981,7 +19981,7 @@
     "types": [
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 80,
@@ -19998,7 +19998,7 @@
     "types": [
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 90,
@@ -20015,7 +20015,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 100,
@@ -20032,7 +20032,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 120,
     "atk": 120,
@@ -20050,7 +20050,7 @@
       "Steel",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 90,
@@ -20068,7 +20068,7 @@
       "Rock",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 129,
@@ -20086,7 +20086,7 @@
       "Grass",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 90,
@@ -20103,7 +20103,7 @@
     "types": [
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 79,
     "atk": 115,
@@ -20121,7 +20121,7 @@
       "Electric",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 79,
     "atk": 115,
@@ -20139,7 +20139,7 @@
       "Ground",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 89,
     "atk": 125,
@@ -20157,7 +20157,7 @@
       "Dragon",
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 125,
     "atk": 130,
@@ -20175,7 +20175,7 @@
       "Water",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 91,
     "atk": 72,
@@ -20193,7 +20193,7 @@
       "Normal",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 77,
@@ -20211,7 +20211,7 @@
       "Bug",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 71,
     "atk": 120,
@@ -20229,7 +20229,7 @@
       "Dragon",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 108,
     "atk": 100,
@@ -20247,7 +20247,7 @@
       "Rock",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 50,
     "atk": 100,
@@ -20265,7 +20265,7 @@
       "Psychic",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 110,
@@ -20283,7 +20283,7 @@
       "Fire",
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 110,
@@ -20301,7 +20301,7 @@
       "Electric",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 115,
@@ -20319,7 +20319,7 @@
       "Psychic",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 85,
@@ -20337,7 +20337,7 @@
       "Grass",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 130,
@@ -20355,7 +20355,7 @@
       "Water",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 70,
     "atk": 75,
@@ -20372,7 +20372,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 43,
     "atk": 29,
@@ -20389,7 +20389,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 43,
     "atk": 29,
@@ -20407,7 +20407,7 @@
       "Rock",
       "Poison"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 109,
     "atk": 53,
@@ -20425,7 +20425,7 @@
       "Bug",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 107,
     "atk": 139,
@@ -20443,7 +20443,7 @@
       "Bug",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 71,
     "atk": 137,
@@ -20460,7 +20460,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 83,
     "atk": 89,
@@ -20478,7 +20478,7 @@
       "Steel",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 97,
     "atk": 101,
@@ -20496,7 +20496,7 @@
       "Grass",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 59,
     "atk": 181,
@@ -20514,7 +20514,7 @@
       "Dark",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 223,
     "atk": 101,
@@ -20531,7 +20531,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 97,
     "atk": 107,
@@ -20549,7 +20549,7 @@
       "Steel",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 95,
@@ -20567,7 +20567,7 @@
       "Fighting",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 125,
@@ -20584,7 +20584,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 67,
     "atk": 73,
@@ -20602,7 +20602,7 @@
       "Poison",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 73,
     "atk": 73,
@@ -20620,7 +20620,7 @@
       "Rock",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 61,
     "atk": 131,
@@ -20638,7 +20638,7 @@
       "Fire",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 53,
     "atk": 127,
@@ -20655,7 +20655,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 60,
     "atk": 90,
@@ -20673,7 +20673,7 @@
       "Fighting",
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 130,
@@ -20691,7 +20691,7 @@
       "Dark",
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 120,
@@ -20708,7 +20708,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 100,
@@ -20725,7 +20725,7 @@
     "types": [
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 200,
     "atk": 100,
@@ -20742,7 +20742,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 145,
@@ -20759,7 +20759,7 @@
     "types": [
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 65,
@@ -20777,7 +20777,7 @@
       "Psychic",
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 80,
@@ -20795,7 +20795,7 @@
       "Ground",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 115,
     "atk": 131,
@@ -20813,7 +20813,7 @@
       "Fairy",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 115,
     "atk": 65,
@@ -20831,7 +20831,7 @@
       "Grass",
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 111,
     "atk": 127,
@@ -20849,7 +20849,7 @@
       "Ghost",
       "Fairy"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 55,
     "atk": 55,
@@ -20867,7 +20867,7 @@
       "Bug",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 85,
     "atk": 135,
@@ -20885,7 +20885,7 @@
       "Electric",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 85,
     "atk": 81,
@@ -20903,7 +20903,7 @@
       "Ground",
       "Steel"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 112,
@@ -20921,7 +20921,7 @@
       "Ice",
       "Water"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 56,
     "atk": 80,
@@ -20939,7 +20939,7 @@
       "Fighting",
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 154,
     "atk": 140,
@@ -20957,7 +20957,7 @@
       "Dark",
       "Flying"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 94,
     "atk": 80,
@@ -20975,7 +20975,7 @@
       "Fire",
       "Poison"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 70,
@@ -20993,7 +20993,7 @@
       "Rock",
       "Electric"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 100,
     "atk": 134,
@@ -21011,7 +21011,7 @@
       "Dragon",
       "Dark"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 139,
@@ -21029,7 +21029,7 @@
       "Fairy",
       "Fighting"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 74,
     "atk": 130,
@@ -21047,7 +21047,7 @@
       "Water",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 99,
     "atk": 83,
@@ -21065,7 +21065,7 @@
       "Grass",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 130,
@@ -21083,7 +21083,7 @@
       "Fire",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 105,
     "atk": 115,
@@ -21101,7 +21101,7 @@
       "Electric",
       "Dragon"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 125,
     "atk": 73,
@@ -21119,7 +21119,7 @@
       "Rock",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 120,
@@ -21137,7 +21137,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 90,
     "atk": 72,
@@ -21155,7 +21155,7 @@
       "Dark",
       "Grass"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 85,
     "atk": 85,
@@ -21173,7 +21173,7 @@
       "Dark",
       "Ice"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 80,
     "atk": 120,
@@ -21191,7 +21191,7 @@
       "Dark",
       "Ground"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 155,
     "atk": 110,
@@ -21209,7 +21209,7 @@
       "Dark",
       "Fire"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 55,
     "atk": 80,
@@ -21227,7 +21227,7 @@
       "Poison",
       "Ghost"
     ],
-    "catch": 3,
+    "catch": 12,
     "growth": "Slow",
     "hp": 88,
     "atk": 88,
