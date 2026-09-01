@@ -62,14 +62,13 @@ export function DexView() {
           const isShiny = flag >= 7;
           return (
             <li
-              key={s.id}
+              key={`${s.id}-${s.name}`}
               className={cn(
                 "flex flex-col items-center rounded-2xl bg-surface px-2 py-3 shadow-border",
                 !seen && "opacity-40",
               )}
             >
               <span className="font-mono text-[10px] tabular-nums text-muted">#{String(s.id).padStart(3, "0")}</span>
-              {/* Added animated prop to load Showdown 3D GIF models */}
               <Sprite
                 name={s.name}
                 shiny={isShiny}

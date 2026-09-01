@@ -36,170 +36,94 @@ export function speciesById(id: number): Species | undefined {
   return POKEDEX[id - 1];
 }
 
-const SLUG_OVERRIDES: Record<string, string> = {
-  "Nidoran f": "nidoran-f",
-  "Nidoran m": "nidoran-m",
-  "Mr. Mime": "mr-mime",
-  "Mime Jr.": "mime-jr",
+const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
+  "Nidoran f": "nidoranf",
+  "Nidoran m": "nidoranm",
+  "Mr. Mime": "mrmime",
+  "Mime Jr.": "mimejr",
   Farfetchd: "farfetchd",
-  "Type: Null": "type-null",
-  "M-Venusaur": "venusaur-mega",
-  "M-Charizard X": "charizard-megax",
-  "M-Charizard Y": "charizard-megay",
-  "M-Blastoise": "blastoise-mega",
-  "M-Alakazam": "alakazam-mega",
-  "M-Gengar": "gengar-mega",
-  "M-Kangaskhan": "kangaskhan-mega",
-  "M-Pinsir": "pinsir-mega",
-  "M-Gyarados": "gyarados-mega",
-  "M-Aerodactyl": "aerodactyl-mega",
-  "M-Mewtwo X": "mewtwo-megax",
-  "M-Mewtwo Y": "mewtwo-megay",
-  "Ash-Greninja": "greninja-ash",
-  "Wishiwashi-S": "wishiwashi-school",
-  "A-Rattata": "rattata-alolan",
-  "A-Raticate": "raticate-alolan",
-  "A-Sandshrew": "sandshrew-alolan",
-  "A-Sandslash": "sandslash-alolan",
-  "A-Vulpix": "vulpix-alolan",
-  "A-Ninetales": "ninetales-alolan",
-  "A-Diglett": "diglett-alolan",
-  "A-Dugtrio": "dugtrio-alolan",
-  "A-Meowth": "meowth-alolan",
-  "A-Persian": "persian-alolan",
-  "A-Geodude": "geodude-alolan",
-  "A-Graveler": "graveler-alolan",
-  "A-Golem": "golem-alolan",
-  "A-Grimer": "grimer-alolan",
-  "A-Muk": "muk-alolan",
-  "P-Kyogre": "kyogre-primal",
-  "P-Groudon": "groudon-primal",
+  "Farfetch'd": "farfetchd",
+  "Sirfetch'd": "sirfetchd",
+  "Ho-Oh": "hooh",
+  "Porygon-Z": "porygonz",
+  "Type: Null": "typenull",
+  "Galarian Farfetchd": "farfetchd-galar",
+  "Galarian Mr. Mime": "mrmime-galar",
+  "Darmanitan-Zen": "darmanitan-galar-zen",
+  "Galarian Darmanitan": "darmanitan-galar",
+  "Eiscue-Noice": "eiscue-noice",
+  "Indeedee-F": "indeedee-f",
+  "Urshifu-Rapid": "urshifu-rapid-strike",
+  "Zacian-Crowned": "zacian-crowned",
+  "Zamazenta-Crowned": "zamazenta-crowned",
+  "Eternatus-Eternamax": "eternatus-eternamax",
+  "Calyrex-Ice": "calyrex-ice",
+  "Calyrex-Shadow": "calyrex-shadow",
+  "Oinkologne-F": "oinkologne-f",
+  "Gimmighoul-Roaming": "gimmighoul-roaming",
+  "Palafin-Hero": "palafin-hero",
+  "Ogerpon-Wellspring": "ogerpon-wellspring",
+  "Ogerpon-Hearthflame": "ogerpon-hearthflame",
+  "Ogerpon-Cornerstone": "ogerpon-cornerstone",
+  "Terapagos-Terastal": "terapagos-terastal",
+  "Terapagos-Stellar": "terapagos-stellar",
+  "A-Rattata": "rattata-alola",
+  "A-Raticate": "raticate-alola",
+  "A-Sandshrew": "sandshrew-alola",
+  "A-Sandslash": "sandslash-alola",
+  "A-Vulpix": "vulpix-alola",
+  "A-Ninetales": "ninetales-alola",
+  "A-Diglett": "diglett-alola",
+  "A-Dugtrio": "dugtrio-alola",
+  "A-Meowth": "meowth-alola",
+  "A-Persian": "persian-alola",
+  "A-Geodude": "geodude-alola",
+  "A-Graveler": "graveler-alola",
+  "A-Golem": "golem-alola",
+  "A-Grimer": "grimer-alola",
+  "A-Muk": "muk-alola",
 };
 
-export function spriteSlug(name: string): string {
-  if (SLUG_OVERRIDES[name]) return SLUG_OVERRIDES[name];
+function showdownSlug(name: string): string {
+  if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
+  if (name.startsWith("Dynamax ")) return showdownSlug(name.slice(8));
+  if (name.startsWith("Tera ")) return showdownSlug(name.slice(5));
+  if (name.startsWith("Galarian ")) return `${name.slice(9).toLowerCase().replace(/[.'’]/g, "").replace(/\s+/g, "")}-galar`;
+  if (name.startsWith("Paldean ")) return `${name.slice(8).toLowerCase().replace(/[.'’]/g, "").replace(/\s+/g, "-")}-paldea`;
   if (name.startsWith("M-")) {
     return name.slice(2).toLowerCase().replace(/\s+/g, "") + "-mega";
   }
   return name
     .toLowerCase()
     .replace(/[.'’:]/g, "")
-    .replace(/\s+/g, "-");
+    .replace(/\s+/g, "");
 }
 
-const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
-  "Galarian Farfetchd": "farfetchdgalar",
-  "Galarian Mr. Mime": "mrmimegalar",
-  "Darmanitan-Zen": "darmanitangalarzen",
-  "Galarian Darmanitan": "darmanitangalar",
-  "Eiscue-Noice": "escuenoice",
-  "Indeedee-F": "indeedeef",
-  "Urshifu-Rapid": "urshifurapidstrike",
-  "Zacian-Crowned": "zaciancrowned",
-  "Zamazenta-Crowned": "zamazentacrowned",
-  "Eternatus-Eternamax": "eternatuseternamax",
-  "Calyrex-Ice": "calyrexice",
-  "Calyrex-Shadow": "calyrexshadow",
-  "Oinkologne-F": "oinkolognef",
-  "Gimmighoul-Roaming": "gimmighoulroaming",
-  "Palafin-Hero": "palafinhero",
-  "Ogerpon-Wellspring": "ogerponwellspring",
-  "Ogerpon-Hearthflame": "ogerponhearthflame",
-  "Ogerpon-Cornerstone": "ogerponcornerstone",
-  "Terapagos-Terastal": "terapagos-terastal",
-  "Terapagos-Stellar": "terapagos-stellar",
-};
-
-/**
- * Converts species, form, and trainer names into canonical Showdown ID slugs.
- */
-function showdownSlug(name: string): string {
-  if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
-
-  let cleaned = name.trim();
-  if (cleaned.startsWith("Dynamax ")) cleaned = cleaned.slice(8);
-  if (cleaned.startsWith("Tera ")) cleaned = cleaned.slice(5);
-
-  const toCleanId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-  if (cleaned.startsWith("Galarian ")) return `${toCleanId(cleaned.slice(9))}galar`;
-  if (cleaned.startsWith("Paldean ")) return `${toCleanId(cleaned.slice(8))}paldea`;
-  if (cleaned.startsWith("Hisuian ")) return `${toCleanId(cleaned.slice(8))}hisui`;
-  if (cleaned.startsWith("Alolan ")) return `${toCleanId(cleaned.slice(7))}alola`;
-
-  if (cleaned.startsWith("M-")) {
-    const rest = cleaned.slice(2);
-    if (rest.endsWith(" X") || rest.endsWith(" Y")) {
-      const char = rest.slice(-1).toLowerCase();
-      const base = toCleanId(rest.slice(0, -2));
-      return `${base}mega${char}`;
-    }
-    return `${toCleanId(rest)}mega`;
-  }
-  if (cleaned.startsWith("A-")) return `${toCleanId(cleaned.slice(2))}alola`;
-  if (cleaned.startsWith("P-")) return `${toCleanId(cleaned.slice(2))}primal`;
-  if (cleaned.startsWith("H-")) return `${toCleanId(cleaned.slice(2))}hisui`;
-  if (cleaned.startsWith("G-")) return `${toCleanId(cleaned.slice(2))}galar`;
-
-  return toCleanId(cleaned);
-}
-
-/** Returns true for any "Tera Foo" named Pokémon (but NOT Terapagos). */
 export function isTeraSpriteName(name: string): boolean {
   return name.startsWith("Tera ") && !name.startsWith("Terapagos");
 }
 
-/**
- * Returns Showdown assets for Pokémon (front/back 3D animated models or 2D sprites)
- * or Player/Trainer avatars from play.pokemonshowdown.com
- */
-export function spriteUrl(
-  name: string,
-  shiny = false,
-  animated = false,
-  back = false
-): string {
-  // Tera forms use the base Pokémon sprite — overlay handled in <Sprite>
-  if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, animated, back);
+export function spriteUrl(name: string, shiny = false, _animated = true, isBack = false): string {
+  if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, _animated, isBack);
 
-  const spec = speciesByName(name);
-  const id = showdownSlug(name);
+  const folder = isBack
+    ? shiny
+      ? "ani-back-shiny"
+      : "ani-back"
+    : shiny
+      ? "ani-shiny"
+      : "ani";
 
-  // Auto-detect Human Trainer/Player sprites (e.g. Red, Ethan, Trainer)
-  const isTrainer =
-    !spec &&
-    !SHOWDOWN_SLUG_OVERRIDES[name] &&
-    !/^(M-|A-|P-|H-|G-|Tera |Dynamax )/.test(name);
-
-  if (isTrainer) {
-    return `https://play.pokemonshowdown.com/sprites/trainers/${id}.png`;
-  }
-
-  // Animated 3D Models (.gif) from Showdown CDN
-  if (animated) {
-    let folder = "ani";
-    if (back && shiny) folder = "ani-back-shiny";
-    else if (back) folder = "ani-back";
-    else if (shiny) folder = "ani-shiny";
-
-    return `https://play.pokemonshowdown.com/sprites/${folder}/${id}.gif`;
-  }
-
-  // Static 2D Sprites (.png) from Showdown CDN
-  let folder = "gen5";
-  if (back && shiny) folder = "gen5-back-shiny";
-  else if (back) folder = "gen5-back";
-  else if (shiny) folder = "gen5-shiny";
-
-  return `https://play.pokemonshowdown.com/sprites/${folder}/${id}.png`;
+  return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.gif`;
 }
 
-/**
- * Returns Showdown official dex artwork or falls back to Showdown static models
- */
 export function artworkUrl(name: string): string {
-  const id = showdownSlug(name);
-  return `https://play.pokemonshowdown.com/sprites/dex/${id}.png`;
+  const spec = speciesByName(name);
+  const id = spec?.id ?? 0;
+  if (id >= 1 && id <= 802 && !/^(M-|A-|P-)/.test(name)) {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+  }
+  return spriteUrl(name, false, true, false);
 }
 
 export const STARTERS = ["Bulbasaur", "Charmander", "Squirtle"] as const;

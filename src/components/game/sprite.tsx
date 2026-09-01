@@ -1,16 +1,16 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { spriteUrl, isTeraSpriteName } from "@/lib/game/dex";
 import { cn } from "@/lib/utils";
 
 export function Sprite({
   name,
-  shiny,
-  animated,
+  shiny = false,
+  animated = true,
   size = 96,
   className,
   facing = "front",
 }: {
-  name: string;
+  name?: string;
   shiny?: boolean;
   animated?: boolean;
   size?: number;
@@ -18,11 +18,9 @@ export function Sprite({
   facing?: "front" | "back";
 }) {
   const [failed, setFailed] = useState(false);
-  const isBack = facing === "back";
-  const src = spriteUrl(name, !!shiny, !!animated, isBack);
-  const isTera = isTeraSpriteName(name);
 
-  if (failed) {
+  // Return fallback block early if name is undefined or image load failed
+  if (!name || failed) {
     return (
       <div
         className={cn(
@@ -32,10 +30,14 @@ export function Sprite({
         style={{ width: size, height: size }}
         aria-hidden
       >
-        {name.slice(0, 1)}
+        {name ? name.slice(0, 1) : "?"}
       </div>
     );
   }
+
+  const isBack = facing === "back";
+  const src = spriteUrl(name, shiny, animated, isBack);
+  const isTera = isTeraSpriteName(name);
 
   const imgEl = (
     <img
@@ -44,7 +46,7 @@ export function Sprite({
       width={size}
       height={size}
       className={cn(
-        "object-contain pixelated drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)]",
+        "object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)]",
         shiny && "brightness-110 contrast-110",
         isTera && "brightness-110 saturate-50 hue-rotate-180",
         !isTera && className,
@@ -57,8 +59,7 @@ export function Sprite({
 
   if (!isTera) return imgEl;
 
-  // Mask overlay directly to the sprite asset alpha channel
-  const maskStyle: React.CSSProperties = {
+  const maskStyle: CSSProperties = {
     WebkitMaskImage: `url("${src}")`,
     maskImage: `url("${src}")`,
     WebkitMaskSize: "contain",
@@ -75,10 +76,8 @@ export function Sprite({
       style={{ width: size, height: size }}
       aria-label={name}
     >
-      {/* base sprite with cool crystalline tint */}
       {imgEl}
 
-      {/* crystal overlay — clipped to sprite silhouette */}
       <img
         src="/tera-crystal.jpg"
         alt=""
@@ -96,7 +95,6 @@ export function Sprite({
         }}
       />
 
-      {/* subtle iridescent shimmer rim — clipped to sprite silhouette */}
       <div
         aria-hidden
         className="absolute inset-0 rounded-sm pointer-events-none"
