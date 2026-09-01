@@ -130,7 +130,8 @@ function PokeRow({
       onClick={onSelect}
     >
       <div className="flex items-center gap-3">
-        <Sprite name={poke.name} shiny={poke.shiny} size={56} />
+        {/* Pass animated to load Showdown 3D model GIFs */}
+        <Sprite name={poke.name} shiny={poke.shiny} animated size={56} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate font-medium">{poke.name}</span>
