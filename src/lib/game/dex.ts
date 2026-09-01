@@ -82,9 +82,13 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "A-Golem": "golem-alola",
   "A-Grimer": "grimer-alola",
   "A-Muk": "muk-alola",
+  "Ting-Lu": "tinglu",
+  "Chien-Pao": "chienpao",
+  "Wo-Chien": "wochien",
+  "Chi-Yu": "chiyu",
 };
 
-function showdownSlug(name: string): string {
+export function showdownSlug(name: string): string {
   if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
   if (name.startsWith("Dynamax ")) return showdownSlug(name.slice(8));
   if (name.startsWith("Tera ")) return showdownSlug(name.slice(5));
@@ -115,6 +119,20 @@ export function spriteUrl(name: string, shiny = false, _animated = true, isBack 
       : "ani";
 
   return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.gif`;
+}
+
+export function staticSpriteUrl(name: string, shiny = false, isBack = false): string {
+  if (isTeraSpriteName(name)) return staticSpriteUrl(name.slice(5), shiny, isBack);
+
+  const folder = isBack
+    ? shiny
+      ? "gen5-back-shiny"
+      : "gen5-back"
+    : shiny
+      ? "gen5-shiny"
+      : "gen5";
+
+  return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.png`;
 }
 
 export function artworkUrl(name: string): string {
