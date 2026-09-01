@@ -87,59 +87,61 @@ export function spriteSlug(name: string): string {
     .replace(/\s+/g, "-");
 }
 
-// Showdown-style slugs for the Galar/Paldea/Anomalies additions.
 const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
-  "Galarian Farfetchd": "farfetchd-galar",
-  "Galarian Mr. Mime": "mrmime-galar",
-  "Darmanitan-Zen": "darmanitan-galar-zen",
-  "Galarian Darmanitan": "darmanitan-galar",
-  "Eiscue-Noice": "eiscue-noice",
-  "Indeedee-F": "indeedee-f",
-  "Urshifu-Rapid": "urshifu-rapid-strike",
-  "Zacian-Crowned": "zacian-crowned",
-  "Zamazenta-Crowned": "zamazenta-crowned",
-  "Eternatus-Eternamax": "eternatus-eternamax",
-  "Calyrex-Ice": "calyrex-ice",
-  "Calyrex-Shadow": "calyrex-shadow",
-  "Oinkologne-F": "oinkologne-f",
-  "Gimmighoul-Roaming": "gimmighoul-roaming",
-  "Palafin-Hero": "palafin-hero",
-  "Ogerpon-Wellspring": "ogerpon-wellspring",
-  "Ogerpon-Hearthflame": "ogerpon-hearthflame",
-  "Ogerpon-Cornerstone": "ogerpon-cornerstone",
+  "Galarian Farfetchd": "farfetchdgalar",
+  "Galarian Mr. Mime": "mrmimegalar",
+  "Darmanitan-Zen": "darmanitangalarzen",
+  "Galarian Darmanitan": "darmanitangalar",
+  "Eiscue-Noice": "escuenoice",
+  "Indeedee-F": "indeedeef",
+  "Urshifu-Rapid": "urshifurapidstrike",
+  "Zacian-Crowned": "zaciancrowned",
+  "Zamazenta-Crowned": "zamazentacrowned",
+  "Eternatus-Eternamax": "eternatuseternamax",
+  "Calyrex-Ice": "calyrexice",
+  "Calyrex-Shadow": "calyrexshadow",
+  "Oinkologne-F": "oinkolognef",
+  "Gimmighoul-Roaming": "gimmighoulroaming",
+  "Palafin-Hero": "palafinhero",
+  "Ogerpon-Wellspring": "ogerponwellspring",
+  "Ogerpon-Hearthflame": "ogerponhearthflame",
+  "Ogerpon-Cornerstone": "ogerponcornerstone",
   "Terapagos-Terastal": "terapagos-terastal",
   "Terapagos-Stellar": "terapagos-stellar",
 };
 
-function toShowdownCleanId(str: string): string {
-  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
+/**
+ * Converts species and form names into canonical Showdown ID slugs.
+ */
 function showdownSlug(name: string): string {
   if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
-  if (name.startsWith("Dynamax ")) return showdownSlug(name.slice(8));
-  if (name.startsWith("Tera ")) return showdownSlug(name.slice(5));
-  if (name.startsWith("Galarian ")) return `${toShowdownCleanId(name.slice(9))}-galar`;
-  if (name.startsWith("Paldean ")) return `${toShowdownCleanId(name.slice(8))}-paldea`;
-  if (name.startsWith("Hisuian ")) return `${toShowdownCleanId(name.slice(8))}-hisui`;
-  if (name.startsWith("Alolan ")) return `${toShowdownCleanId(name.slice(7))}-alola`;
 
-  // Handle prefix forms (M-, A-, P-, H-, G-)
-  if (name.startsWith("M-")) {
-    const rest = name.slice(2);
+  let cleaned = name.trim();
+  if (cleaned.startsWith("Dynamax ")) cleaned = cleaned.slice(8);
+  if (cleaned.startsWith("Tera ")) cleaned = cleaned.slice(5);
+
+  const toCleanId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  if (cleaned.startsWith("Galarian ")) return `${toCleanId(cleaned.slice(9))}galar`;
+  if (cleaned.startsWith("Paldean ")) return `${toCleanId(cleaned.slice(8))}paldea`;
+  if (cleaned.startsWith("Hisuian ")) return `${toCleanId(cleaned.slice(8))}hisui`;
+  if (cleaned.startsWith("Alolan ")) return `${toCleanId(cleaned.slice(7))}alola`;
+
+  if (cleaned.startsWith("M-")) {
+    const rest = cleaned.slice(2);
     if (rest.endsWith(" X") || rest.endsWith(" Y")) {
       const char = rest.slice(-1).toLowerCase();
-      const base = toShowdownCleanId(rest.slice(0, -2));
-      return `${base}-mega${char}`;
+      const base = toCleanId(rest.slice(0, -2));
+      return `${base}mega${char}`;
     }
-    return `${toShowdownCleanId(rest)}-mega`;
+    return `${toCleanId(rest)}mega`;
   }
-  if (name.startsWith("A-")) return `${toShowdownCleanId(name.slice(2))}-alola`;
-  if (name.startsWith("P-")) return `${toShowdownCleanId(name.slice(2))}-primal`;
-  if (name.startsWith("H-")) return `${toShowdownCleanId(name.slice(2))}-hisui`;
-  if (name.startsWith("G-")) return `${toShowdownCleanId(name.slice(2))}-galar`;
+  if (cleaned.startsWith("A-")) return `${toCleanId(cleaned.slice(2))}alola`;
+  if (cleaned.startsWith("P-")) return `${toCleanId(cleaned.slice(2))}primal`;
+  if (cleaned.startsWith("H-")) return `${toCleanId(cleaned.slice(2))}hisui`;
+  if (cleaned.startsWith("G-")) return `${toCleanId(cleaned.slice(2))}galar`;
 
-  return toShowdownCleanId(name);
+  return toCleanId(cleaned);
 }
 
 /** Returns true for any "Tera Foo" named Pokémon (but NOT Terapagos). */
@@ -147,41 +149,33 @@ export function isTeraSpriteName(name: string): boolean {
   return name.startsWith("Tera ") && !name.startsWith("Terapagos");
 }
 
+/**
+ * Returns Showdown 3D Animated models (.gif) or Showdown Static Sprites (.png)
+ * entirely hosted on play.pokemonshowdown.com
+ */
 export function spriteUrl(name: string, shiny: boolean, animated = false): string {
-  // Tera forms use the base Pokémon sprite — the crystal overlay is handled in <Sprite>
+  // Tera forms use the base Pokémon sprite — overlay handled in <Sprite>
   if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, animated);
-  const spec = speciesByName(name);
-  const id = spec?.id ?? 0;
-  const isForm = /^(M-|A-|P-|B-|W-|H-|F-|Fan-)/.test(name) || name.includes("-");
 
-  // Gen 1–5 non-forms use Gen V Black/White animated GIFs from PokeAPI
-  if (animated && id >= 1 && id <= 649 && !isForm) {
-    const folder = shiny ? "shiny/" : "";
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${folder}${id}.gif`;
-  }
+  const id = showdownSlug(name);
 
-  // All other animated requests (Gen 6+, forms, regional forms, Anomalies, etc.) resolve via Showdown GIFs
+  // Animated 3D Models (.gif) from Showdown CDN
   if (animated) {
     const folder = shiny ? "ani-shiny" : "ani";
-    return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.gif`;
+    return `https://play.pokemonshowdown.com/sprites/${folder}/${id}.gif`;
   }
 
-  // Static PNG fallbacks
-  if (id >= 1 && id <= 802 && !isForm) {
-    const folder = shiny ? "shiny/" : "";
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${folder}${id}.png`;
-  }
-  const slug = spriteSlug(name);
-  return `https://img.pokemondb.net/sprites/home/${shiny ? "shiny" : "normal"}/${slug}.png`;
+  // Static 2D Sprites (.png) from Showdown CDN
+  const folder = shiny ? "gen5-shiny" : "gen5";
+  return `https://play.pokemonshowdown.com/sprites/${folder}/${id}.png`;
 }
 
+/**
+ * Returns Showdown official dex artwork or falls back to Showdown static models
+ */
 export function artworkUrl(name: string): string {
-  const spec = speciesByName(name);
-  const id = spec?.id ?? 0;
-  if (id >= 1 && id <= 802 && !/^(M-|A-|P-)/.test(name)) {
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
-  }
-  return spriteUrl(name, false, false);
+  const id = showdownSlug(name);
+  return `https://play.pokemonshowdown.com/sprites/dex/${id}.png`;
 }
 
 export const STARTERS = ["Bulbasaur", "Charmander", "Squirtle"] as const;
