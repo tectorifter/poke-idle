@@ -119,6 +119,8 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Iron Crown": "ironcrown",
 };
 
+const KNOWN_MISSING_GIFS = new Set<string>([]);
+
 export function showdownSlug(name: string): string {
   if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
   if (name.startsWith("Dynamax ")) return showdownSlug(name.slice(8));
@@ -160,42 +162,21 @@ export function isTeraSpriteName(name: string): boolean {
   return name.startsWith("Tera ") && !name.startsWith("Terapagos");
 }
 
-export function staticSpriteUrl(name: string, shiny = false, isBack = false): string {
-  if (isTeraSpriteName(name)) return staticSpriteUrl(name.slice(5), shiny, isBack);
+export function staticSpriteUrl(name: string, shiny = false, _isBack = false): string {
+  if (isTeraSpriteName(name)) return staticSpriteUrl(name.slice(5), shiny, _isBack);
 
-  const folder = isBack
-    ? shiny
-      ? "gen5-back-shiny"
-      : "gen5-back"
-    : shiny
-      ? "gen5-shiny"
-      : "gen5";
-
+  const folder = shiny ? "gen5-shiny" : "gen5";
   return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.png`;
 }
 
-export function spriteUrl(name: string, shiny = false, animated = true, isBack = false): string {
-  if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, animated, isBack);
+export function spriteUrl(name: string, shiny = false, animated = true, _isBack = false): string {
+  if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, animated, _isBack);
 
-  if (!animated) {
-    return staticSpriteUrl(name, shiny, isBack);
+  if (!animated || KNOWN_MISSING_GIFS.has(name)) {
+    return staticSpriteUrl(name, shiny, _isBack);
   }
 
-  const spec = speciesByName(name);
-  // Gen 9 Pokemon (ID >= 906) lack 3D animated GIF files on Pokémon Showdown's CDN,
-  // so we safely fall back to the static Gen 5 PNG sprite set which is fully populated for Gen 9.
-  if (spec && spec.id >= 906) {
-    return staticSpriteUrl(name, shiny, isBack);
-  }
-
-  const folder = isBack
-    ? shiny
-      ? "ani-back-shiny"
-      : "ani-back"
-    : shiny
-      ? "ani-shiny"
-      : "ani";
-
+  const folder = shiny ? "ani-shiny" : "ani";
   return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.gif`;
 }
 
