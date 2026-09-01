@@ -29,16 +29,16 @@ export const CATCH_TIER_ORDER: CatchTier[] = [
 
 const TIER_BASE_MULT: Record<CatchTier, number> = {
   pokeball: 1,
-  greatball: 1.5,
-  ultraball: 2,
-  masterball: 5,
+  greatball: 11,
+  ultraball: 21,
+  masterball: 31,
 };
 
 const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
-  pokeball: 0,    // Level 1:   0 + 1 = 1
-  greatball: 10,  // Level 1:  10 + 1 = 11
-  ultraball: 20,  // Level 1:  20 + 1 = 21
-  masterball: 30, // Level 1:  30 + 1 = 31
+  pokeball: 1,    // Level 1:   0 + 1 = 1
+  greatball: 2,  // Level 1:  10 + 1 = 11
+  ultraball: 3,  // Level 1:  20 + 1 = 21
+  masterball: 4, // Level 1:  30 + 1 = 31
 };
 
 /** Final catch multiplier for a given tier + level (1–10). Caps at 50. */
