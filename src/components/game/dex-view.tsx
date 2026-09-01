@@ -69,7 +69,14 @@ export function DexView() {
               )}
             >
               <span className="font-mono text-[10px] tabular-nums text-muted">#{String(s.id).padStart(3, "0")}</span>
-              <Sprite name={s.name} shiny={isShiny} size={64} className={cn(!seen && "brightness-0")} />
+              {/* Added animated prop to load Showdown 3D GIF models */}
+              <Sprite
+                name={s.name}
+                shiny={isShiny}
+                animated
+                size={64}
+                className={cn(!seen && "brightness-0")}
+              />
               <span className="mt-1 truncate text-center text-xs font-medium">{seen ? s.name : "????"}</span>
               <span className="text-[10px] text-muted">{got ? (isShiny ? "Shiny" : "Owned") : seen ? "Seen" : "—"}</span>
             </li>
