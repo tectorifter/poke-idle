@@ -153,7 +153,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 30,
@@ -169,7 +169,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 20,
@@ -203,7 +203,7 @@
       "Bug",
       "Poison"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 35,
@@ -220,7 +220,7 @@
       "Bug",
       "Poison"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 25,
@@ -254,7 +254,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 45,
@@ -271,7 +271,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 63,
     "atk": 60,
@@ -304,7 +304,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 56,
@@ -320,7 +320,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 127,
+    "catch": 67,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 81,
@@ -337,7 +337,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 60,
@@ -370,7 +370,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 60,
@@ -402,7 +402,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 55,
@@ -434,7 +434,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 75,
@@ -466,7 +466,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 235,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 47,
@@ -482,7 +482,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 62,
@@ -515,7 +515,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 235,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 46,
     "atk": 57,
@@ -531,7 +531,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 61,
     "atk": 72,
@@ -564,7 +564,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Fast",
     "hp": 70,
     "atk": 45,
@@ -596,7 +596,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 41,
@@ -629,7 +629,7 @@
       "Normal",
       "Fairy"
     ],
-    "catch": 170,
+  "catch": 60,
     "growth": "Fast",
     "hp": 115,
     "atk": 45,
@@ -663,7 +663,7 @@
       "Poison",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 45,
@@ -697,7 +697,7 @@
       "Grass",
       "Poison"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 50,
@@ -714,7 +714,7 @@
       "Grass",
       "Poison"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 60,
     "atk": 65,
@@ -748,7 +748,7 @@
       "Bug",
       "Grass"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 70,
@@ -782,7 +782,7 @@
       "Bug",
       "Poison"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 55,
@@ -815,7 +815,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 10,
     "atk": 55,
@@ -847,7 +847,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 45,
@@ -879,7 +879,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 52,
@@ -911,7 +911,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 80,
@@ -943,7 +943,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 55,
     "atk": 70,
@@ -975,7 +975,7 @@
     "types": [
       "Water"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 50,
@@ -991,7 +991,7 @@
     "types": [
       "Water"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 65,
     "atk": 65,
@@ -1024,7 +1024,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 25,
     "atk": 20,
@@ -1040,7 +1040,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 100,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 35,
@@ -1072,7 +1072,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 80,
@@ -1121,7 +1121,7 @@
       "Grass",
       "Poison"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 75,
@@ -1138,7 +1138,7 @@
       "Grass",
       "Poison"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 65,
     "atk": 90,
@@ -1172,7 +1172,7 @@
       "Water",
       "Poison"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 40,
     "atk": 40,
@@ -1206,7 +1206,7 @@
       "Rock",
       "Ground"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 80,
@@ -1223,7 +1223,7 @@
       "Rock",
       "Ground"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 95,
@@ -1256,7 +1256,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 85,
@@ -1289,7 +1289,7 @@
       "Water",
       "Psychic"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 90,
     "atk": 65,
@@ -1323,7 +1323,7 @@
       "Electric",
       "Steel"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 25,
     "atk": 35,
@@ -1374,7 +1374,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 85,
@@ -1407,7 +1407,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 65,
     "atk": 45,
@@ -1440,7 +1440,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 80,
     "atk": 80,
@@ -1472,7 +1472,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 30,
     "atk": 65,
@@ -1506,7 +1506,7 @@
       "Ghost",
       "Poison"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 30,
     "atk": 35,
@@ -1573,7 +1573,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 48,
@@ -1605,7 +1605,7 @@
     "types": [
       "Water"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 105,
@@ -1637,7 +1637,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 30,
@@ -1703,7 +1703,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 50,
@@ -1783,7 +1783,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 65,
@@ -1816,7 +1816,7 @@
       "Ground",
       "Rock"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 80,
     "atk": 85,
@@ -1897,7 +1897,7 @@
     "types": [
       "Water"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 40,
@@ -1929,7 +1929,7 @@
     "types": [
       "Water"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 67,
@@ -1961,7 +1961,7 @@
     "types": [
       "Water"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Slow",
     "hp": 30,
     "atk": 45,
@@ -2109,7 +2109,7 @@
     "types": [
       "Water"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 20,
     "atk": 10,
@@ -2632,7 +2632,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 46,
@@ -2665,7 +2665,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 30,
@@ -2699,7 +2699,7 @@
       "Bug",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 40,
     "atk": 20,
@@ -2733,7 +2733,7 @@
       "Bug",
       "Poison"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 40,
     "atk": 60,
@@ -2784,7 +2784,7 @@
       "Water",
       "Electric"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 75,
     "atk": 38,
@@ -2817,7 +2817,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 20,
     "atk": 40,
@@ -2833,7 +2833,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Fast",
     "hp": 50,
     "atk": 25,
@@ -2850,7 +2850,7 @@
       "Normal",
       "Fairy"
     ],
-    "catch": 170,
+  "catch": 60,
     "growth": "Fast",
     "hp": 90,
     "atk": 30,
@@ -2866,7 +2866,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Fast",
     "hp": 35,
     "atk": 20,
@@ -2900,7 +2900,7 @@
       "Psychic",
       "Flying"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 50,
@@ -2933,7 +2933,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 235,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 40,
@@ -2949,7 +2949,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 55,
@@ -2998,7 +2998,7 @@
       "Water",
       "Fairy"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Fast",
     "hp": 70,
     "atk": 20,
@@ -3064,7 +3064,7 @@
       "Grass",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 35,
     "atk": 35,
@@ -3081,7 +3081,7 @@
       "Grass",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 45,
@@ -3130,7 +3130,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 235,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 30,
     "atk": 30,
@@ -3146,7 +3146,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 75,
     "atk": 75,
@@ -3180,7 +3180,7 @@
       "Water",
       "Ground"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 45,
@@ -3295,7 +3295,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 48,
     "atk": 72,
@@ -3344,7 +3344,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 65,
@@ -3377,7 +3377,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 100,
     "atk": 70,
@@ -3427,7 +3427,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Fast",
     "hp": 60,
     "atk": 80,
@@ -3494,7 +3494,7 @@
       "Bug",
       "Rock"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 20,
     "atk": 10,
@@ -3544,7 +3544,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 80,
@@ -3576,7 +3576,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 40,
@@ -3610,7 +3610,7 @@
       "Ice",
       "Ground"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Slow",
     "hp": 50,
     "atk": 50,
@@ -3660,7 +3660,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 65,
@@ -3744,7 +3744,7 @@
       "Dark",
       "Fire"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 45,
     "atk": 60,
@@ -3794,7 +3794,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 90,
     "atk": 60,
@@ -4285,7 +4285,7 @@
     "types": [
       "Dark"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 55,
@@ -4301,7 +4301,7 @@
     "types": [
       "Dark"
     ],
-    "catch": 127,
+    "catch": 67,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 90,
@@ -4317,7 +4317,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 30,
@@ -4349,7 +4349,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 45,
@@ -4365,7 +4365,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 35,
@@ -4398,7 +4398,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 35,
@@ -4432,7 +4432,7 @@
       "Water",
       "Grass"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 30,
@@ -4449,7 +4449,7 @@
       "Water",
       "Grass"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 60,
     "atk": 50,
@@ -4482,7 +4482,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 40,
@@ -4499,7 +4499,7 @@
       "Grass",
       "Dark"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 70,
@@ -4533,7 +4533,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 55,
@@ -4567,7 +4567,7 @@
       "Water",
       "Flying"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 30,
@@ -4601,7 +4601,7 @@
       "Psychic",
       "Fairy"
     ],
-    "catch": 235,
+    "catch": 70,
     "growth": "Slow",
     "hp": 28,
     "atk": 25,
@@ -4618,7 +4618,7 @@
       "Psychic",
       "Fairy"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 38,
     "atk": 35,
@@ -4652,7 +4652,7 @@
       "Bug",
       "Water"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 30,
@@ -4685,7 +4685,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 60,
     "atk": 40,
@@ -4718,7 +4718,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 60,
     "atk": 60,
@@ -4734,7 +4734,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 80,
     "atk": 80,
@@ -4767,7 +4767,7 @@
       "Bug",
       "Ground"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 31,
     "atk": 45,
@@ -4784,7 +4784,7 @@
       "Bug",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 61,
     "atk": 90,
@@ -4817,7 +4817,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 64,
     "atk": 51,
@@ -4833,7 +4833,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 84,
     "atk": 71,
@@ -4865,7 +4865,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Fast",
     "hp": 72,
     "atk": 60,
@@ -4881,7 +4881,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Fast",
     "hp": 144,
     "atk": 120,
@@ -4898,7 +4898,7 @@
       "Normal",
       "Fairy"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Fast",
     "hp": 50,
     "atk": 20,
@@ -4914,7 +4914,7 @@
     "types": [
       "Rock"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 45,
@@ -4930,7 +4930,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 50,
     "atk": 45,
@@ -4997,7 +4997,7 @@
       "Steel",
       "Rock"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Slow",
     "hp": 50,
     "atk": 70,
@@ -5048,7 +5048,7 @@
       "Fighting",
       "Psychic"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 40,
@@ -5081,7 +5081,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 40,
     "atk": 45,
@@ -5113,7 +5113,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 50,
@@ -5129,7 +5129,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 40,
@@ -5145,7 +5145,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Slow",
     "hp": 65,
     "atk": 73,
@@ -5161,7 +5161,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Fast",
     "hp": 65,
     "atk": 47,
@@ -5178,7 +5178,7 @@
       "Grass",
       "Poison"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 60,
@@ -5194,7 +5194,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Fast",
     "hp": 70,
     "atk": 43,
@@ -5227,7 +5227,7 @@
       "Water",
       "Dark"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Slow",
     "hp": 45,
     "atk": 90,
@@ -5260,7 +5260,7 @@
     "types": [
       "Water"
     ],
-    "catch": 125,
+    "catch": 65,
     "growth": "Fast",
     "hp": 130,
     "atk": 70,
@@ -5293,7 +5293,7 @@
       "Fire",
       "Ground"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 60,
@@ -5310,7 +5310,7 @@
       "Fire",
       "Ground"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 100,
@@ -5342,7 +5342,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 60,
     "atk": 25,
@@ -5374,7 +5374,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 60,
     "atk": 60,
@@ -5390,7 +5390,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 100,
@@ -5407,7 +5407,7 @@
       "Ground",
       "Dragon"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 70,
@@ -5440,7 +5440,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 85,
@@ -5474,7 +5474,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 45,
     "atk": 40,
@@ -5574,7 +5574,7 @@
       "Water",
       "Ground"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 48,
@@ -5607,7 +5607,7 @@
     "types": [
       "Water"
     ],
-    "catch": 205,
+  "catch": 60,
     "growth": "Fast",
     "hp": 43,
     "atk": 80,
@@ -5624,7 +5624,7 @@
       "Water",
       "Dark"
     ],
-    "catch": 155,
+  "catch": 60,
     "growth": "Fast",
     "hp": 63,
     "atk": 120,
@@ -5641,7 +5641,7 @@
       "Ground",
       "Psychic"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 40,
@@ -5742,7 +5742,7 @@
     "types": [
       "Water"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 20,
     "atk": 15,
@@ -5790,7 +5790,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 60,
     "atk": 90,
@@ -5806,7 +5806,7 @@
     "types": [
       "Ghost"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Fast",
     "hp": 44,
     "atk": 75,
@@ -5838,7 +5838,7 @@
     "types": [
       "Ghost"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Fast",
     "hp": 20,
     "atk": 40,
@@ -5871,7 +5871,7 @@
       "Grass",
       "Flying"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Slow",
     "hp": 99,
     "atk": 68,
@@ -5919,7 +5919,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 125,
+    "catch": 65,
     "growth": "Medium Fast",
     "hp": 95,
     "atk": 23,
@@ -5935,7 +5935,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 50,
@@ -5968,7 +5968,7 @@
       "Ice",
       "Water"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 40,
@@ -5985,7 +5985,7 @@
       "Ice",
       "Water"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 90,
     "atk": 60,
@@ -6018,7 +6018,7 @@
     "types": [
       "Water"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 35,
     "atk": 64,
@@ -6083,7 +6083,7 @@
     "types": [
       "Water"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Fast",
     "hp": 43,
     "atk": 30,
@@ -6512,7 +6512,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 55,
@@ -6529,7 +6529,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 75,
@@ -6562,7 +6562,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 59,
     "atk": 45,
@@ -6579,7 +6579,7 @@
       "Normal",
       "Water"
     ],
-    "catch": 127,
+    "catch": 67,
     "growth": "Medium Fast",
     "hp": 79,
     "atk": 85,
@@ -6595,7 +6595,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 37,
     "atk": 25,
@@ -6627,7 +6627,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 235,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 65,
@@ -6643,7 +6643,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 60,
     "atk": 85,
@@ -6676,7 +6676,7 @@
       "Grass",
       "Poison"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 30,
@@ -6775,7 +6775,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 29,
@@ -6826,7 +6826,7 @@
       "Bug",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 30,
     "atk": 30,
@@ -6859,7 +6859,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 45,
@@ -6875,7 +6875,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 65,
@@ -6907,7 +6907,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 35,
@@ -6939,7 +6939,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 76,
     "atk": 48,
@@ -6989,7 +6989,7 @@
       "Ghost",
       "Flying"
     ],
-    "catch": 125,
+    "catch": 65,
     "growth": "Fast",
     "hp": 90,
     "atk": 50,
@@ -7022,7 +7022,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 66,
@@ -7087,7 +7087,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Fast",
     "hp": 49,
     "atk": 55,
@@ -7119,7 +7119,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Fast",
     "hp": 45,
     "atk": 30,
@@ -7136,7 +7136,7 @@
       "Poison",
       "Dark"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 63,
     "atk": 63,
@@ -7170,7 +7170,7 @@
       "Steel",
       "Psychic"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 57,
     "atk": 24,
@@ -7203,7 +7203,7 @@
     "types": [
       "Rock"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 80,
@@ -7220,7 +7220,7 @@
       "Psychic",
       "Fairy"
     ],
-    "catch": 145,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 20,
     "atk": 25,
@@ -7236,7 +7236,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 130,
+    "catch": 69,
     "growth": "Fast",
     "hp": 100,
     "atk": 5,
@@ -7270,7 +7270,7 @@
       "Ghost",
       "Dark"
     ],
-    "catch": 100,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 92,
@@ -7386,7 +7386,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 140,
+  "catch": 60,
     "growth": "Slow",
     "hp": 68,
     "atk": 72,
@@ -7419,7 +7419,7 @@
       "Poison",
       "Bug"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 40,
     "atk": 50,
@@ -7453,7 +7453,7 @@
       "Poison",
       "Fighting"
     ],
-    "catch": 140,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 48,
     "atk": 61,
@@ -7486,7 +7486,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Slow",
     "hp": 74,
     "atk": 100,
@@ -7502,7 +7502,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 49,
     "atk": 49,
@@ -7552,7 +7552,7 @@
       "Grass",
       "Ice"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 60,
     "atk": 62,
@@ -8291,7 +8291,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 55,
@@ -8307,7 +8307,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 85,
@@ -8323,7 +8323,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 60,
@@ -8339,7 +8339,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 65,
     "atk": 80,
@@ -8371,7 +8371,7 @@
     "types": [
       "Dark"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 41,
     "atk": 50,
@@ -8403,7 +8403,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 53,
@@ -8435,7 +8435,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 53,
@@ -8467,7 +8467,7 @@
     "types": [
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 53,
@@ -8499,7 +8499,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Fast",
     "hp": 76,
     "atk": 25,
@@ -8532,7 +8532,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 55,
@@ -8549,7 +8549,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 62,
     "atk": 77,
@@ -8582,7 +8582,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 60,
@@ -8614,7 +8614,7 @@
     "types": [
       "Rock"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 75,
@@ -8630,7 +8630,7 @@
     "types": [
       "Rock"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 105,
@@ -8663,7 +8663,7 @@
       "Psychic",
       "Flying"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 45,
@@ -8696,7 +8696,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 85,
@@ -8729,7 +8729,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 103,
     "atk": 60,
@@ -8745,7 +8745,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Slow",
     "hp": 75,
     "atk": 80,
@@ -8793,7 +8793,7 @@
     "types": [
       "Water"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 50,
@@ -8810,7 +8810,7 @@
       "Water",
       "Ground"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 75,
     "atk": 65,
@@ -8876,7 +8876,7 @@
       "Bug",
       "Grass"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 53,
@@ -8893,7 +8893,7 @@
       "Bug",
       "Grass"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 63,
@@ -8927,7 +8927,7 @@
       "Bug",
       "Poison"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 30,
     "atk": 45,
@@ -8944,7 +8944,7 @@
       "Bug",
       "Poison"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 55,
@@ -8978,7 +8978,7 @@
       "Grass",
       "Fairy"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 27,
@@ -9011,7 +9011,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 35,
@@ -9060,7 +9060,7 @@
       "Ground",
       "Dark"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 72,
@@ -9110,7 +9110,7 @@
     "types": [
       "Fire"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 90,
@@ -9142,7 +9142,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 75,
     "atk": 86,
@@ -9159,7 +9159,7 @@
       "Bug",
       "Rock"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 65,
@@ -9193,7 +9193,7 @@
       "Dark",
       "Fighting"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 75,
@@ -9243,7 +9243,7 @@
     "types": [
       "Ghost"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 30,
@@ -9343,7 +9343,7 @@
     "types": [
       "Poison"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 50,
@@ -9407,7 +9407,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 55,
     "atk": 50,
@@ -9439,7 +9439,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 30,
@@ -9455,7 +9455,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 100,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 60,
     "atk": 45,
@@ -9487,7 +9487,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 30,
@@ -9503,7 +9503,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 100,
+  "catch": 70,
     "growth": "Medium Slow",
     "hp": 65,
     "atk": 40,
@@ -9536,7 +9536,7 @@
       "Water",
       "Flying"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 62,
     "atk": 44,
@@ -9569,7 +9569,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 36,
     "atk": 50,
@@ -9585,7 +9585,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Slow",
     "hp": 51,
     "atk": 65,
@@ -9618,7 +9618,7 @@
       "Normal",
       "Grass"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 60,
@@ -9652,7 +9652,7 @@
       "Electric",
       "Flying"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 75,
@@ -9668,7 +9668,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 75,
@@ -9702,7 +9702,7 @@
       "Grass",
       "Poison"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 69,
     "atk": 55,
@@ -9736,7 +9736,7 @@
       "Water",
       "Ghost"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 40,
@@ -9786,7 +9786,7 @@
       "Bug",
       "Electric"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 47,
@@ -9820,7 +9820,7 @@
       "Grass",
       "Steel"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 44,
     "atk": 50,
@@ -9853,7 +9853,7 @@
     "types": [
       "Steel"
     ],
-    "catch": 130,
+    "catch": 69,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 55,
@@ -9901,7 +9901,7 @@
     "types": [
       "Electric"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 35,
     "atk": 55,
@@ -9949,7 +9949,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 55,
@@ -9982,7 +9982,7 @@
       "Ghost",
       "Fire"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 30,
@@ -10080,7 +10080,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 70,
@@ -10128,7 +10128,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 40,
@@ -10177,7 +10177,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 85,
@@ -10226,7 +10226,7 @@
       "Ground",
       "Ghost"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 59,
     "atk": 74,
@@ -10260,7 +10260,7 @@
       "Dark",
       "Steel"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 85,
@@ -10310,7 +10310,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 70,
     "atk": 83,
@@ -10344,7 +10344,7 @@
       "Dark",
       "Flying"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Slow",
     "hp": 70,
     "atk": 55,
@@ -10845,7 +10845,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 36,
@@ -10862,7 +10862,7 @@
       "Normal",
       "Ground"
     ],
-    "catch": 127,
+    "catch": 67,
     "growth": "Medium Fast",
     "hp": 85,
     "atk": 56,
@@ -10879,7 +10879,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 50,
@@ -10896,7 +10896,7 @@
       "Fire",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 62,
     "atk": 73,
@@ -10929,7 +10929,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 35,
@@ -10945,7 +10945,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 22,
@@ -10979,7 +10979,7 @@
       "Fire",
       "Normal"
     ],
-    "catch": 220,
+  "catch": 80,
     "growth": "Medium Slow",
     "hp": 62,
     "atk": 50,
@@ -11012,7 +11012,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 44,
     "atk": 38,
@@ -11028,7 +11028,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 54,
     "atk": 45,
@@ -11060,7 +11060,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 66,
     "atk": 65,
@@ -11092,7 +11092,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 220,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 67,
     "atk": 82,
@@ -11125,7 +11125,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 160,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 75,
     "atk": 80,
@@ -11141,7 +11141,7 @@
     "types": [
       "Psychic"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 62,
     "atk": 48,
@@ -11174,7 +11174,7 @@
       "Steel",
       "Ghost"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 80,
@@ -11224,7 +11224,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 78,
     "atk": 52,
@@ -11240,7 +11240,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 140,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 101,
     "atk": 72,
@@ -11256,7 +11256,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 62,
     "atk": 48,
@@ -11272,7 +11272,7 @@
     "types": [
       "Fairy"
     ],
-    "catch": 140,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 82,
     "atk": 80,
@@ -11289,7 +11289,7 @@
       "Dark",
       "Psychic"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 53,
     "atk": 54,
@@ -11323,7 +11323,7 @@
       "Rock",
       "Water"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 42,
     "atk": 52,
@@ -11357,7 +11357,7 @@
       "Poison",
       "Water"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 60,
@@ -11390,7 +11390,7 @@
     "types": [
       "Water"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Slow",
     "hp": 50,
     "atk": 53,
@@ -11423,7 +11423,7 @@
       "Electric",
       "Normal"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 44,
     "atk": 38,
@@ -11541,7 +11541,7 @@
       "Fighting",
       "Flying"
     ],
-    "catch": 100,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 78,
     "atk": 92,
@@ -11558,7 +11558,7 @@
       "Electric",
       "Fairy"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 67,
     "atk": 58,
@@ -11657,7 +11657,7 @@
       "Ghost",
       "Grass"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 43,
     "atk": 70,
@@ -11691,7 +11691,7 @@
       "Ghost",
       "Grass"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 49,
     "atk": 66,
@@ -11724,7 +11724,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 69,
@@ -11757,7 +11757,7 @@
       "Flying",
       "Dragon"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 30,
@@ -12041,7 +12041,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 35,
     "atk": 75,
@@ -12058,7 +12058,7 @@
       "Normal",
       "Flying"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 85,
@@ -12091,7 +12091,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 48,
     "atk": 70,
@@ -12107,7 +12107,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 127,
+    "catch": 67,
     "growth": "Medium Fast",
     "hp": 88,
     "atk": 110,
@@ -12123,7 +12123,7 @@
     "types": [
       "Bug"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 47,
     "atk": 62,
@@ -12140,7 +12140,7 @@
       "Bug",
       "Electric"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 57,
     "atk": 82,
@@ -12173,7 +12173,7 @@
     "types": [
       "Fighting"
     ],
-    "catch": 225,
+  "catch": 80,
     "growth": "Medium Fast",
     "hp": 47,
     "atk": 82,
@@ -12224,7 +12224,7 @@
       "Bug",
       "Fairy"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 45,
@@ -12257,7 +12257,7 @@
     "types": [
       "Rock"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 65,
@@ -12306,7 +12306,7 @@
       "Poison",
       "Water"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 53,
@@ -12339,7 +12339,7 @@
     "types": [
       "Ground"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 100,
@@ -12372,7 +12372,7 @@
       "Water",
       "Bug"
     ],
-    "catch": 200,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 40,
@@ -12389,7 +12389,7 @@
       "Water",
       "Bug"
     ],
-    "catch": 100,
+  "catch": 70,
     "growth": "Medium Fast",
     "hp": 68,
     "atk": 70,
@@ -12405,7 +12405,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 55,
@@ -12438,7 +12438,7 @@
       "Grass",
       "Fairy"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 35,
@@ -12472,7 +12472,7 @@
       "Poison",
       "Fire"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 48,
     "atk": 44,
@@ -12506,7 +12506,7 @@
       "Normal",
       "Fighting"
     ],
-    "catch": 140,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 75,
@@ -12539,7 +12539,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 235,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 42,
     "atk": 30,
@@ -12555,7 +12555,7 @@
     "types": [
       "Grass"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 52,
     "atk": 40,
@@ -12671,7 +12671,7 @@
       "Ghost",
       "Ground"
     ],
-    "catch": 140,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 55,
@@ -12803,7 +12803,7 @@
       "Electric",
       "Steel"
     ],
-    "catch": 180,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 65,
     "atk": 98,
@@ -13106,7 +13106,7 @@
       "Bug",
       "Fighting"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 71,
     "atk": 137,
@@ -13156,7 +13156,7 @@
       "Grass",
       "Steel"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Slow",
     "hp": 59,
     "atk": 181,
@@ -13827,7 +13827,7 @@
       "Normal",
       "Fairy"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Fast",
     "hp": 103,
     "atk": 60,
@@ -13979,7 +13979,7 @@
       "Fire",
       "Ground"
     ],
-    "catch": 150,
+  "catch": 60,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 120,
@@ -14097,7 +14097,7 @@
       "Normal",
       "Dark"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 56,
@@ -14113,7 +14113,7 @@
     "types": [
       "Normal"
     ],
-    "catch": 127,
+    "catch": 67,
     "growth": "Medium Fast",
     "hp": 75,
     "atk": 71,
@@ -14147,7 +14147,7 @@
       "Ice",
       "Steel"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 75,
@@ -14180,7 +14180,7 @@
     "types": [
       "Ice"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 41,
@@ -14213,7 +14213,7 @@
       "Ground",
       "Steel"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 10,
     "atk": 55,
@@ -14246,7 +14246,7 @@
     "types": [
       "Dark"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 35,
@@ -14279,7 +14279,7 @@
       "Rock",
       "Electric"
     ],
-    "catch": 255,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 80,
@@ -14296,7 +14296,7 @@
       "Rock",
       "Electric"
     ],
-    "catch": 120,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 55,
     "atk": 95,
@@ -14330,7 +14330,7 @@
       "Poison",
       "Dark"
     ],
-    "catch": 190,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 80,
     "atk": 80,
