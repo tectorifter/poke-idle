@@ -111,7 +111,7 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
 };
 
 /**
- * Converts species and form names into canonical Showdown ID slugs.
+ * Converts species, form, and trainer names into canonical Showdown ID slugs.
  */
 function showdownSlug(name: string): string {
   if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
@@ -150,23 +150,47 @@ export function isTeraSpriteName(name: string): boolean {
 }
 
 /**
- * Returns Showdown 3D Animated models (.gif) or Showdown Static Sprites (.png)
- * entirely hosted on play.pokemonshowdown.com
+ * Returns Showdown assets for Pokémon (front/back 3D animated models or 2D sprites)
+ * or Player/Trainer avatars from play.pokemonshowdown.com
  */
-export function spriteUrl(name: string, shiny: boolean, animated = false): string {
+export function spriteUrl(
+  name: string,
+  shiny = false,
+  animated = false,
+  back = false
+): string {
   // Tera forms use the base Pokémon sprite — overlay handled in <Sprite>
-  if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, animated);
+  if (isTeraSpriteName(name)) return spriteUrl(name.slice(5), shiny, animated, back);
 
+  const spec = speciesByName(name);
   const id = showdownSlug(name);
+
+  // Auto-detect Human Trainer/Player sprites (e.g. Red, Ethan, Trainer)
+  const isTrainer =
+    !spec &&
+    !SHOWDOWN_SLUG_OVERRIDES[name] &&
+    !/^(M-|A-|P-|H-|G-|Tera |Dynamax )/.test(name);
+
+  if (isTrainer) {
+    return `https://play.pokemonshowdown.com/sprites/trainers/${id}.png`;
+  }
 
   // Animated 3D Models (.gif) from Showdown CDN
   if (animated) {
-    const folder = shiny ? "ani-shiny" : "ani";
+    let folder = "ani";
+    if (back && shiny) folder = "ani-back-shiny";
+    else if (back) folder = "ani-back";
+    else if (shiny) folder = "ani-shiny";
+
     return `https://play.pokemonshowdown.com/sprites/${folder}/${id}.gif`;
   }
 
   // Static 2D Sprites (.png) from Showdown CDN
-  const folder = shiny ? "gen5-shiny" : "gen5";
+  let folder = "gen5";
+  if (back && shiny) folder = "gen5-back-shiny";
+  else if (back) folder = "gen5-back";
+  else if (shiny) folder = "gen5-shiny";
+
   return `https://play.pokemonshowdown.com/sprites/${folder}/${id}.png`;
 }
 

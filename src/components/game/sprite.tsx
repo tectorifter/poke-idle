@@ -18,7 +18,8 @@ export function Sprite({
   facing?: "front" | "back";
 }) {
   const [failed, setFailed] = useState(false);
-  const src = spriteUrl(name, !!shiny, !!animated);
+  const isBack = facing === "back";
+  const src = spriteUrl(name, !!shiny, !!animated, isBack);
   const isTera = isTeraSpriteName(name);
 
   if (failed) {
@@ -44,7 +45,6 @@ export function Sprite({
       height={size}
       className={cn(
         "object-contain pixelated drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)]",
-        facing === "back" && "scale-x-[-1]",
         shiny && "brightness-110 contrast-110",
         isTera && "brightness-110 saturate-50 hue-rotate-180",
         !isTera && className,
@@ -84,10 +84,7 @@ export function Sprite({
         alt=""
         aria-hidden
         draggable={false}
-        className={cn(
-          "absolute inset-0 rounded-sm pointer-events-none",
-          facing === "back" && "scale-x-[-1]",
-        )}
+        className="absolute inset-0 rounded-sm pointer-events-none"
         style={{
           width: size,
           height: size,
@@ -102,10 +99,7 @@ export function Sprite({
       {/* subtle iridescent shimmer rim — clipped to sprite silhouette */}
       <div
         aria-hidden
-        className={cn(
-          "absolute inset-0 rounded-sm pointer-events-none",
-          facing === "back" && "scale-x-[-1]",
-        )}
+        className="absolute inset-0 rounded-sm pointer-events-none"
         style={{
           width: size,
           height: size,
