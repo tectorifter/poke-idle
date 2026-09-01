@@ -29,27 +29,38 @@ export const CATCH_TIER_ORDER: CatchTier[] = [
 
 const TIER_BASE_MULT: Record<CatchTier, number> = {
   pokeball: 1,
-  greatball: 11,
-  ultraball: 21,
-  masterball: 31,
+  greatball: 4,
+  ultraball: 7,
+  masterball: 10,
 };
 
 const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
-  pokeball: 1,    // Level 1:   0 + 1 = 1
-  greatball: 2,  // Level 1:  10 + 1 = 11
-  ultraball: 3,  // Level 1:  20 + 1 = 21
-  masterball: 4, // Level 1:  30 + 1 = 31
+  pokeball: 0,    // Level 1:   0 + 1 = 1
+  greatball: 4,  // Level 1:  10 + 1 = 11
+  ultraball: 7,  // Level 1:  20 + 1 = 21
+  masterball: 10, // Level 1:  30 + 1 = 31
 };
 
+const MAX_CATCH_MULT = 20;
 /** Final catch multiplier for a given tier + level (1–10). Caps at 50. */
+/** Dynamically spreads the tier difference across 10 levels */
 export function catchMultiplier(tier: CatchTier, level: number): number {
   const lvl = Math.max(1, Math.min(10, level));
-  if (tier === "masterball") {
-    // Linear from 5 → 50 across 10 levels
-    return Math.min(50, 5 + (lvl - 1) * 5);
-  }
-  const base = TIER_BASE_MULT[tier];
-  return base * (1 + (lvl - 1) * 0.15);
+  const idx = CATCH_TIER_ORDER.indexOf(tier);
+  const currentBase = TIER_BASE_MULT[tier];
+  
+  const isLastTier = idx === CATCH_TIER_ORDER.length - 1;
+  const nextBase = isLastTier 
+    ? MAX_CATCH_MULT 
+    : TIER_BASE_MULT[CATCH_TIER_ORDER[idx + 1]];
+
+  // Standard tiers divide by 10 so the tier upgrade grants the 10th step
+  // Master Ball divides by 9 so Level 10 lands exactly on 20.0x
+  const step = isLastTier 
+    ? (nextBase - currentBase) / 9 
+    : (nextBase - currentBase) / 10;
+
+  return Number((currentBase + (lvl - 1) * step).toFixed(1));
 }
 
 /** Same cost curve as auto-tap for each catch level (level is 1-based). */
