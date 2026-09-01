@@ -87,8 +87,7 @@ export function spriteSlug(name: string): string {
     .replace(/\s+/g, "-");
 }
 
-// Showdown-style slugs for the Galar/Paldea/Anomalies additions. Not exhaustive/guaranteed —
-// spot-check exotic forms (alt battle forms, masks) against play.pokemonshowdown.com/sprites/ani/.
+// Showdown-style slugs for the Galar/Paldea/Anomalies additions.
 const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Galarian Farfetchd": "farfetchd-galar",
   "Galarian Mr. Mime": "mrmime-galar",
@@ -112,16 +111,35 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Terapagos-Stellar": "terapagos-stellar",
 };
 
+function toShowdownCleanId(str: string): string {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function showdownSlug(name: string): string {
   if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
   if (name.startsWith("Dynamax ")) return showdownSlug(name.slice(8));
   if (name.startsWith("Tera ")) return showdownSlug(name.slice(5));
-  if (name.startsWith("Galarian ")) return `${name.slice(9).toLowerCase().replace(/[.'’]/g, "").replace(/\s+/g, "")}-galar`;
-  if (name.startsWith("Paldean ")) return `${name.slice(8).toLowerCase().replace(/[.'’]/g, "").replace(/\s+/g, "-")}-paldea`;
-  return name
-    .toLowerCase()
-    .replace(/[.'’:]/g, "")
-    .replace(/\s+/g, "-");
+  if (name.startsWith("Galarian ")) return `${toShowdownCleanId(name.slice(9))}-galar`;
+  if (name.startsWith("Paldean ")) return `${toShowdownCleanId(name.slice(8))}-paldea`;
+  if (name.startsWith("Hisuian ")) return `${toShowdownCleanId(name.slice(8))}-hisui`;
+  if (name.startsWith("Alolan ")) return `${toShowdownCleanId(name.slice(7))}-alola`;
+
+  // Handle prefix forms (M-, A-, P-, H-, G-)
+  if (name.startsWith("M-")) {
+    const rest = name.slice(2);
+    if (rest.endsWith(" X") || rest.endsWith(" Y")) {
+      const char = rest.slice(-1).toLowerCase();
+      const base = toShowdownCleanId(rest.slice(0, -2));
+      return `${base}-mega${char}`;
+    }
+    return `${toShowdownCleanId(rest)}-mega`;
+  }
+  if (name.startsWith("A-")) return `${toShowdownCleanId(name.slice(2))}-alola`;
+  if (name.startsWith("P-")) return `${toShowdownCleanId(name.slice(2))}-primal`;
+  if (name.startsWith("H-")) return `${toShowdownCleanId(name.slice(2))}-hisui`;
+  if (name.startsWith("G-")) return `${toShowdownCleanId(name.slice(2))}-galar`;
+
+  return toShowdownCleanId(name);
 }
 
 /** Returns true for any "Tera Foo" named Pokémon (but NOT Terapagos). */
@@ -135,16 +153,20 @@ export function spriteUrl(name: string, shiny: boolean, animated = false): strin
   const spec = speciesByName(name);
   const id = spec?.id ?? 0;
   const isForm = /^(M-|A-|P-|B-|W-|H-|F-|Fan-)/.test(name) || name.includes("-");
+
+  // Gen 1–5 non-forms use Gen V Black/White animated GIFs from PokeAPI
   if (animated && id >= 1 && id <= 649 && !isForm) {
     const folder = shiny ? "shiny/" : "";
     return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${folder}${id}.gif`;
   }
-  // Galar/Paldea/Anomalies (id > 895) and any regional/battle forms: Showdown's animated
-  // frontal sprite set covers these; front-default only (no shiny variant requested).
-  if (animated && (id > 895 || isForm)) {
+
+  // All other animated requests (Gen 6+, forms, regional forms, Anomalies, etc.) resolve via Showdown GIFs
+  if (animated) {
     const folder = shiny ? "ani-shiny" : "ani";
     return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.gif`;
   }
+
+  // Static PNG fallbacks
   if (id >= 1 && id <= 802 && !isForm) {
     const folder = shiny ? "shiny/" : "";
     return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${folder}${id}.png`;

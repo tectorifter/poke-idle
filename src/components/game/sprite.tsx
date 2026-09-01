@@ -57,7 +57,18 @@ export function Sprite({
 
   if (!isTera) return imgEl;
 
-  // Tera: base sprite tinted + crystal facet overlay composited via mix-blend-mode
+  // Mask overlay directly to the sprite asset alpha channel
+  const maskStyle: React.CSSProperties = {
+    WebkitMaskImage: `url("${src}")`,
+    maskImage: `url("${src}")`,
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+  };
+
   return (
     <div
       className={cn("relative shrink-0 inline-flex", className)}
@@ -66,7 +77,8 @@ export function Sprite({
     >
       {/* base sprite with cool crystalline tint */}
       {imgEl}
-      {/* crystal overlay — scaled to match sprite, blended over the silhouette */}
+
+      {/* crystal overlay — clipped to sprite silhouette */}
       <img
         src="/tera-crystal.jpg"
         alt=""
@@ -83,9 +95,11 @@ export function Sprite({
           mixBlendMode: "overlay",
           opacity: 0.55,
           imageRendering: "pixelated",
+          ...maskStyle,
         }}
       />
-      {/* subtle iridescent shimmer rim */}
+
+      {/* subtle iridescent shimmer rim — clipped to sprite silhouette */}
       <div
         aria-hidden
         className={cn(
@@ -98,6 +112,7 @@ export function Sprite({
           background:
             "radial-gradient(ellipse at 30% 25%, rgba(180,220,255,0.28) 0%, rgba(120,180,255,0.12) 40%, transparent 70%)",
           mixBlendMode: "screen",
+          ...maskStyle,
         }}
       />
     </div>
