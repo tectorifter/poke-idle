@@ -21711,5 +21711,586 @@
     "spd": 65,
     "spe": 110,
     "exp": 170
+  },
+  {
+    "id": 1305,
+    "name": "Necrozma-Dusk-Mane",
+    "types": [
+      "Psychic",
+      "Steel"
+    ],
+    "catch": 12,
+    "growth": "Slow",
+    "hp": 97,
+    "atk": 157,
+    "def": 127,
+    "spa": 113,
+    "spd": 109,
+    "spe": 77,
+    "exp": 306
+  },
+  {
+    "id": 1306,
+    "name": "Necrozma-Dawn-Wings",
+    "types": [
+      "Psychic",
+      "Ghost"
+    ],
+    "catch": 12,
+    "growth": "Slow",
+    "hp": 97,
+    "atk": 113,
+    "def": 109,
+    "spa": 157,
+    "spd": 127,
+    "spe": 77,
+    "exp": 306
+  },
+  {
+    "id": 1307,
+    "name": "Necrozma-Ultra",
+    "types": [
+      "Psychic",
+      "Dragon"
+    ],
+    "catch": 12,
+    "growth": "Slow",
+    "hp": 97,
+    "atk": 167,
+    "def": 97,
+    "spa": 167,
+    "spd": 97,
+    "spe": 129,
+    "exp": 340
+  },
+  {
+    "id": 1308,
+    "name": "Gigantamax Venusaur",
+    "types": [
+      "Grass",
+      "Poison"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 80,
+    "atk": 82,
+    "def": 83,
+    "spa": 100,
+    "spd": 100,
+    "spe": 80,
+    "exp": 236
+  },
+  {
+    "id": 1309,
+    "name": "Gigantamax Charizard",
+    "types": [
+      "Fire",
+      "Flying"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 78,
+    "atk": 84,
+    "def": 78,
+    "spa": 109,
+    "spd": 85,
+    "spe": 100,
+    "exp": 240
+  },
+  {
+    "id": 1310,
+    "name": "Gigantamax Blastoise",
+    "types": [
+      "Water"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 79,
+    "atk": 83,
+    "def": 100,
+    "spa": 85,
+    "spd": 105,
+    "spe": 78,
+    "exp": 239
+  },
+  {
+    "id": 1311,
+    "name": "Gigantamax Butterfree",
+    "types": [
+      "Bug",
+      "Flying"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 60,
+    "atk": 45,
+    "def": 50,
+    "spa": 90,
+    "spd": 80,
+    "spe": 70,
+    "exp": 178
+  },
+  {
+    "id": 1312,
+    "name": "Gigantamax Pikachu",
+    "types": [
+      "Electric"
+    ],
+    "catch": 70,
+    "growth": "Medium Fast",
+    "hp": 35,
+    "atk": 55,
+    "def": 40,
+    "spa": 50,
+    "spd": 50,
+    "spe": 90,
+    "exp": 112
+  },
+  {
+    "id": 1313,
+    "name": "Gigantamax Meowth",
+    "types": [
+      "Normal"
+    ],
+    "catch": 70,
+    "growth": "Medium Fast",
+    "hp": 40,
+    "atk": 45,
+    "def": 35,
+    "spa": 40,
+    "spd": 40,
+    "spe": 90,
+    "exp": 58
+  },
+  {
+    "id": 1314,
+    "name": "Gigantamax Machamp",
+    "types": [
+      "Fighting"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 90,
+    "atk": 130,
+    "def": 80,
+    "spa": 65,
+    "spd": 85,
+    "spe": 55,
+    "exp": 227
+  },
+  {
+    "id": 1315,
+    "name": "Gigantamax Gengar",
+    "types": [
+      "Ghost",
+      "Poison"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 60,
+    "atk": 65,
+    "def": 60,
+    "spa": 130,
+    "spd": 75,
+    "spe": 110,
+    "exp": 225
+  },
+  {
+    "id": 1316,
+    "name": "Gigantamax Kingler",
+    "types": [
+      "Water"
+    ],
+    "catch": 60,
+    "growth": "Medium Fast",
+    "hp": 55,
+    "atk": 130,
+    "def": 115,
+    "spa": 50,
+    "spd": 50,
+    "spe": 75,
+    "exp": 166
+  },
+  {
+    "id": 1317,
+    "name": "Gigantamax Lapras",
+    "types": [
+      "Water",
+      "Ice"
+    ],
+    "catch": 45,
+    "growth": "Slow",
+    "hp": 130,
+    "atk": 85,
+    "def": 80,
+    "spa": 85,
+    "spd": 95,
+    "spe": 60,
+    "exp": 187
+  },
+  {
+    "id": 1318,
+    "name": "Gigantamax Eevee",
+    "types": [
+      "Normal"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 55,
+    "atk": 55,
+    "def": 50,
+    "spa": 45,
+    "spd": 65,
+    "spe": 55,
+    "exp": 65
+  },
+  {
+    "id": 1319,
+    "name": "Gigantamax Snorlax",
+    "types": [
+      "Normal"
+    ],
+    "catch": 25,
+    "growth": "Slow",
+    "hp": 160,
+    "atk": 110,
+    "def": 65,
+    "spa": 65,
+    "spd": 110,
+    "spe": 30,
+    "exp": 189
+  },
+  {
+    "id": 1320,
+    "name": "Gigantamax Garbodor",
+    "types": [
+      "Poison"
+    ],
+    "catch": 60,
+    "growth": "Medium Fast",
+    "hp": 80,
+    "atk": 95,
+    "def": 82,
+    "spa": 60,
+    "spd": 82,
+    "spe": 75,
+    "exp": 166
+  },
+  {
+    "id": 1321,
+    "name": "Gigantamax Rillaboom",
+    "types": [
+      "Grass"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 100,
+    "atk": 125,
+    "def": 90,
+    "spa": 60,
+    "spd": 70,
+    "spe": 85,
+    "exp": 329
+  },
+  {
+    "id": 1322,
+    "name": "Gigantamax Cinderace",
+    "types": [
+      "Fire"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 80,
+    "atk": 116,
+    "def": 75,
+    "spa": 65,
+    "spd": 75,
+    "spe": 119,
+    "exp": 329
+  },
+  {
+    "id": 1323,
+    "name": "Gigantamax Inteleon",
+    "types": [
+      "Water"
+    ],
+    "catch": 45,
+    "growth": "Medium Slow",
+    "hp": 70,
+    "atk": 85,
+    "def": 65,
+    "spa": 125,
+    "spd": 65,
+    "spe": 120,
+    "exp": 329
+  },
+  {
+    "id": 1324,
+    "name": "Gigantamax Corviknight",
+    "types": [
+      "Flying",
+      "Steel"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 98,
+    "atk": 87,
+    "def": 105,
+    "spa": 53,
+    "spd": 85,
+    "spe": 67,
+    "exp": 307
+  },
+  {
+    "id": 1325,
+    "name": "Gigantamax Orbeetle",
+    "types": [
+      "Bug",
+      "Psychic"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 60,
+    "atk": 45,
+    "def": 110,
+    "spa": 80,
+    "spd": 120,
+    "spe": 90,
+    "exp": 313
+  },
+  {
+    "id": 1326,
+    "name": "Gigantamax Drednaw",
+    "types": [
+      "Water",
+      "Rock"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 90,
+    "atk": 115,
+    "def": 90,
+    "spa": 48,
+    "spd": 68,
+    "spe": 74,
+    "exp": 301
+  },
+  {
+    "id": 1327,
+    "name": "Gigantamax Coalossal",
+    "types": [
+      "Rock",
+      "Fire"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 110,
+    "atk": 80,
+    "def": 120,
+    "spa": 80,
+    "spd": 90,
+    "spe": 30,
+    "exp": 316
+  },
+  {
+    "id": 1328,
+    "name": "Gigantamax Flapple",
+    "types": [
+      "Grass",
+      "Dragon"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 70,
+    "atk": 110,
+    "def": 80,
+    "spa": 95,
+    "spd": 60,
+    "spe": 70,
+    "exp": 301
+  },
+  {
+    "id": 1329,
+    "name": "Gigantamax Appletun",
+    "types": [
+      "Grass",
+      "Dragon"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 110,
+    "atk": 85,
+    "def": 80,
+    "spa": 100,
+    "spd": 80,
+    "spe": 30,
+    "exp": 301
+  },
+  {
+    "id": 1330,
+    "name": "Gigantamax Sandaconda",
+    "types": [
+      "Ground"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 72,
+    "atk": 107,
+    "def": 125,
+    "spa": 65,
+    "spd": 70,
+    "spe": 71,
+    "exp": 316
+  },
+  {
+    "id": 1331,
+    "name": "Gigantamax Toxtricity",
+    "types": [
+      "Electric",
+      "Poison"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 75,
+    "atk": 98,
+    "def": 70,
+    "spa": 114,
+    "spd": 70,
+    "spe": 75,
+    "exp": 311
+  },
+  {
+    "id": 1332,
+    "name": "Gigantamax Centiskorch",
+    "types": [
+      "Fire",
+      "Bug"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 100,
+    "atk": 115,
+    "def": 65,
+    "spa": 90,
+    "spd": 90,
+    "spe": 65,
+    "exp": 326
+  },
+  {
+    "id": 1333,
+    "name": "Gigantamax Hatterene",
+    "types": [
+      "Psychic",
+      "Fairy"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 57,
+    "atk": 90,
+    "def": 95,
+    "spa": 136,
+    "spd": 103,
+    "spe": 29,
+    "exp": 316
+  },
+  {
+    "id": 1334,
+    "name": "Gigantamax Grimmsnarl",
+    "types": [
+      "Dark",
+      "Fairy"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 95,
+    "atk": 120,
+    "def": 65,
+    "spa": 95,
+    "spd": 75,
+    "spe": 60,
+    "exp": 316
+  },
+  {
+    "id": 1335,
+    "name": "Gigantamax Alcremie",
+    "types": [
+      "Fairy"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 65,
+    "atk": 60,
+    "def": 75,
+    "spa": 110,
+    "spd": 121,
+    "spe": 64,
+    "exp": 307
+  },
+  {
+    "id": 1336,
+    "name": "Gigantamax Copperajah",
+    "types": [
+      "Steel"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 122,
+    "atk": 130,
+    "def": 69,
+    "spa": 80,
+    "spd": 69,
+    "spe": 30,
+    "exp": 310
+  },
+  {
+    "id": 1337,
+    "name": "Gigantamax Duraludon",
+    "types": [
+      "Steel",
+      "Dragon"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 70,
+    "atk": 95,
+    "def": 115,
+    "spa": 120,
+    "spd": 50,
+    "spe": 85,
+    "exp": 332
+  },
+  {
+    "id": 1338,
+    "name": "Gigantamax Urshifu",
+    "types": [
+      "Fighting",
+      "Dark"
+    ],
+    "catch": 12,
+    "growth": "Slow",
+    "hp": 100,
+    "atk": 130,
+    "def": 100,
+    "spa": 63,
+    "spd": 60,
+    "spe": 97,
+    "exp": 341
+  },
+  {
+    "id": 1339,
+    "name": "Gigantamax Urshifu-Rapid",
+    "types": [
+      "Fighting",
+      "Water"
+    ],
+    "catch": 12,
+    "growth": "Slow",
+    "hp": 100,
+    "atk": 130,
+    "def": 100,
+    "spa": 63,
+    "spd": 60,
+    "spe": 97,
+    "exp": 341
   }
 ]

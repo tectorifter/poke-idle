@@ -1,5 +1,22 @@
 import { create } from "zustand";
-import { ROUTES, REGIONS, REGION_UNLOCK, speciesByName, STARTERS, POKEDEX } from "./dex";
+import {
+  ROUTES,
+  REGIONS,
+  REGION_UNLOCK,
+  speciesByName,
+  STARTERS,
+  POKEDEX,
+  SPECIES_UNLOCK,
+  GMAX_FORMS,
+  isRouteUnlocked,
+  isPermanentAnomalyCatch,
+  baseSpeciesOf,
+  megaFormsFor,
+  gmaxFormFor,
+  dynamaxUnlocked,
+  teraUnlocked,
+} from "./dex";
+import type { AnomalyKind } from "./dex";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
 import {
@@ -15,6 +32,9 @@ import {
   makeOwned,
   pickWeighted,
   randomLevel,
+  rollTeraType,
+  WILD_FORM_DEFEATS,
+  WILD_RECHARGE_DEFEATS,
   SHINY_ODDS,
   TEAM_SIZE,
   MAX_AUTO_LEVEL,
@@ -27,20 +47,35 @@ import {
   playerMaxHp,
   playerLevelOf,
 } from "./formulas";
+import type { FormKind } from "./formulas";
 import type {
   CatchMode,
   CatchTier,
   DexFlag,
   LogLine,
   OwnedPoke,
+  RechargeCounts,
   SaveBlob,
   Stats,
   TabId,
+  WildActivation,
+  WildForms,
 } from "./types";
 
-const SAVE_KEY = "pokeidle-save-v4";
-const LEGACY_SAVE_KEY = "pokeidle-save-v3";
-const SAVE_VERSION = 4;
+const SAVE_KEY = "pokeidle-save-v5";
+const LEGACY_SAVE_KEY = "pokeidle-save-v4";
+const SAVE_VERSION = 5;
+
+/** Old single "Anomalies" region → the four themed anomaly regions, keyed by
+ *  the route id the player was last standing on. */
+const ANOMALY_REGION_MIGRATION: Record<string, [string, string]> = {
+  mega: ["Kalos Anomaly", "mega"],
+  primal: ["Kalos Anomaly", "primal"],
+  ultrabeast: ["Alola Anomaly", "ultraspace"],
+  ultraspace: ["Alola Anomaly", "ultraspace"],
+  dynamax: ["Galar Anomaly", "dynamax"],
+  tera: ["Paldea Anomaly", "tera"],
+};
 const MAX_LOG = 24;
 
 const defaultStats = (): Stats => ({
@@ -87,6 +122,69 @@ let enemyTimer = 0;
 let uiAcc = 0;
 let saveAcc = 0;
 let lastManualTap = 0;
+let lastManualCatch = 0;
+
+// ─── Wild anomaly-activation helpers ──────────────────────────────────────────
+const ANOMALY_KINDS: AnomalyKind[] = ["mega", "dynamax", "tera"];
+const ACTIVATION_LABEL: Record<AnomalyKind, string> = {
+  mega: "Mega Evolution",
+  dynamax: "Dynamax",
+  tera: "Terastallization",
+};
+const freshWildForms = (): WildForms => ({ mega: null, dynamax: null, tera: null });
+const freshRecharge = (): RechargeCounts => ({ mega: 0, dynamax: 0, tera: 0 });
+
+/** Drop activations whose target mon is no longer on the team. */
+function pruneActivations(wa: WildForms, team: OwnedPoke[]): WildForms {
+  const live = new Set(team.map((p) => p.uid));
+  const out = { ...wa };
+  for (const k of ANOMALY_KINDS) if (out[k] && !live.has(out[k]!.uid)) out[k] = null;
+  return out;
+}
+
+/** Effective attacker for a wild-combat mon: swaps to the Mega / G-Max species
+ *  and reports the form kind + tera type for the damage formula. */
+function wildEffective(
+  mon: OwnedPoke,
+  wa: WildForms,
+): { poke: OwnedPoke; form?: FormKind; teraType?: string } {
+  if (wa.mega && wa.mega.uid === mon.uid && wa.mega.formName)
+    return { poke: { ...mon, name: wa.mega.formName }, form: "mega" };
+  if (wa.dynamax && wa.dynamax.uid === mon.uid)
+    return wa.dynamax.formName
+      ? { poke: { ...mon, name: wa.dynamax.formName }, form: "gmax" }
+      : { poke: mon, form: "dynamax" };
+  if (wa.tera && wa.tera.uid === mon.uid)
+    return { poke: mon, form: "tera", teraType: mon.teraType };
+  return { poke: mon };
+}
+
+/** One wild defeat: tick every live activation's duration and every recharge
+ *  counter. Returns the next {wa, wr} plus any log lines to emit. */
+function tickWildAnomalies(
+  wa: WildForms,
+  wr: RechargeCounts,
+): { wa: WildForms; wr: RechargeCounts; expired: AnomalyKind[] } {
+  const nextWa = { ...wa };
+  const nextWr = { ...wr };
+  const expired: AnomalyKind[] = [];
+  for (const k of ANOMALY_KINDS) {
+    const a = nextWa[k];
+    if (a) {
+      const left = a.defeatsLeft - 1;
+      if (left <= 0) {
+        nextWa[k] = null;
+        nextWr[k] = WILD_RECHARGE_DEFEATS;
+        expired.push(k);
+      } else {
+        nextWa[k] = { ...a, defeatsLeft: left };
+      }
+    } else if (nextWr[k] > 0) {
+      nextWr[k] = nextWr[k] - 1;
+    }
+  }
+  return { wa: nextWa, wr: nextWr, expired };
+}
 /** Timestamp (ms) when the next wild encounter may spawn. 0 = ready now. */
 let respawnAt = 0;
 const RESPAWN_DELAY_MS = 200;
@@ -114,6 +212,14 @@ export type GameState = {
   stats: Stats;
   lastHeal: number;
   anomalyCleared: Record<string, boolean>;
+  /** Multiplier on the base 1/2000 wild Gigantamax replacement chance in Galar. */
+  gmaxChanceMult: number;
+  /** Live temporary anomaly activations for wild combat (one per kind, party-wide). */
+  wildActivations: WildForms;
+  /** Wild defeats left until each anomaly type can be activated again. */
+  wildRecharge: RechargeCounts;
+  /** When on, wild HP is clamped to a floor of 1 (nothing can be knocked out). */
+  falseSwipe: boolean;
   log: LogLine[];
   paused: boolean;
   playerHit: number;
@@ -130,6 +236,11 @@ type GameActions = {
   setRoute: (region: string, route: string) => void;
   setActive: (index: number) => void;
   setCatchMode: (mode: CatchMode) => void;
+  /** Fire a temporary anomaly activation on the active wild-combat mon. */
+  activateWild: (kind: AnomalyKind, formChoice?: string) => void;
+  /** Manually attempt to catch the current wild enemy right now. */
+  manualCatch: () => void;
+  toggleFalseSwipe: () => void;
   buyAutoTap: () => void;
   buyCatchUpgrade: () => void;
   /** Prestige the player (global). Requires at least one mon at Lv.100. */
@@ -166,6 +277,10 @@ function emptyState(): GameState {
     stats: defaultStats(),
     lastHeal: Date.now(),
     anomalyCleared: {},
+    gmaxChanceMult: 1,
+    wildActivations: freshWildForms(),
+    wildRecharge: freshRecharge(),
+    falseSwipe: false,
     log: [],
     paused: false,
     playerHit: 0,
@@ -196,6 +311,10 @@ function persist(state: GameState) {
     lastHeal: state.lastHeal,
     started: state.started,
     anomalyCleared: state.anomalyCleared,
+    gmaxChanceMult: state.gmaxChanceMult,
+    wildActivations: state.wildActivations,
+    wildRecharge: state.wildRecharge,
+    falseSwipe: state.falseSwipe,
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(blob));
@@ -208,14 +327,35 @@ function spawnEnemy(
   region: string,
   routeId: string,
   anomalyCleared: Record<string, boolean>,
+  dex: Record<string, DexFlag>,
+  gmaxChanceMult = 1,
 ): OwnedPoke | null {
   const route = ROUTES[region]?.[routeId];
   if (!route || route.pokes.length === 0) return null;
-  const name = pickWeighted(route.pokes, route.weights);
+
+  // Drop species still behind a spawn gate; keep weights aligned with the pool.
+  const pool: string[] = [];
+  const weights: number[] = [];
+  route.pokes.forEach((n, i) => {
+    const gate = SPECIES_UNLOCK[n];
+    if (gate && !gate(dex)) return;
+    pool.push(n);
+    if (route.weights) weights.push(route.weights[i] ?? 1);
+  });
+  if (pool.length === 0) return null;
+
+  let name = pickWeighted(pool, route.weights ? weights : undefined);
   if (!speciesByName(name)) return null;
+
+  // Gigantamax: a normal Galar-route spawn is rarely swapped for its G-Max form.
+  // `gmaxChanceMult` is a hook for a future rate upgrade (default 1, unused UI-side).
+  if (region === "Galar" && GMAX_FORMS[name] && Math.random() < (1 / 2000) * gmaxChanceMult) {
+    name = GMAX_FORMS[name][0];
+  }
+
   const shiny = Math.random() < SHINY_ODDS;
   const prestige =
-    region === "Anomalies" && anomalyCleared[routeId]
+    region.endsWith(" Anomaly") && anomalyCleared[routeId]
       ? leagueEnemyPrestige(useLeague.getState().progress)
       : 0;
   return makeOwned(name, randomLevel(route.minLevel, route.maxLevel), shiny, prestige);
@@ -240,13 +380,24 @@ function hydrate(): GameState {
   const saved = typeof window !== "undefined" ? loadSave() : null;
   const base = emptyState();
   if (!saved || !saved.started) return base;
-  const region = saved.region && ROUTES[saved.region] ? saved.region : "Kanto";
-  const route =
-    saved.route && ROUTES[region]?.[saved.route] ? saved.route : "route";
-  const team = (saved.team ?? []).map((p) => ({
-    ...p,
-    hp: Math.min(p.hp, combatStats(p).maxHp),
-  }));
+
+  let region = saved.region && ROUTES[saved.region] ? saved.region : "Kanto";
+  let route = saved.route && ROUTES[region]?.[saved.route] ? saved.route : "";
+  if (saved.region === "Anomalies") {
+    [region, route] = ANOMALY_REGION_MIGRATION[saved.route ?? ""] ?? ["Kalos Anomaly", "mega"];
+  }
+  if (!route || !ROUTES[region]?.[route]) {
+    route = ROUTES[region]?.route ? "route" : Object.keys(ROUTES[region] ?? {})[0] ?? "route";
+  }
+
+  // Backfill the Terastal type on saves that predate it.
+  const withTera = (p: OwnedPoke): OwnedPoke =>
+    p.teraType ? p : { ...p, teraType: rollTeraType(p.name) };
+  const team = (saved.team ?? []).map((raw) => {
+    const p = withTera(raw);
+    return { ...p, hp: Math.min(p.hp, combatStats(p).maxHp) };
+  });
+  const storage = (saved.storage ?? []).map(withTera);
   const activeIndex = Math.min(
     saved.active ?? 0,
     Math.max(0, team.length - 1),
@@ -258,7 +409,7 @@ function hydrate(): GameState {
     ...base,
     started: true,
     team,
-    storage: saved.storage ?? [],
+    storage,
     active: activeIndex,
     pokeyen: saved.pokeyen ?? 0,
     playerPrestige: saved.playerPrestige ?? 0,
@@ -274,7 +425,11 @@ function hydrate(): GameState {
     stats: { ...defaultStats(), ...saved.stats },
     lastHeal: saved.lastHeal ?? Date.now(),
     anomalyCleared: saved.anomalyCleared ?? {},
-    enemy: spawnEnemy(region, route, saved.anomalyCleared ?? {}),
+    gmaxChanceMult: saved.gmaxChanceMult ?? 1,
+    wildActivations: pruneActivations(saved.wildActivations ?? freshWildForms(), team),
+    wildRecharge: saved.wildRecharge ?? freshRecharge(),
+    falseSwipe: saved.falseSwipe ?? false,
+    enemy: spawnEnemy(region, route, saved.anomalyCleared ?? {}, saved.dex ?? {}, saved.gmaxChanceMult ?? 1),
     now: Date.now(),
   };
   if (state.enemy) {
@@ -299,7 +454,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   startWith: (name) => {
     const starter = makeOwned(name, 5, false, 0);
-    const enemy = spawnEnemy("Kanto", "route", {});
+    const enemy = spawnEnemy("Kanto", "route", {}, {});
     const dex: Record<string, DexFlag> = { [name]: 6 };
     let stats = defaultStats();
     if (enemy) {
@@ -343,12 +498,15 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
     let enemy = { ...s.enemy };
-    const { damage } = attackDamage(atkPoke, enemy, {
+    const eff = wildEffective(atkPoke, s.wildActivations);
+    const { damage } = attackDamage(eff.poke, enemy, {
       attackerIsPlayer: true,
       playerPrestige: s.playerPrestige,
       uniqueBonus,
+      form: eff.form,
+      teraType: eff.teraType,
     });
-    enemy.hp = Math.max(0, enemy.hp - damage);
+    enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
     const stats = { ...s.stats, damage: s.stats.damage + damage };
 
     set({
@@ -418,6 +576,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let pokeyen = s.pokeyen;
     let playerHit = s.playerHit;
     let enemyHit = s.enemyHit;
+    let wildActivations = s.wildActivations;
+    let wildRecharge = s.wildRecharge;
     let lastCatch: GameState["lastCatch"] = "none";
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(dex));
@@ -430,7 +590,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     } else if (pendingFaint && s.enemy) {
       enemy = { ...s.enemy };
     } else {
-      const spawned = spawnEnemy(s.region, s.route, s.anomalyCleared);
+      const spawned = spawnEnemy(s.region, s.route, s.anomalyCleared, dex, s.gmaxChanceMult);
       if (!spawned) return;
       enemy = spawned;
       respawnAt = 0;
@@ -447,12 +607,15 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const playerAtk = () => {
       const atkPoke = team[activeIndex];
       if (!atkPoke || playerHp <= 0 || enemy.hp <= 0) return;
-      const { damage } = attackDamage(atkPoke, enemy, {
+      const eff = wildEffective(atkPoke, wildActivations);
+      const { damage } = attackDamage(eff.poke, enemy, {
         attackerIsPlayer: true,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
+        form: eff.form,
+        teraType: eff.teraType,
       });
-      enemy.hp = Math.max(0, enemy.hp - damage);
+      enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
       stats = { ...stats, damage: stats.damage + damage };
       enemyHit = now;
       dirty = true;
@@ -481,8 +644,20 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const onEnemyFaint = () => {
       const fallen = enemy;
       stats = { ...stats, beaten: stats.beaten + 1 };
-      if (s.region === "Anomalies" && !anomalyCleared[s.route]) {
+      if (s.region.endsWith(" Anomaly") && !anomalyCleared[s.route]) {
         anomalyCleared = { ...anomalyCleared, [s.route]: true };
+      }
+      if (fallen.name === "Eternatus-Eternamax" && !anomalyCleared["galar-eternamax"]) {
+        anomalyCleared = { ...anomalyCleared, "galar-eternamax": true };
+        log = pushLog(log, "The Eternamax anomaly collapses — Dynamax is yours to command!", "level");
+      }
+
+      // Tick temporary anomaly activations + recharge counters on every wild defeat.
+      {
+        const t = tickWildAnomalies(wildActivations, wildRecharge);
+        wildActivations = t.wa;
+        wildRecharge = t.wr;
+        for (const k of t.expired) log = pushLog(log, `${ACTIVATION_LABEL[k]} wore off.`, "system");
       }
 
       const yenGain = pokeyenReward(levelOf(fallen));
@@ -511,17 +686,29 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
           s.catchLevel,
         );
         if (Math.random() * 100 < chance) {
-          const caught = makeOwned(fallen.name, levelOf(fallen), fallen.shiny, 0);
+          // Anomaly forms register their Dex flag (that flag is the activation
+          // unlock) but hand you the base species — except the permanent catches
+          // (Ultra Space, Ogerpon, Terapagos) which come as themselves.
+          const gained = isPermanentAnomalyCatch(fallen.name)
+            ? fallen.name
+            : baseSpeciesOf(fallen.name);
+          const morphed = gained !== fallen.name;
+          const caught = makeOwned(gained, levelOf(fallen), fallen.shiny, 0);
           if (team.length < TEAM_SIZE) team.push(caught);
           else storage = [...storage, caught];
           dex = markDex(dex, fallen.name, fallen.shiny ? 8 : 6);
+          if (morphed) dex = markDex(dex, gained, fallen.shiny ? 8 : 6);
           if (fallen.shiny) {
             stats = { ...stats, shinyCaught: stats.shinyCaught + 1 };
             log = pushLog(log, `Caught Shiny ${fallen.name}!!`, "shiny");
             lastCatch = "shiny";
           } else {
             stats = { ...stats, caught: stats.caught + 1 };
-            log = pushLog(log, `Caught ${fallen.name}!`, "catch");
+            log = pushLog(
+              log,
+              morphed ? `Caught ${fallen.name}! ${gained} joined — form unlocked.` : `Caught ${fallen.name}!`,
+              "catch",
+            );
             lastCatch = "caught";
           }
         } else {
@@ -619,6 +806,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         enemyHit,
         lastCatch,
         anomalyCleared,
+        wildActivations,
+        wildRecharge,
         now,
       });
       if (saveAcc > 4) {
@@ -729,12 +918,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (caught < need) return;
     const def = ROUTES[region]?.[route];
     if (!def) return;
-    if (def.requiredPrestige != null && get().playerPrestige < def.requiredPrestige)
-      return;
+    if (!isRouteUnlocked(region, route, get().dex, get().playerPrestige)) return;
     playerTimer = 0;
     enemyTimer = 0;
     respawnAt = 0;
-    const enemy = spawnEnemy(region, route, get().anomalyCleared);
+    const enemy = spawnEnemy(region, route, get().anomalyCleared, get().dex, get().gmaxChanceMult);
     let dex = get().dex;
     let stats = get().stats;
     let log = get().log;
@@ -758,6 +946,98 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   setCatchMode: (catchMode) => {
     set({ catchMode });
+    persist({ ...get() });
+  },
+
+  toggleFalseSwipe: () => {
+    set({ falseSwipe: !get().falseSwipe });
+    persist({ ...get() });
+  },
+
+  activateWild: (kind, formChoice) => {
+    const s = get();
+    if (!s.started || s.paused || !s.enemy || s.enemy.hp <= 0) return;
+    if (s.wildActivations[kind] || s.wildRecharge[kind] > 0) return;
+    const mon = s.team[s.active];
+    if (!mon) return;
+    // One activation per mon at a time.
+    if (ANOMALY_KINDS.some((k) => s.wildActivations[k]?.uid === mon.uid)) return;
+
+    let formName: string | null = null;
+    let verb: string;
+    if (kind === "mega") {
+      const owned = megaFormsFor(s.dex, mon.name);
+      if (!owned.length) return;
+      formName = formChoice && owned.includes(formChoice) ? formChoice : owned[0];
+      verb = `Mega Evolved into ${formName.replace(/^M-/, "")}`;
+    } else if (kind === "dynamax") {
+      if (!dynamaxUnlocked(s.anomalyCleared)) return;
+      formName = gmaxFormFor(s.dex, mon.name);
+      verb = formName ? "Gigantamaxed" : "Dynamaxed";
+    } else {
+      if (!teraUnlocked(s.dex)) return;
+      verb = `Terastallized${mon.teraType ? ` (${mon.teraType})` : ""}`;
+    }
+
+    set({
+      wildActivations: {
+        ...s.wildActivations,
+        [kind]: { uid: mon.uid, formName, defeatsLeft: WILD_FORM_DEFEATS },
+      },
+      log: pushLog(s.log, `${mon.name} ${verb}!`, "level"),
+    });
+    persist({ ...get() });
+  },
+
+  manualCatch: () => {
+    const s = get();
+    if (!s.started || s.paused) return;
+    const e = s.enemy;
+    if (!e || e.hp <= 0) return;
+    const now = Date.now();
+    if (now - lastManualCatch < 350) return;
+    lastManualCatch = now;
+
+    const spec = speciesByName(e.name);
+    const eMax = Math.max(1, combatStats(e).maxHp);
+    const missFrac = Math.max(0, Math.min(1, 1 - e.hp / eMax));
+    const base = catchChancePercentPermanent(spec?.catch ?? 45, s.catchTier, s.catchLevel);
+    const chance = Math.max(15, base * (0.3 + 0.7 * missFrac));
+
+    if (Math.random() * 100 >= chance) {
+      set({ log: pushLog(s.log, `${e.name} broke free!`, "escape"), lastCatch: "escaped" });
+      return;
+    }
+
+    const gained = isPermanentAnomalyCatch(e.name) ? e.name : baseSpeciesOf(e.name);
+    const morphed = gained !== e.name;
+    const caught = makeOwned(gained, levelOf(e), e.shiny, 0);
+    let team = s.team;
+    let storage = s.storage;
+    if (team.length < TEAM_SIZE) team = [...team, caught];
+    else storage = [...storage, caught];
+    let dex = markDex(s.dex, e.name, e.shiny ? 8 : 6);
+    if (morphed) dex = markDex(dex, gained, e.shiny ? 8 : 6);
+    const stats = e.shiny
+      ? { ...s.stats, shinyCaught: s.stats.shinyCaught + 1 }
+      : { ...s.stats, caught: s.stats.caught + 1 };
+
+    respawnAt = now + RESPAWN_DELAY_MS;
+    set({
+      team,
+      storage,
+      dex,
+      stats,
+      enemy: { ...e, hp: 0 },
+      lastCatch: e.shiny ? "shiny" : "caught",
+      log: pushLog(
+        s.log,
+        morphed
+          ? `Caught ${e.name}! ${gained} joined — form unlocked.`
+          : `Caught ${e.shiny ? "Shiny " : ""}${e.name}!`,
+        e.shiny ? "shiny" : "catch",
+      ),
+    });
     persist({ ...get() });
   },
 

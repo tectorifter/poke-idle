@@ -15,6 +15,24 @@ import { cn } from "@/lib/utils";
 import { Meter } from "./bars";
 import { Sprite } from "./sprite";
 import { TypeBadge } from "./type-badge";
+import { WildActivationBar } from "./activation-bar";
+
+function PokeballIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <clipPath id="pokeball-clip">
+        <circle cx="12" cy="12" r="10" />
+      </clipPath>
+      <g clipPath="url(#pokeball-clip)">
+        <rect x="0" y="0" width="24" height="12" fill="#ef4444" />
+        <rect x="0" y="12" width="24" height="12" fill="#f8fafc" />
+      </g>
+      <circle cx="12" cy="12" r="10" fill="none" stroke="#0f172a" strokeWidth="2" />
+      <line x1="2" y1="12" x2="22" y2="12" stroke="#0f172a" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3.2" fill="#f8fafc" stroke="#0f172a" strokeWidth="2" />
+    </svg>
+  );
+}
 
 export function BattleView() {
   const enemy = useGame((s) => s.enemy);
@@ -33,6 +51,9 @@ export function BattleView() {
   const paused = useGame((s) => s.paused);
   const setActive = useGame((s) => s.setActive);
   const manualTap = useGame((s) => s.manualTap);
+  const manualCatch = useGame((s) => s.manualCatch);
+  const toggleFalseSwipe = useGame((s) => s.toggleFalseSwipe);
+  const falseSwipe = useGame((s) => s.falseSwipe);
   const log = useGame((s) => s.log);
 
   const player = team[active];
@@ -193,6 +214,33 @@ export function BattleView() {
           </ol>
         </div>
       </button>
+
+      {/* ── Activations + manual catch (outside the tap zone) ── */}
+      <div className="shrink-0 space-y-2 px-3 pt-2">
+        <WildActivationBar />
+        {enemy && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={manualCatch}
+              aria-label="Throw ball"
+              className="grid size-11 shrink-0 place-items-center rounded-full bg-surface shadow-border active:scale-95"
+            >
+              <PokeballIcon className="size-6" />
+            </button>
+            <button
+              type="button"
+              onClick={toggleFalseSwipe}
+              className={cn(
+                "h-11 flex-1 rounded-full px-4 text-xs font-semibold shadow-border",
+                falseSwipe ? "bg-warn text-black" : "bg-surface text-muted",
+              )}
+            >
+              False Swipe{falseSwipe ? " · ON" : ""}
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* ── Team strip ── */}
       <div className="shrink-0 border-t border-border bg-bg px-3 pb-2 pt-2">

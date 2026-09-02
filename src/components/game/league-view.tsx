@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { FighterCard } from "./battle";
 import { Meter } from "./bars";
 import { Sprite } from "./sprite";
+import { LeagueActivationBar } from "./activation-bar";
 
 export function LeagueView() {
   const team = useGame((s) => s.team);
@@ -164,7 +165,13 @@ export function LeagueView() {
       </div>
 
       {!finished && (
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3">
+          <LeagueActivationBar />
+        </div>
+      )}
+
+      {!finished && (
+        <div className="mt-2 grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={cheerUp}

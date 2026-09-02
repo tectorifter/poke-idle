@@ -1,5 +1,5 @@
 import { Lock } from "lucide-react";
-import { REGION_UNLOCK, speciesByName } from "@/lib/game/dex";
+import { REGION_UNLOCK, speciesByName, isRouteUnlocked, routeRequirementLabel } from "@/lib/game/dex";
 import { regionUnlocked, ROUTES, uniqueOwnedCount, useGame } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 
@@ -8,9 +8,8 @@ export function MapView() {
   const route = useGame((s) => s.route);
   const dex = useGame((s) => s.dex);
   const setRoute = useGame((s) => s.setRoute);
-  const team = useGame((s) => s.team);
+  const playerPrestige = useGame((s) => s.playerPrestige);
   const owned = uniqueOwnedCount(dex);
-  const prestige = team.reduce((n, p) => n + p.prestige, 0);
   const regions = Object.keys(ROUTES);
 
   const routes = Object.entries(ROUTES[region] ?? {}).filter(([, r]) => !r.subRoutes);
@@ -44,12 +43,13 @@ export function MapView() {
           })}
         </div>
         <p className="pb-2 text-xs text-muted">
-          Dex {owned} / {Object.keys(REGION_UNLOCK).length ? "895" : "—"} · Prestige {prestige}
+          Dex {owned} / {Object.keys(REGION_UNLOCK).length ? "895" : "—"} · Prestige {playerPrestige}
         </p>
       </div>
       <ul className="flex-1 space-y-2 overflow-y-auto px-4 pb-4">
         {routes.map(([id, def]) => {
-          const locked = def.requiredPrestige != null && prestige < def.requiredPrestige;
+          const locked = !isRouteUnlocked(region, id, dex, playerPrestige);
+          const lockLabel = locked ? routeRequirementLabel(region, id) : null;
           const known = def.pokes.filter((n) => speciesByName(n));
           const got = known.filter((n) => (dex[n] ?? 0) >= 5).length;
           const shiny = known.filter((n) => (dex[n] ?? 0) >= 7).length;
@@ -74,8 +74,12 @@ export function MapView() {
                     <span className="truncate font-medium">{def.name}</span>
                   </div>
                   <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted">
-                    Lv.{def.minLevel}–{def.maxLevel} · {got}/{known.length}
-                    {shinyDone ? " · shiny" : ""}
+                    {lockLabel ?? (
+                      <>
+                        Lv.{def.minLevel}–{def.maxLevel} · {got}/{known.length}
+                        {shinyDone ? " · shiny" : ""}
+                      </>
+                    )}
                   </p>
                 </div>
                 <span

@@ -26,7 +26,17 @@ export type OwnedPoke = {
   /** Kept for anomaly identification / display; no longer used for per-mon prestige. */
   prestige: number;
   hp: number;
+  /** Terastal type rolled once at creation from this mon's own types (single-typed
+   *  mons get their sole type). Fixed for the mon's life; drives Tera activation. */
+  teraType?: string;
 };
+
+/** A live temporary anomaly activation on one wild-combat mon. `formName` is the
+ *  Mega / Gigantamax species to render (null for plain Dynamax and for Tera). */
+export type WildActivation = { uid: string; formName: string | null; defeatsLeft: number };
+export type WildForms = { mega: WildActivation | null; dynamax: WildActivation | null; tera: WildActivation | null };
+/** Wild defeats remaining until each anomaly type is available again (0 = ready). */
+export type RechargeCounts = { mega: number; dynamax: number; tera: number };
 
 /** Permanent catch-power tiers (no consumable balls). */
 export type CatchTier = "pokeball" | "greatball" | "ultraball" | "masterball";
@@ -126,4 +136,8 @@ export type SaveBlob = {
   lastHeal: number;
   started: boolean;
   anomalyCleared: Record<string, boolean>;
+  gmaxChanceMult: number;
+  wildActivations?: WildForms;
+  wildRecharge?: RechargeCounts;
+  falseSwipe?: boolean;
 };
