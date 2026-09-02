@@ -1,5 +1,9 @@
 export type GrowthRate = "Slow" | "Medium Slow" | "Medium Fast" | "Fast";
 
+export type StatKey = "hp" | "atk" | "def" | "spa" | "spd" | "spe";
+/** A value per battle stat (IVs, EVs, …). */
+export type StatSpread = Record<StatKey, number>;
+
 export type Species = {
   id: number;
   name: string;
@@ -29,6 +33,10 @@ export type OwnedPoke = {
   /** Terastal type rolled once at creation from this mon's own types (single-typed
    *  mons get their sole type). Fixed for the mon's life; drives Tera activation. */
   teraType?: string;
+  /** Individual Values (0–31 per stat) rolled once at creation. */
+  ivs?: StatSpread;
+  /** Effort Values (0–252 per stat, 510 total) trained by party mons on exp gain. */
+  evs?: StatSpread;
 };
 
 /** A live temporary anomaly activation on one wild-combat mon. `formName` is the
