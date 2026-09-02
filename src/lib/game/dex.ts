@@ -242,4 +242,28 @@ export function artworkUrl(name: string): string {
   return staticSpriteUrl(name, false, false);
 }
 
+// Real National Dex number for species whose internal `id` (in pokedex.json)
+// was appended sequentially far past 1025 when this dex grew, so it no longer
+// matches PokeAPI's numbering. Needed to build a correct third-tier fallback.
+const NATIONAL_DEX_ID: Record<string, number> = {
+  Ogerpon: 1017,
+  "Ogerpon-Wellspring": 1017,
+  "Ogerpon-Hearthflame": 1017,
+  "Ogerpon-Cornerstone": 1017,
+  Terapagos: 1024,
+  "Terapagos-Terastal": 1024,
+  "Terapagos-Stellar": 1024,
+};
+
+/** Third-tier fallback, independently verified against a different host
+ *  (raw.githubusercontent.com, no hotlink restriction) in case Showdown's own
+ *  static folder fails to load for some environment-specific reason. Shows the
+ *  base form's artwork when the exact alternate form isn't separately modeled
+ *  there -- not pixel-perfect, but never a fully broken image. */
+export function ultimateFallbackUrl(name: string): string | null {
+  const nationalId = NATIONAL_DEX_ID[name];
+  if (!nationalId) return null;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${nationalId}.png`;
+}
+
 export const STARTERS = ["Bulbasaur", "Charmander", "Squirtle"] as const;

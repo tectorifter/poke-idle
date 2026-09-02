@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { spriteUrl, staticSpriteUrl } from "@/lib/game/dex";
+import { spriteUrl, staticSpriteUrl, ultimateFallbackUrl } from "@/lib/game/dex";
 import { cn } from "@/lib/utils";
 
 interface SpriteProps {
@@ -21,6 +21,7 @@ export function Sprite({
 }: SpriteProps) {
   const primaryUrl = spriteUrl(name, shiny, animated, isBack);
   const fallbackUrl = staticSpriteUrl(name, shiny, isBack);
+  const lastResortUrl = ultimateFallbackUrl(name);
 
   // Default to the primary URL (GIF if animated=true)
   const [imgSrc, setImgSrc] = useState(primaryUrl);
@@ -30,10 +31,17 @@ export function Sprite({
     setImgSrc(spriteUrl(name, shiny, animated, isBack));
   }, [name, shiny, animated, isBack]);
 
-  // When the browser hits a 404 on the GIF, fallback to static PNG
+  // Two-step fallback: animated/static Showdown fails -> try Showdown's static
+  // PNG -> if that ALSO fails (a handful of species, e.g. Ogerpon/Terapagos,
+  // have had trouble loading from Showdown specifically) -> a fully independent
+  // host (GitHub-hosted PokeAPI artwork) as a last resort.
   const handleError = () => {
-    if (imgSrc !== fallbackUrl) {
+    if (imgSrc === primaryUrl && imgSrc !== fallbackUrl) {
       setImgSrc(fallbackUrl);
+      return;
+    }
+    if (lastResortUrl && imgSrc !== lastResortUrl) {
+      setImgSrc(lastResortUrl);
     }
   };
 
