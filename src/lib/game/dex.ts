@@ -65,14 +65,14 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Zacian-Crowned": "zacian-crowned",
   "Zamazenta-Crowned": "zamazenta-crowned",
   "Eternatus-Eternamax": "eternatus-eternamax",
-  "Calyrex-Ice": "calyrex-icerider",
-  "Calyrex-Shadow": "calyrex-shadowrider",
+  "Calyrex-Ice": "calyrex-ice",
+  "Calyrex-Shadow": "calyrex-shadow",
   "Oinkologne-F": "oinkologne-f",
   "Gimmighoul-Roaming": "gimmighoul-roaming",
   "Palafin-Hero": "palafin-hero",
-  "Ogerpon-Wellspring": "ogerpon-wellspringmask",
-  "Ogerpon-Hearthflame": "ogerpon-hearthflamemask",
-  "Ogerpon-Cornerstone": "ogerpon-cornerstonemask",
+  "Ogerpon-Wellspring": "ogerpon-wellspring",
+  "Ogerpon-Hearthflame": "ogerpon-hearthflame",
+  "Ogerpon-Cornerstone": "ogerpon-cornerstone",
   "Terapagos-Terastal": "terapagos-terastal",
   "Terapagos-Stellar": "terapagos-stellar",
   "A-Rattata": "rattata-alola",
@@ -117,9 +117,59 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Raging Bolt": "ragingbolt",
   "Iron Boulder": "ironboulder",
   "Iron Crown": "ironcrown",
+
+  // Alternate-forme names that collide with reserved prefixes (M-/H-/A-/G-/P-)
+  // or whose Showdown slug doesn't match a plain lowercase strip of the name.
+  "B-Kyurem": "kyurem-black",
+  "W-Kyurem": "kyurem-white",
+  "Giratina-O": "giratina-origin",
+  "Shaymin-S": "shaymin-sky",
+  "Deoxys-A": "deoxys-attack",
+  "Deoxys-D": "deoxys-defense",
+  "Deoxys-S": "deoxys-speed",
+  "Tornadus-T": "tornadus-therian",
+  "Thundurus-T": "thundurus-therian",
+  "Landorus-T": "landorus-therian",
+  "Keldeo-R": "keldeo-resolute",
+  "Meloetta-P": "meloetta-pirouette",
+  "Darmanitan-Z": "darmanitan-zen",
+  "Aegislash-B": "aegislash-blade",
+  "Zygarde-10": "zygarde-10",
+  "Zygarde-C": "zygarde-complete",
+  "Hoopa-U": "hoopa-unbound",
+  "Lycanroc-M": "lycanroc-midnight",
+  "Wishiwashi-S": "wishiwashi-school",
+  "Ash-Greninja": "greninja-ash",
+  // Rotom's 5 appliance formes predate the M-/H- prefix conventions used
+  // elsewhere and collide with them (Mega, Hisuian) — explicit overrides needed.
+  "H-Rotom": "rotom-heat",
+  "W-Rotom": "rotom-wash",
+  "F-Rotom": "rotom-frost",
+  "Fan-Rotom": "rotom-fan",
+  "M-Rotom": "rotom-mow",
+  "Paldean Tauros-Combat": "tauros-paldeacombat",
+  "Paldean Tauros-Blaze": "tauros-paldeablaze",
+  "Paldean Tauros-Aqua": "tauros-paldeaaqua",
+
+  // Hisuian additions -- same hyphen-preserved pattern as the other compound names above.
+  "Basculin-White-Striped": "basculin-whitestriped",
+  "Enamorus-Therian": "enamorus-therian",
+  "Ursaluna-Bloodmoon": "ursaluna-bloodmoon",
+  "Basculegion-F": "basculegion-f",
 };
 
-const KNOWN_MISSING_GIFS = new Set<string>([]);
+const KNOWN_MISSING_GIFS = new Set<string>([
+  // Confirmed absent from /sprites/ani/ on Showdown as of this check -- only
+  // static 'home' renders exist for these. Add more here if the same turns up
+  // for other species; this is a manually-verified list, not a guess.
+  "Ogerpon",
+  "Ogerpon-Wellspring",
+  "Ogerpon-Hearthflame",
+  "Ogerpon-Cornerstone",
+  "Terapagos",
+  "Terapagos-Terastal",
+  "Terapagos-Stellar",
+]);
 
 export function showdownSlug(name: string): string {
   if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
@@ -165,7 +215,10 @@ export function isTeraSpriteName(name: string): boolean {
 export function staticSpriteUrl(name: string, shiny = false, _isBack = false): string {
   if (isTeraSpriteName(name)) return staticSpriteUrl(name.slice(5), shiny, _isBack);
 
-  const folder = shiny ? "gen5-shiny" : "gen5";
+  // 'home' is Showdown's actively-maintained modern static render set (covers
+  // through current gen, including Ogerpon/Terapagos); the older 'gen5' BW-style
+  // icon set predates most post-Gen5 content and was missing recent additions.
+  const folder = shiny ? "home-shiny" : "home";
   return `https://play.pokemonshowdown.com/sprites/${folder}/${showdownSlug(name)}.png`;
 }
 

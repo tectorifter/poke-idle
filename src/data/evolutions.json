@@ -741,6 +741,10 @@
     {
       "level": 45,
       "to": "Scizor"
+    },
+    {
+      "level": 42,
+      "to": "Kleavor"
     }
   ],
   "Scizor": [
@@ -765,6 +769,10 @@
     {
       "level": 30,
       "to": "Ursaring"
+    },
+    {
+      "level": 32,
+      "to": "Ursaluna"
     }
   ],
   "Slugma": [
@@ -3249,6 +3257,60 @@
     {
       "level": 1,
       "to": "Farigiraf"
+    }
+  ],
+  "Hisuian Growlithe": [
+    {
+      "level": 30,
+      "to": "Hisuian Arcanine"
+    }
+  ],
+  "Hisuian Voltorb": [
+    {
+      "level": 30,
+      "to": "Hisuian Electrode"
+    }
+  ],
+  "Hisuian Qwilfish": [
+    {
+      "level": 28,
+      "to": "Overqwil"
+    }
+  ],
+  "Hisuian Sneasel": [
+    {
+      "level": 40,
+      "to": "Sneasler"
+    }
+  ],
+  "Hisuian Zorua": [
+    {
+      "level": 24,
+      "to": "Hisuian Zoroark"
+    }
+  ],
+  "Basculin-White-Striped": [
+    {
+      "level": 40,
+      "to": "Basculegion"
+    }
+  ],
+  "Enamorus": [
+    {
+      "level": 1,
+      "to": "Enamorus-Therian"
+    }
+  ],
+  "Ursaluna": [
+    {
+      "level": 55,
+      "to": "Ursaluna-Bloodmoon"
+    }
+  ],
+  "Stantler": [
+    {
+      "level": 32,
+      "to": "Wyrdeer"
     }
   ]
 }

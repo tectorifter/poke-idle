@@ -1908,7 +1908,8 @@
         "Starly",
         "Bidoof",
         "Shinx",
-        "Kricketot"
+        "Kricketot",
+        "Hisuian Growlithe"
       ],
       "minLevel": 4,
       "maxLevel": 6,
@@ -1918,7 +1919,8 @@
       "name": "Oreburgh City",
       "pokes": [
         "Cranidos",
-        "Shieldon"
+        "Shieldon",
+        "Hisuian Lilligant"
       ],
       "minLevel": 16,
       "maxLevel": 16,
@@ -1929,7 +1931,8 @@
       "pokes": [
         "Geodude",
         "Zubat",
-        "Onix"
+        "Onix",
+        "Hisuian Voltorb"
       ],
       "minLevel": 5,
       "maxLevel": 9,
@@ -2002,7 +2005,8 @@
         "Gastrodon",
         "Shinx",
         "Luxio",
-        "Pachirisu"
+        "Pachirisu",
+        "Hisuian Typhlosion"
       ],
       "minLevel": 22,
       "maxLevel": 23,
@@ -2055,7 +2059,8 @@
       "name": "Wayward Cave",
       "pokes": [
         "Bronzor",
-        "Gible"
+        "Gible",
+        "Basculin-White-Striped"
       ],
       "minLevel": 12,
       "maxLevel": 16,
@@ -2111,7 +2116,8 @@
         "Mime Jr.",
         "Starly",
         "Staravia",
-        "Bonsly"
+        "Bonsly",
+        "Hisuian Qwilfish"
       ],
       "minLevel": 13,
       "maxLevel": 14,
@@ -2165,7 +2171,8 @@
       "name": "Route 211",
       "pokes": [
         "Chingling",
-        "Bronzor"
+        "Bronzor",
+        "Hisuian Samurott"
       ],
       "minLevel": 21,
       "maxLevel": 23,
@@ -2249,7 +2256,8 @@
       "name": "Route 214",
       "pokes": [
         "Stunky",
-        "Kricketune"
+        "Kricketune",
+        "Hisuian Zoroark"
       ],
       "minLevel": 17,
       "maxLevel": 19,
@@ -2331,7 +2339,8 @@
         "Steelix",
         "Smoochum",
         "Jynx",
-        "Sneasel"
+        "Sneasel",
+        "Hisuian Goodra"
       ],
       "minLevel": 36,
       "maxLevel": 42,
@@ -2365,7 +2374,8 @@
         "Tentacool",
         "Wingull",
         "Tentacruel",
-        "Pelipper"
+        "Pelipper",
+        "Hisuian Electrode"
       ],
       "minLevel": 16,
       "maxLevel": 31,
@@ -2390,7 +2400,8 @@
         "Stunky",
         "Skuntank",
         "Shellos",
-        "Gastrodon"
+        "Gastrodon",
+        "Hisuian Decidueye"
       ],
       "minLevel": 22,
       "maxLevel": 24,
@@ -2404,7 +2415,8 @@
         "Chatot",
         "Glameow",
         "Luxio",
-        "Purugly"
+        "Purugly",
+        "Hisuian Avalugg"
       ],
       "minLevel": 29,
       "maxLevel": 32,
@@ -2536,7 +2548,8 @@
         "Dugtrio",
         "Rhydon",
         "Diglett",
-        "Cacnea"
+        "Cacnea",
+        "Hisuian Sliggoo"
       ],
       "minLevel": 18,
       "maxLevel": 41,
@@ -2575,7 +2588,8 @@
         "Beautifly",
         "Gastrodon",
         "Dustox",
-        "Wingull"
+        "Wingull",
+        "Hisuian Sneasel"
       ],
       "minLevel": 14,
       "maxLevel": 39,
@@ -2643,7 +2657,8 @@
       "name": "Moon Island",
       "pokes": [
         "Cresselia",
-        "Darkrai"
+        "Darkrai",
+        "Enamorus"
       ],
       "minLevel": 38,
       "maxLevel": 38,
@@ -2652,7 +2667,8 @@
     "special101": {
       "name": "Flower Paradise",
       "pokes": [
-        "Shaymin"
+        "Shaymin",
+        "Hisuian Arcanine"
       ],
       "minLevel": 23,
       "maxLevel": 23,
@@ -2670,7 +2686,8 @@
     "water6": {
       "name": "Old Rod",
       "pokes": [
-        "Finneon"
+        "Finneon",
+        "Hisuian Zorua"
       ],
       "minLevel": 3,
       "maxLevel": 12,
@@ -2691,7 +2708,8 @@
       "pokes": [
         "Lumineon",
         "Mantyke",
-        "Floatzel"
+        "Floatzel",
+        "Hisuian Braviary"
       ],
       "minLevel": 16,
       "maxLevel": 42,

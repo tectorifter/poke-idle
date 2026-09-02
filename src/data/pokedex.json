@@ -564,7 +564,7 @@
     "types": [
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 70,
     "atk": 45,
@@ -629,7 +629,7 @@
       "Normal",
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 115,
     "atk": 45,
@@ -1024,7 +1024,7 @@
     "types": [
       "Psychic"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 25,
     "atk": 20,
@@ -1040,7 +1040,7 @@
     "types": [
       "Psychic"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 35,
@@ -1072,7 +1072,7 @@
     "types": [
       "Fighting"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 70,
     "atk": 80,
@@ -1605,7 +1605,7 @@
     "types": [
       "Water"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 105,
@@ -1897,7 +1897,7 @@
     "types": [
       "Water"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 40,
@@ -1929,7 +1929,7 @@
     "types": [
       "Water"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 67,
@@ -1961,7 +1961,7 @@
     "types": [
       "Water"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Slow",
     "hp": 30,
     "atk": 45,
@@ -2833,7 +2833,7 @@
     "types": [
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 50,
     "atk": 25,
@@ -2850,7 +2850,7 @@
       "Normal",
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 90,
     "atk": 30,
@@ -3295,7 +3295,7 @@
     "types": [
       "Psychic"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 48,
     "atk": 72,
@@ -3610,7 +3610,7 @@
       "Ice",
       "Ground"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Slow",
     "hp": 50,
     "atk": 50,
@@ -4533,7 +4533,7 @@
       "Normal",
       "Flying"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 40,
     "atk": 55,
@@ -4652,7 +4652,7 @@
       "Bug",
       "Water"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 40,
     "atk": 30,
@@ -4865,7 +4865,7 @@
     "types": [
       "Fighting"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 72,
     "atk": 60,
@@ -4881,7 +4881,7 @@
     "types": [
       "Fighting"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Fast",
     "hp": 144,
     "atk": 120,
@@ -4898,7 +4898,7 @@
       "Normal",
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 50,
     "atk": 20,
@@ -4997,7 +4997,7 @@
       "Steel",
       "Rock"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Slow",
     "hp": 50,
     "atk": 70,
@@ -5048,7 +5048,7 @@
       "Fighting",
       "Psychic"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 30,
     "atk": 40,
@@ -5113,7 +5113,7 @@
     "types": [
       "Electric"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 50,
@@ -5129,7 +5129,7 @@
     "types": [
       "Electric"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 40,
@@ -5145,7 +5145,7 @@
     "types": [
       "Bug"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Slow",
     "hp": 65,
     "atk": 73,
@@ -5161,7 +5161,7 @@
     "types": [
       "Bug"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 65,
     "atk": 47,
@@ -5178,7 +5178,7 @@
       "Grass",
       "Poison"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 60,
@@ -5194,7 +5194,7 @@
     "types": [
       "Poison"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Fast",
     "hp": 70,
     "atk": 43,
@@ -5227,7 +5227,7 @@
       "Water",
       "Dark"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Slow",
     "hp": 45,
     "atk": 90,
@@ -5310,7 +5310,7 @@
       "Fire",
       "Ground"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 100,
@@ -5607,7 +5607,7 @@
     "types": [
       "Water"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 43,
     "atk": 80,
@@ -5624,7 +5624,7 @@
       "Water",
       "Dark"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Fast",
     "hp": 63,
     "atk": 120,
@@ -5790,7 +5790,7 @@
     "types": [
       "Normal"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 60,
     "atk": 90,
@@ -5806,7 +5806,7 @@
     "types": [
       "Ghost"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Fast",
     "hp": 44,
     "atk": 75,
@@ -5871,7 +5871,7 @@
       "Grass",
       "Flying"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Slow",
     "hp": 99,
     "atk": 68,
@@ -6083,7 +6083,7 @@
     "types": [
       "Water"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Fast",
     "hp": 43,
     "atk": 30,
@@ -6859,7 +6859,7 @@
     "types": [
       "Electric"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 60,
     "atk": 45,
@@ -7136,7 +7136,7 @@
       "Poison",
       "Dark"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 63,
     "atk": 63,
@@ -7220,7 +7220,7 @@
       "Psychic",
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 20,
     "atk": 25,
@@ -7270,7 +7270,7 @@
       "Ghost",
       "Dark"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 92,
@@ -7386,7 +7386,7 @@
     "types": [
       "Ground"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Slow",
     "hp": 68,
     "atk": 72,
@@ -7453,7 +7453,7 @@
       "Poison",
       "Fighting"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 48,
     "atk": 61,
@@ -7486,7 +7486,7 @@
     "types": [
       "Grass"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Slow",
     "hp": 74,
     "atk": 100,
@@ -8745,7 +8745,7 @@
     "types": [
       "Fighting"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 75,
     "atk": 80,
@@ -9060,7 +9060,7 @@
       "Ground",
       "Dark"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 50,
     "atk": 72,
@@ -9193,7 +9193,7 @@
       "Dark",
       "Fighting"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 75,
@@ -9439,7 +9439,7 @@
     "types": [
       "Psychic"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 30,
@@ -9455,7 +9455,7 @@
     "types": [
       "Psychic"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 60,
     "atk": 45,
@@ -9487,7 +9487,7 @@
     "types": [
       "Psychic"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 30,
@@ -9503,7 +9503,7 @@
     "types": [
       "Psychic"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Slow",
     "hp": 65,
     "atk": 40,
@@ -9652,7 +9652,7 @@
       "Electric",
       "Flying"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 75,
@@ -9668,7 +9668,7 @@
     "types": [
       "Bug"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 75,
@@ -10128,7 +10128,7 @@
     "types": [
       "Bug"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 40,
@@ -10177,7 +10177,7 @@
     "types": [
       "Fighting"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Slow",
     "hp": 45,
     "atk": 85,
@@ -10979,7 +10979,7 @@
       "Fire",
       "Normal"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Slow",
     "hp": 62,
     "atk": 50,
@@ -11012,7 +11012,7 @@
     "types": [
       "Fairy"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 44,
     "atk": 38,
@@ -11060,7 +11060,7 @@
     "types": [
       "Grass"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 66,
     "atk": 65,
@@ -11092,7 +11092,7 @@
     "types": [
       "Fighting"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 67,
     "atk": 82,
@@ -11125,7 +11125,7 @@
     "types": [
       "Normal"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 75,
     "atk": 80,
@@ -11174,7 +11174,7 @@
       "Steel",
       "Ghost"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 45,
     "atk": 80,
@@ -11224,7 +11224,7 @@
     "types": [
       "Fairy"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 78,
     "atk": 52,
@@ -11240,7 +11240,7 @@
     "types": [
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 101,
     "atk": 72,
@@ -11256,7 +11256,7 @@
     "types": [
       "Fairy"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 62,
     "atk": 48,
@@ -11272,7 +11272,7 @@
     "types": [
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 82,
     "atk": 80,
@@ -11357,7 +11357,7 @@
       "Poison",
       "Water"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 50,
     "atk": 60,
@@ -11390,7 +11390,7 @@
     "types": [
       "Water"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Slow",
     "hp": 50,
     "atk": 53,
@@ -11541,7 +11541,7 @@
       "Fighting",
       "Flying"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 78,
     "atk": 92,
@@ -11558,7 +11558,7 @@
       "Electric",
       "Fairy"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 67,
     "atk": 58,
@@ -12173,7 +12173,7 @@
     "types": [
       "Fighting"
     ],
-  "catch": 80,
+    "catch": 80,
     "growth": "Medium Fast",
     "hp": 47,
     "atk": 82,
@@ -12372,7 +12372,7 @@
       "Water",
       "Bug"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 38,
     "atk": 40,
@@ -12389,7 +12389,7 @@
       "Water",
       "Bug"
     ],
-  "catch": 70,
+    "catch": 70,
     "growth": "Medium Fast",
     "hp": 68,
     "atk": 70,
@@ -12506,7 +12506,7 @@
       "Normal",
       "Fighting"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 75,
@@ -12671,7 +12671,7 @@
       "Ghost",
       "Ground"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 55,
     "atk": 55,
@@ -12803,7 +12803,7 @@
       "Electric",
       "Steel"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 65,
     "atk": 98,
@@ -13979,7 +13979,7 @@
       "Fire",
       "Ground"
     ],
-  "catch": 60,
+    "catch": 60,
     "growth": "Medium Fast",
     "hp": 70,
     "atk": 120,
@@ -21237,5 +21237,463 @@
     "spe": 88,
     "exp": 372,
     "teraType": "Poison"
+  },
+  {
+    "id": 1277,
+    "name": "Hisuian Growlithe",
+    "types": [
+      "Fire",
+      "Rock"
+    ],
+    "catch": 75,
+    "growth": "Medium Fast",
+    "hp": 60,
+    "atk": 75,
+    "def": 45,
+    "spa": 65,
+    "spd": 50,
+    "spe": 55,
+    "exp": 217
+  },
+  {
+    "id": 1278,
+    "name": "Hisuian Arcanine",
+    "types": [
+      "Fire",
+      "Rock"
+    ],
+    "catch": 40,
+    "growth": "Medium Fast",
+    "hp": 90,
+    "atk": 110,
+    "def": 80,
+    "spa": 100,
+    "spd": 80,
+    "spe": 95,
+    "exp": 344
+  },
+  {
+    "id": 1279,
+    "name": "Hisuian Voltorb",
+    "types": [
+      "Electric",
+      "Grass"
+    ],
+    "catch": 70,
+    "growth": "Medium Fast",
+    "hp": 40,
+    "atk": 30,
+    "def": 50,
+    "spa": 55,
+    "spd": 55,
+    "spe": 100,
+    "exp": 205
+  },
+  {
+    "id": 1280,
+    "name": "Hisuian Electrode",
+    "types": [
+      "Electric",
+      "Grass"
+    ],
+    "catch": 35,
+    "growth": "Medium Fast",
+    "hp": 60,
+    "atk": 50,
+    "def": 70,
+    "spa": 80,
+    "spd": 80,
+    "spe": 150,
+    "exp": 304
+  },
+  {
+    "id": 1281,
+    "name": "Hisuian Typhlosion",
+    "types": [
+      "Fire",
+      "Ghost"
+    ],
+    "catch": 30,
+    "growth": "Medium Fast",
+    "hp": 73,
+    "atk": 84,
+    "def": 78,
+    "spa": 119,
+    "spd": 85,
+    "spe": 111,
+    "exp": 341
+  },
+  {
+    "id": 1282,
+    "name": "Hisuian Qwilfish",
+    "types": [
+      "Dark",
+      "Poison"
+    ],
+    "catch": 55,
+    "growth": "Medium Fast",
+    "hp": 65,
+    "atk": 95,
+    "def": 75,
+    "spa": 55,
+    "spd": 55,
+    "spe": 85,
+    "exp": 267
+  },
+  {
+    "id": 1283,
+    "name": "Hisuian Sneasel",
+    "types": [
+      "Fighting",
+      "Poison"
+    ],
+    "catch": 50,
+    "growth": "Medium Slow",
+    "hp": 55,
+    "atk": 95,
+    "def": 55,
+    "spa": 35,
+    "spd": 75,
+    "spe": 115,
+    "exp": 267
+  },
+  {
+    "id": 1284,
+    "name": "Hisuian Braviary",
+    "types": [
+      "Psychic",
+      "Flying"
+    ],
+    "catch": 32,
+    "growth": "Medium Fast",
+    "hp": 110,
+    "atk": 83,
+    "def": 70,
+    "spa": 112,
+    "spd": 70,
+    "spe": 110,
+    "exp": 344
+  },
+  {
+    "id": 1285,
+    "name": "Hisuian Sliggoo",
+    "types": [
+      "Steel",
+      "Dragon"
+    ],
+    "catch": 55,
+    "growth": "Slow",
+    "hp": 58,
+    "atk": 75,
+    "def": 83,
+    "spa": 83,
+    "spd": 113,
+    "spe": 60,
+    "exp": 293
+  },
+  {
+    "id": 1286,
+    "name": "Hisuian Goodra",
+    "types": [
+      "Steel",
+      "Dragon"
+    ],
+    "catch": 22,
+    "growth": "Slow",
+    "hp": 80,
+    "atk": 100,
+    "def": 100,
+    "spa": 110,
+    "spd": 150,
+    "spe": 80,
+    "exp": 384
+  },
+  {
+    "id": 1287,
+    "name": "Hisuian Avalugg",
+    "types": [
+      "Ice",
+      "Rock"
+    ],
+    "catch": 28,
+    "growth": "Slow",
+    "hp": 95,
+    "atk": 113,
+    "def": 123,
+    "spa": 65,
+    "spd": 70,
+    "spe": 54,
+    "exp": 322
+  },
+  {
+    "id": 1288,
+    "name": "Hisuian Decidueye",
+    "types": [
+      "Grass",
+      "Fighting"
+    ],
+    "catch": 30,
+    "growth": "Medium Slow",
+    "hp": 78,
+    "atk": 107,
+    "def": 75,
+    "spa": 100,
+    "spd": 100,
+    "spe": 70,
+    "exp": 329
+  },
+  {
+    "id": 1289,
+    "name": "Hisuian Samurott",
+    "types": [
+      "Water",
+      "Dark"
+    ],
+    "catch": 30,
+    "growth": "Medium Slow",
+    "hp": 90,
+    "atk": 108,
+    "def": 80,
+    "spa": 100,
+    "spd": 65,
+    "spe": 85,
+    "exp": 327
+  },
+  {
+    "id": 1290,
+    "name": "Hisuian Lilligant",
+    "types": [
+      "Grass",
+      "Fighting"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 70,
+    "atk": 105,
+    "def": 75,
+    "spa": 50,
+    "spd": 75,
+    "spe": 105,
+    "exp": 298
+  },
+  {
+    "id": 1291,
+    "name": "Hisuian Zorua",
+    "types": [
+      "Normal",
+      "Ghost"
+    ],
+    "catch": 65,
+    "growth": "Medium Fast",
+    "hp": 35,
+    "atk": 60,
+    "def": 40,
+    "spa": 65,
+    "spd": 40,
+    "spe": 70,
+    "exp": 192
+  },
+  {
+    "id": 1292,
+    "name": "Hisuian Zoroark",
+    "types": [
+      "Normal",
+      "Ghost"
+    ],
+    "catch": 32,
+    "growth": "Medium Fast",
+    "hp": 60,
+    "atk": 105,
+    "def": 60,
+    "spa": 105,
+    "spd": 60,
+    "spe": 105,
+    "exp": 307
+  },
+  {
+    "id": 1293,
+    "name": "Basculin-White-Striped",
+    "types": [
+      "Water"
+    ],
+    "catch": 60,
+    "growth": "Medium Fast",
+    "hp": 70,
+    "atk": 92,
+    "def": 65,
+    "spa": 80,
+    "spd": 55,
+    "spe": 98,
+    "exp": 285
+  },
+  {
+    "id": 1294,
+    "name": "Enamorus",
+    "types": [
+      "Fairy",
+      "Flying"
+    ],
+    "catch": 14,
+    "growth": "Slow",
+    "hp": 74,
+    "atk": 115,
+    "def": 70,
+    "spa": 135,
+    "spd": 80,
+    "spe": 106,
+    "exp": 360
+  },
+  {
+    "id": 1295,
+    "name": "Enamorus-Therian",
+    "types": [
+      "Fairy",
+      "Flying"
+    ],
+    "catch": 12,
+    "growth": "Slow",
+    "hp": 74,
+    "atk": 115,
+    "def": 90,
+    "spa": 135,
+    "spd": 80,
+    "spe": 106,
+    "exp": 372
+  },
+  {
+    "id": 1296,
+    "name": "Wyrdeer",
+    "types": [
+      "Normal",
+      "Psychic"
+    ],
+    "catch": 28,
+    "growth": "Slow",
+    "hp": 103,
+    "atk": 105,
+    "def": 72,
+    "spa": 105,
+    "spd": 75,
+    "spe": 65,
+    "exp": 326
+  },
+  {
+    "id": 1297,
+    "name": "Kleavor",
+    "types": [
+      "Bug",
+      "Rock"
+    ],
+    "catch": 26,
+    "growth": "Slow",
+    "hp": 70,
+    "atk": 135,
+    "def": 95,
+    "spa": 45,
+    "spd": 70,
+    "spe": 85,
+    "exp": 310
+  },
+  {
+    "id": 1298,
+    "name": "Ursaluna",
+    "types": [
+      "Ground",
+      "Normal"
+    ],
+    "catch": 24,
+    "growth": "Slow",
+    "hp": 130,
+    "atk": 140,
+    "def": 105,
+    "spa": 45,
+    "spd": 80,
+    "spe": 50,
+    "exp": 341
+  },
+  {
+    "id": 1299,
+    "name": "Ursaluna-Bloodmoon",
+    "types": [
+      "Ground",
+      "Normal"
+    ],
+    "catch": 20,
+    "growth": "Slow",
+    "hp": 113,
+    "atk": 70,
+    "def": 120,
+    "spa": 135,
+    "spd": 65,
+    "spe": 52,
+    "exp": 344
+  },
+  {
+    "id": 1300,
+    "name": "Basculegion",
+    "types": [
+      "Water",
+      "Ghost"
+    ],
+    "catch": 25,
+    "growth": "Slow",
+    "hp": 120,
+    "atk": 112,
+    "def": 65,
+    "spa": 80,
+    "spd": 75,
+    "spe": 78,
+    "exp": 329
+  },
+  {
+    "id": 1301,
+    "name": "Basculegion-F",
+    "types": [
+      "Water",
+      "Ghost"
+    ],
+    "catch": 25,
+    "growth": "Slow",
+    "hp": 120,
+    "atk": 92,
+    "def": 65,
+    "spa": 100,
+    "spd": 75,
+    "spe": 78,
+    "exp": 329
+  },
+  {
+    "id": 1302,
+    "name": "Sneasler",
+    "types": [
+      "Fighting",
+      "Poison"
+    ],
+    "catch": 25,
+    "growth": "Medium Slow",
+    "hp": 80,
+    "atk": 130,
+    "def": 60,
+    "spa": 40,
+    "spd": 80,
+    "spe": 120,
+    "exp": 316
+  },
+  {
+    "id": 1303,
+    "name": "Overqwil",
+    "types": [
+      "Dark",
+      "Poison"
+    ],
+    "catch": 30,
+    "growth": "Medium Fast",
+    "hp": 85,
+    "atk": 115,
+    "def": 95,
+    "spa": 65,
+    "spd": 65,
+    "spe": 85,
+    "exp": 316
   }
 ]
