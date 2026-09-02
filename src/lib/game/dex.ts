@@ -143,6 +143,7 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Zygarde-C": "zygarde-complete",
   "Hoopa-U": "hoopa-unbound",
   "Lycanroc-M": "lycanroc-midnight",
+  "Lycanroc-Dusk": "lycanroc-dusk",
   "Wishiwashi-S": "wishiwashi-school",
   "Ash-Greninja": "greninja-ash",
   // Rotom's 5 appliance formes predate the M-/H- prefix conventions used

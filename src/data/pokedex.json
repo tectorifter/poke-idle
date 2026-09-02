@@ -21695,5 +21695,21 @@
     "spd": 65,
     "spe": 85,
     "exp": 316
+  },
+  {
+    "id": 1304,
+    "name": "Lycanroc-Dusk",
+    "types": [
+      "Rock"
+    ],
+    "catch": 90,
+    "growth": "Medium Fast",
+    "hp": 75,
+    "atk": 117,
+    "def": 65,
+    "spa": 55,
+    "spd": 65,
+    "spe": 110,
+    "exp": 170
   }
 ]

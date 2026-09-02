@@ -2801,12 +2801,30 @@
     {
       "level": 25,
       "to": "Lycanroc-M"
+    },
+    {
+      "level": 25,
+      "to": "Lycanroc-Dusk"
     }
   ],
   "Lycanroc-M": [
     {
       "level": 25,
       "to": "Lycanroc"
+    },
+    {
+      "level": 25,
+      "to": "Lycanroc-Dusk"
+    }
+  ],
+  "Lycanroc-Dusk": [
+    {
+      "level": 25,
+      "to": "Lycanroc"
+    },
+    {
+      "level": 25,
+      "to": "Lycanroc-M"
     }
   ],
   "Grookey": [
