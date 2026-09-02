@@ -4,7 +4,7 @@ import {
   autoTapMsFromLevel,
   catchUpgradeCost,
   ballChargeCost,
-  catchMultiplier,
+  ballBonus,
   BALL_META,
   CATCH_TIER_ORDER,
   tierIndex,
@@ -45,7 +45,7 @@ export function StoreView() {
   const catchMaxed = catchTier === "timerball" && catchLevel >= 10;
   const curBall = BALL_META[catchTier].label;
 
-  const mult = catchMultiplier(catchTier, catchLevel);
+  const bonus = ballBonus(catchTier, catchLevel);
   const canPrestige = team.some((p) => levelOf(p) >= 100);
 
   return (
@@ -95,11 +95,12 @@ export function StoreView() {
           {curBall} Lv.{catchLevel}
         </p>
         <p className="text-xs text-muted">
-          Auto-catch multiplier ×{mult.toFixed(1)}
+          Ball bonus ×{bonus.toFixed(2)} (real catch-rate formula)
           {catchTier !== "timerball" && " · reach Lv.10 to unlock the next ball type"}
         </p>
         <p className="mt-1 text-xs text-muted">
-          Auto-catch is free &amp; always on. Manual throws use a purchased ball and are 10% better.
+          Auto-catch is free &amp; always on (target fainted). Manual throws spend a purchased ball
+          but use the target's live HP + a ×1.5 aim bonus.
         </p>
 
         {/* Catch mode toggle */}
@@ -135,7 +136,7 @@ export function StoreView() {
               : "bg-accent text-accent-fg",
           )}
         >
-          {catchMaxed ? "Maxed (×20)" : `Upgrade · ¥ ${catchCost.toLocaleString()}`}
+          {catchMaxed ? "Maxed (×4)" : `Upgrade · ¥ ${catchCost.toLocaleString()}`}
         </button>
       </section>
 

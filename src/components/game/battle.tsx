@@ -16,6 +16,7 @@ import {
   tierIndex,
 } from "@/lib/game/formulas";
 import { chosenMoves } from "@/lib/game/learnsets";
+import { toMaxMove, toGMaxMove } from "@/lib/game/moves";
 import type { MoveData } from "@/lib/game/moves";
 import type { OwnedPoke } from "@/lib/game/types";
 import { ROUTES, useGame, uniqueCaught } from "@/lib/game/store";
@@ -186,10 +187,16 @@ const CATEGORY_ICON: Record<MoveData["category"], typeof Swords> = {
   Status: Shield,
 };
 
-/** The active mon's four move slots — its best learnable moves for now; the
- *  move editor (next phase) will let the player choose. */
-function movesFor(mon: OwnedPoke | undefined): (MoveData | null)[] {
-  const picked = mon ? chosenMoves(mon, levelOf(mon)) : [];
+/** The active mon's four move slots. While Dynamaxed / Gigantamaxed the slots
+ *  show the Max / G-Max versions (correct Max-move base power). */
+function movesFor(
+  mon: OwnedPoke | undefined,
+  dyna: { formName: string | null } | null,
+): (MoveData | null)[] {
+  let picked = mon ? chosenMoves(mon, levelOf(mon)) : [];
+  if (dyna) {
+    picked = picked.map((m) => (dyna.formName ? toGMaxMove(m, dyna.formName) : toMaxMove(m)));
+  }
   return [0, 1, 2, 3].map((i) => picked[i] ?? null);
 }
 
@@ -237,7 +244,13 @@ function MoveButton({
 function MoveGrid() {
   const team = useGame((s) => s.team);
   const active = useGame((s) => s.active);
-  const moves = movesFor(team[active]);
+  const wildActivations = useGame((s) => s.wildActivations);
+  const mon = team[active];
+  const dyna =
+    mon && wildActivations.dynamax?.uid === mon.uid
+      ? { formName: wildActivations.dynamax.formName }
+      : null;
+  const moves = movesFor(mon, dyna);
   // HOOK: which slot is the "selected" move to use in battle.
   const [selected, setSelected] = useState(0);
   return (

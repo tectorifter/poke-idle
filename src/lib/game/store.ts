@@ -9,6 +9,7 @@ import {
   GMAX_FORMS,
   isRouteUnlocked,
   isPermanentAnomalyCatch,
+  isAnomalyFormName,
   baseSpeciesOf,
   megaFormsFor,
   gmaxFormFor,
@@ -17,14 +18,14 @@ import {
 } from "./dex";
 import type { AnomalyKind } from "./dex";
 import { rollNature, NATURE_NAMES } from "./natures";
-import { learnableMoveNames } from "./learnsets";
+import { learnableMoveNames, moveAcquisitionCost, chosenMoves } from "./learnsets";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
 import {
   attackDamage,
   BENCH_EXP_SHARE,
   STORAGE_EXP_SHARE,
-  catchChancePercentPermanent,
+  catchChance,
   combatStats,
   expAtLevel,
   expReward,
@@ -54,7 +55,6 @@ import {
   ballChargeCost,
   BALL_META,
   CATCH_TIER_ORDER,
-  manualCatchChance,
   tierIndex,
   pokeyenReward,
   uniqueCaughtBonus,
@@ -176,6 +176,15 @@ function pruneActivations(wa: WildForms, team: OwnedPoke[]): WildForms {
   return out;
 }
 
+/** Rayquaza Mega-Evolves by knowing Dragon Ascent — never via the Mega button.
+ *  It still uses the normal Mega duration / recharge; this just auto-fills the slot. */
+export function rayquazaAutoMega(mon: OwnedPoke | undefined, dex: Record<string, DexFlag>): boolean {
+  if (!mon || baseSpeciesOf(mon.name) !== "Rayquaza") return false;
+  if (!megaFormsFor(dex, "Rayquaza").includes("M-Rayquaza")) return false;
+  const names = mon.moves?.length ? mon.moves : chosenMoves(mon, levelOf(mon)).map((m) => m.name);
+  return names.includes("Dragon Ascent");
+}
+
 /** Effective attacker for a wild-combat mon: swaps to the Mega / G-Max species
  *  and reports the form kind + tera type for the damage formula. */
 function wildEffective(
@@ -288,12 +297,9 @@ type GameActions = {
   /** Prestige the player (global). Requires at least one mon at Lv.100. */
   prestigePlayer: () => void;
   evolve: (uid: string, to: string) => void;
-  /** Apply an IV / EV / nature / move edit to a party mon. ¥2000 per changed
-   *  category among IV/EV/nature; moves are free. Returns false if unaffordable. */
-  modifyPoke: (
-    uid: string,
-    draft: { ivs: StatSpread; evs: StatSpread; nature: Nature; moves: string[] },
-  ) => boolean;
+  /** Apply an IV / EV / nature / move edit to a party mon (see modifyPokeCost).
+   *  Returns false if unaffordable. */
+  modifyPoke: (uid: string, draft: PokeDraft) => boolean;
   moveToStorage: (uid: string) => void;
   moveToTeam: (uid: string) => void;
   release: (uid: string, from: "team" | "storage") => void;
@@ -452,14 +458,20 @@ function hydrate(): GameState {
     ? (savedBall as CatchTier)
     : undefined;
 
-  // Backfill per-instance fields on saves that predate them (teraType, IVs, EVs).
-  const withMeta = (p: OwnedPoke): OwnedPoke => ({
-    ...p,
-    teraType: p.teraType ?? rollTeraType(p.name),
-    ivs: p.ivs ?? rollIVs(),
-    evs: p.evs ?? zeroEVs(),
-    nature: p.nature ?? rollNature(),
-  });
+  // Backfill per-instance fields on saves that predate them, and hard-revert any
+  // mon stuck in a temporary-activation form (Mega / Primal / Tera / Dynamax /
+  // Gigantamax) back to its base species — those must never be permanent.
+  const withMeta = (p: OwnedPoke): OwnedPoke => {
+    const name = isAnomalyFormName(p.name) ? baseSpeciesOf(p.name) : p.name;
+    return {
+      ...p,
+      name,
+      teraType: p.teraType ?? rollTeraType(name),
+      ivs: p.ivs ?? rollIVs(),
+      evs: p.evs ?? zeroEVs(),
+      nature: p.nature ?? rollNature(),
+    };
+  };
   const team = (saved.team ?? []).map((raw) => {
     const p = withMeta(raw);
     return { ...p, hp: Math.min(p.hp, combatStats(p).maxHp) };
@@ -508,6 +520,46 @@ function hydrate(): GameState {
     else state.stats.seen += 1;
   }
   return state;
+}
+
+// ─── Party-mon editor: draft sanitising + cost ───────────────────────────────
+const MOD_CATEGORY_COST = 2000; // per changed category (IV / EV / nature)
+const STAT_MOD_COST = 500; // per individual stat changed within IV or EV
+
+export type PokeDraft = { ivs: StatSpread; evs: StatSpread; nature: Nature; moves: string[] };
+
+const zeroSpread = (): StatSpread => ({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 });
+
+/** Clamp a raw editor draft to the mon's limits and learnable pool. */
+export function sanitizeDraft(poke: OwnedPoke, level: number, draft: PokeDraft): PokeDraft {
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.floor(v || 0)));
+  const ivs = zeroSpread();
+  for (const k of STAT_KEYS) ivs[k] = clamp(draft.ivs?.[k] ?? 0, 0, IV_MAX);
+  const evs = zeroSpread();
+  let left = EV_MAX_TOTAL;
+  for (const k of STAT_KEYS) {
+    const want = clamp(draft.evs?.[k] ?? 0, 0, EV_MAX_PER_STAT);
+    evs[k] = Math.min(want, left);
+    left -= evs[k];
+  }
+  const nature: Nature = NATURE_NAMES.includes(draft.nature) ? draft.nature : poke.nature ?? "Hardy";
+  const learnable = new Set(learnableMoveNames(poke.name, level));
+  const moves = [...new Set(draft.moves ?? [])].filter((n) => learnable.has(n)).slice(0, 4);
+  return { ivs, evs, nature, moves };
+}
+
+/** ¥ cost of applying a (sanitized) draft: ¥2000 + ¥500/stat per changed IV or
+ *  EV category, ¥2000 per nature change, plus TM/tutor cost for newly-added moves. */
+export function modifyPokeCost(poke: OwnedPoke, level: number, d: PokeDraft): number {
+  const ivDiff = STAT_KEYS.filter((k) => (poke.ivs?.[k] ?? 0) !== d.ivs[k]).length;
+  const evDiff = STAT_KEYS.filter((k) => (poke.evs?.[k] ?? 0) !== d.evs[k]).length;
+  let cost = 0;
+  if (ivDiff > 0) cost += MOD_CATEGORY_COST + STAT_MOD_COST * ivDiff;
+  if (evDiff > 0) cost += MOD_CATEGORY_COST + STAT_MOD_COST * evDiff;
+  if ((poke.nature ?? d.nature) !== d.nature) cost += MOD_CATEGORY_COST;
+  const curMoves = poke.moves?.length ? poke.moves : chosenMoves(poke, level).map((m) => m.name);
+  for (const n of d.moves) if (!curMoves.includes(n)) cost += moveAcquisitionCost(poke.name, level, n);
+  return cost;
 }
 
 export const useGame = create<GameState & GameActions>((set, get) => ({
@@ -655,6 +707,23 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       dirty = true;
     }
 
+    // Rayquaza auto-Mega-Evolves when it knows Dragon Ascent — same slot, same
+    // duration/recharge as a button activation, it just triggers itself.
+    if (
+      enemy.hp > 0 &&
+      !wildActivations.mega &&
+      wildRecharge.mega === 0 &&
+      !ANOMALY_KINDS.some((k) => wildActivations[k]?.uid === team[activeIndex]?.uid) &&
+      rayquazaAutoMega(team[activeIndex], dex)
+    ) {
+      wildActivations = {
+        ...wildActivations,
+        mega: { uid: team[activeIndex].uid, formName: "M-Rayquaza", defeatsLeft: WILD_FORM_DEFEATS },
+      };
+      log = pushLog(log, `${team[activeIndex].name} Mega Evolved into Rayquaza via Dragon Ascent!`, "level");
+      dirty = true;
+    }
+
     const playerAtk = () => {
       const atkPoke = team[activeIndex];
       if (!atkPoke || playerHp <= 0 || enemy.hp <= 0) return;
@@ -731,12 +800,9 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
       if (wantCatch) {
         const spec = speciesByName(fallen.name);
-        const chance = catchChancePercentPermanent(
-          spec?.catch ?? 45,
-          s.catchTier,
-          s.catchLevel,
-        );
-        if (Math.random() * 100 < chance) {
+        // Auto-catch: treated as a full-HP target, current-tier ball, no aim bonus.
+        const chance = catchChance(spec?.catch ?? 45, s.catchTier, s.catchTier, s.catchLevel, 1, false);
+        if (Math.random() < chance) {
           // Anomaly forms register their Dex flag (that flag is the activation
           // unlock) but hand you the base species — except the permanent catches
           // (Ultra Space, Ogerpon, Terapagos) which come as themselves.
@@ -1092,6 +1158,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let formName: string | null = null;
     let verb: string;
     if (kind === "mega") {
+      // Rayquaza Mega-Evolves by knowing Dragon Ascent, never via this button.
+      if (baseSpeciesOf(mon.name) === "Rayquaza") return;
       const owned = megaFormsFor(s.dex, mon.name);
       if (!owned.length) return;
       formName = formChoice && owned.includes(formChoice) ? formChoice : owned[0];
@@ -1134,10 +1202,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const ballCharges = { ...s.ballCharges, [ball]: s.ballCharges[ball] - 1 };
 
     const spec = speciesByName(e.name);
-    // Chosen ball, 10% better than the equivalent auto-catch.
-    const chance = manualCatchChance(spec?.catch ?? 45, ball, s.catchTier, s.catchLevel);
+    // Manual: real formula with the enemy's live HP fraction + aim bonus.
+    const eMax = combatStats(e).maxHp;
+    const hpFrac = eMax > 0 ? e.hp / eMax : 0;
+    const chance = catchChance(spec?.catch ?? 45, ball, s.catchTier, s.catchLevel, hpFrac, true);
 
-    if (Math.random() * 100 >= chance) {
+    if (Math.random() >= chance) {
       set({
         ballCharges,
         log: pushLog(
@@ -1185,6 +1255,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   evolve: (uid, to) => {
     const s = get();
+    // Mega / Primal / Tera / Dynamax / Gigantamax are activations, not evolutions.
+    if (isAnomalyFormName(to)) return;
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
     const apply = (list: OwnedPoke[]) =>
       list.map((p) => {
@@ -1211,40 +1283,24 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     persist({ ...get() });
   },
 
-  modifyPoke: (uid, draft) => {
+  modifyPoke: (uid, rawDraft) => {
     const s = get();
     const idx = s.team.findIndex((p) => p.uid === uid); // party mons only
     if (idx < 0) return false;
     const cur = s.team[idx];
-    const MOD_COST = 2000;
-
-    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.floor(v || 0)));
-    const ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as StatSpread;
-    for (const k of STAT_KEYS) ivs[k] = clamp(draft.ivs?.[k] ?? 0, 0, IV_MAX);
-
-    const evs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as StatSpread;
-    let evLeft = EV_MAX_TOTAL;
-    for (const k of STAT_KEYS) {
-      const want = clamp(draft.evs?.[k] ?? 0, 0, EV_MAX_PER_STAT);
-      evs[k] = Math.min(want, evLeft);
-      evLeft -= evs[k];
-    }
-
-    const nature: Nature = NATURE_NAMES.includes(draft.nature) ? draft.nature : cur.nature ?? "Hardy";
-
-    const learnable = new Set(learnableMoveNames(cur.name, levelOf(cur)));
-    const moves = [...new Set(draft.moves ?? [])].filter((n) => learnable.has(n)).slice(0, 4);
-
-    const spreadEq = (a: StatSpread | undefined, b: StatSpread) =>
-      STAT_KEYS.every((k) => (a?.[k] ?? 0) === b[k]);
-    let cost = 0;
-    if (!spreadEq(cur.ivs, ivs)) cost += MOD_COST;
-    if (!spreadEq(cur.evs, evs)) cost += MOD_COST;
-    if ((cur.nature ?? nature) !== nature) cost += MOD_COST;
+    const lvl = levelOf(cur);
+    const d = sanitizeDraft(cur, lvl, rawDraft);
+    const cost = modifyPokeCost(cur, lvl, d);
     if (cost > s.pokeyen) return false;
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
-    const next: OwnedPoke = { ...cur, ivs, evs, nature, moves: moves.length ? moves : undefined };
+    const next: OwnedPoke = {
+      ...cur,
+      ivs: d.ivs,
+      evs: d.evs,
+      nature: d.nature,
+      moves: d.moves.length ? d.moves : undefined,
+    };
     next.hp = Math.min(
       cur.hp,
       combatStats(next, { isPlayer: true, playerPrestige: s.playerPrestige, uniqueBonus }).maxHp,
@@ -1255,7 +1311,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       pokeyen: s.pokeyen - cost,
       log: pushLog(
         s.log,
-        cost > 0 ? `${cur.name} retrained (−¥${cost.toLocaleString()}).` : `${cur.name} moves updated.`,
+        cost > 0 ? `${cur.name} retrained (−¥${cost.toLocaleString()}).` : `${cur.name} updated.`,
         "system",
       ),
     });

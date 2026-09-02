@@ -1,6 +1,6 @@
 import learnsetsData from "@/data/learnsets.json";
 import { baseSpeciesOf, speciesByName } from "./dex";
-import { MOVES, MOVE_BY_ID, fallbackTypeMove } from "./moves";
+import { MOVES, MOVE_BY_ID, moveId, fallbackTypeMove } from "./moves";
 import type { MoveData } from "./moves";
 import type { OwnedPoke } from "./types";
 
@@ -82,4 +82,16 @@ export function chosenMove(poke: OwnedPoke, level: number): MoveData {
 /** All learnable move names (level-up + Lv.100 TM/egg/tutor), for the editor. */
 export function learnableMoveNames(speciesName: string, level: number): string[] {
   return learnableMoves(speciesName, level).map((m) => m.name).filter((n) => MOVES[n]);
+}
+
+/** ¥ to newly teach a move: free by level-up (≤ current level) or egg; TM / tutor
+ *  moves cost by power — 1000 (<50), 2000 (<100), 3000 (≥100). */
+export function moveAcquisitionCost(speciesName: string, level: number, moveName: string): number {
+  const ls = rawLearnset(speciesName);
+  if (!ls) return 0;
+  const id = moveId(moveName);
+  if (ls.level.some(([mid, lvl]) => mid === id && lvl <= level)) return 0;
+  if (!(ls.machine.includes(id) || ls.tutor.includes(id))) return 0;
+  const p = MOVES[moveName]?.power ?? 0;
+  return p >= 100 ? 3000 : p >= 50 ? 2000 : 1000;
 }

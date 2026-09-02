@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { combatStats, attackDamage, HEAL_COOLDOWN_MS, LEAGUE_DYNAMAX_MS } from "./formulas";
 import type { FormKind } from "./formulas";
 import {
+  baseSpeciesOf,
   megaFormsFor,
   gmaxFormFor,
   dynamaxUnlocked,
@@ -20,7 +21,7 @@ import {
   trainerOf,
   winStage,
 } from "./league";
-import { useGame } from "./store";
+import { rayquazaAutoMega, useGame } from "./store";
 import type { LeagueProgress, OwnedPoke, TrainerDef } from "./types";
 
 const SAVE_KEY = "pokeidle-league-v1";
@@ -287,6 +288,8 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     const next: LeagueForms = { ...lf };
     let line: string;
     if (kind === "mega") {
+      // Rayquaza Mega-Evolves via a known Dragon Ascent, not this button.
+      if (baseSpeciesOf(mon.name) === "Rayquaza") return;
       const owned = megaFormsFor(gs.dex, mon.name);
       if (!owned.length) return;
       const formName = formChoice && owned.includes(formChoice) ? formChoice : owned[0];
@@ -364,6 +367,23 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     }
 
     let player = team[activeIndex];
+
+    // Rayquaza auto-Mega-Evolves in a league fight when it knows Dragon Ascent —
+    // consumes the one-per-fight Mega slot, same as a button activation would.
+    let formsUsed = b.formsUsed;
+    if (
+      !formsUsed.mega &&
+      !lf.mega &&
+      player.hp > 0 &&
+      lf.dynamax?.uid !== player.uid &&
+      lf.tera?.uid !== player.uid &&
+      rayquazaAutoMega(player, gs.dex)
+    ) {
+      lf.mega = { uid: player.uid, formName: "M-Rayquaza" };
+      formsUsed = { ...formsUsed, mega: true };
+      log = [...log, `${player.name} Mega Evolved into Rayquaza via Dragon Ascent!`];
+    }
+
     const enemyTeam = b.enemyTeam.map((p) => ({ ...p }));
     let enemyIndex = b.enemyIndex;
     let enemy = enemyTeam[enemyIndex];
@@ -479,6 +499,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         playerTimer,
         enemyTimer,
         buffs,
+        formsUsed,
         leagueForms: lf,
         log: log.length > 40 ? log.slice(-40) : log,
       },

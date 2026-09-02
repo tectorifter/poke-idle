@@ -423,6 +423,12 @@ export function isPermanentAnomalyCatch(name: string): boolean {
   return ULTRA_SPACE.has(name) || name.startsWith("Ogerpon") || name.startsWith("Terapagos");
 }
 
+/** A temporary-activation form (Mega / Primal / Tera / Dynamax / Gigantamax) that
+ *  must never be a mon's permanent name — it should always revert to its base. */
+export function isAnomalyFormName(name: string): boolean {
+  return !isPermanentAnomalyCatch(name) && baseSpeciesOf(name) !== name;
+}
+
 // --- progression gates ------------------------------------------------------
 type Dex = Record<string, number>;
 const dexHas = (d: Dex, n: string) => (d[n] ?? 0) >= 5;
