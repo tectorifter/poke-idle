@@ -41,6 +41,8 @@ import {
   autoTapCost,
   autoTapMsFromLevel,
   catchUpgradeCost,
+  ballChargeCost,
+  BALL_META,
   CATCH_TIER_ORDER,
   manualCatchChance,
   tierIndex,
@@ -51,6 +53,7 @@ import {
 } from "./formulas";
 import type { FormKind } from "./formulas";
 import type {
+  BallCharges,
   CatchMode,
   CatchTier,
   DexFlag,
@@ -127,6 +130,16 @@ let lastManualTap = 0;
 let lastManualCatch = 0;
 
 // ─── Wild anomaly-activation helpers ──────────────────────────────────────────
+const freshBallCharges = (): BallCharges => ({ pokeball: 10, greatball: 0, ultraball: 0, timerball: 0 });
+function normalizeCharges(raw: Partial<BallCharges> | undefined): BallCharges {
+  const base = raw ? { pokeball: 0, greatball: 0, ultraball: 0, timerball: 0 } : freshBallCharges();
+  for (const b of CATCH_TIER_ORDER) {
+    const n = Number(raw?.[b]);
+    base[b] = Number.isFinite(n) && n > 0 ? Math.floor(n) : base[b];
+  }
+  return base;
+}
+
 const ANOMALY_KINDS: AnomalyKind[] = ["mega", "dynamax", "tera"];
 const ACTIVATION_LABEL: Record<AnomalyKind, string> = {
   mega: "Mega Evolution",
@@ -206,8 +219,10 @@ export type GameState = {
   autoTapLevel: number; // 0–25
   catchTier: CatchTier;
   catchLevel: number; // 1–10
-  /** Ball the manual-catch button throws (an unlocked tier ≤ catchTier). */
+  /** Ball the manual-catch button throws AND the Store buys charges for. */
   selectedBall: CatchTier;
+  /** Manual-throw charges per ball type. */
+  ballCharges: BallCharges;
   /** Always-on catch; only filters which mons are attempted. */
   catchMode: CatchMode;
   region: string;
@@ -244,8 +259,10 @@ type GameActions = {
   activateWild: (kind: AnomalyKind, formChoice?: string) => void;
   /** Manually attempt to catch the current wild enemy right now (uses selectedBall). */
   manualCatch: () => void;
-  /** Choose which ball the manual-catch button throws. */
+  /** Choose which ball the manual-catch button throws / the Store buys. */
   setSelectedBall: (ball: CatchTier) => void;
+  /** Buy `qty` throw charges of a ball type (must be an unlocked tier). */
+  buyBall: (ball: CatchTier, qty?: number) => void;
   toggleFalseSwipe: () => void;
   buyAutoTap: () => void;
   buyCatchUpgrade: () => void;
@@ -277,6 +294,7 @@ function emptyState(): GameState {
     catchTier: "pokeball",
     catchLevel: 1,
     selectedBall: "pokeball",
+    ballCharges: freshBallCharges(),
     catchMode: "new",
     region: "Kanto",
     route: "route",
@@ -311,6 +329,7 @@ function persist(state: GameState) {
     catchTier: state.catchTier,
     catchLevel: state.catchLevel,
     selectedBall: state.selectedBall,
+    ballCharges: state.ballCharges,
     catchMode: state.catchMode,
     region: state.region,
     route: state.route,
@@ -438,6 +457,7 @@ function hydrate(): GameState {
     catchLevel: Math.max(1, Math.min(10, saved.catchLevel ?? 1)),
     selectedBall:
       selectedBall && tierIndex(selectedBall) <= tierIndex(catchTier) ? selectedBall : catchTier,
+    ballCharges: normalizeCharges(saved.ballCharges),
     catchMode: saved.catchMode === "all" ? "all" : "new",
     region,
     route,
@@ -898,6 +918,20 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     persist({ ...get() });
   },
 
+  buyBall: (ball, qty = 1) => {
+    const s = get();
+    if (tierIndex(ball) > tierIndex(s.catchTier)) return; // tier not unlocked yet
+    const n = Math.max(1, Math.floor(qty));
+    const cost = ballChargeCost(ball, n);
+    if (s.pokeyen < cost) return;
+    set({
+      pokeyen: s.pokeyen - cost,
+      ballCharges: { ...s.ballCharges, [ball]: s.ballCharges[ball] + n },
+      log: pushLog(s.log, `Bought ${n}× ${BALL_META[ball].label} (−¥${cost.toLocaleString()}).`, "system"),
+    });
+    persist({ ...get() });
+  },
+
   prestigePlayer: () => {
     const s = get();
     const ready = s.team.some((p) => levelOf(p) >= 100);
@@ -1029,12 +1063,29 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (now - lastManualCatch < 350) return;
     lastManualCatch = now;
 
+    const ball = s.selectedBall;
+    if ((s.ballCharges[ball] ?? 0) <= 0) {
+      set({
+        log: pushLog(s.log, `Out of ${BALL_META[ball].label} — buy more in the Store.`, "system"),
+      });
+      return;
+    }
+    const ballCharges = { ...s.ballCharges, [ball]: s.ballCharges[ball] - 1 };
+
     const spec = speciesByName(e.name);
     // Chosen ball, 10% better than the equivalent auto-catch.
-    const chance = manualCatchChance(spec?.catch ?? 45, s.selectedBall, s.catchTier, s.catchLevel);
+    const chance = manualCatchChance(spec?.catch ?? 45, ball, s.catchTier, s.catchLevel);
 
     if (Math.random() * 100 >= chance) {
-      set({ log: pushLog(s.log, `${e.name} broke free!`, "escape"), lastCatch: "escaped" });
+      set({
+        ballCharges,
+        log: pushLog(
+          s.log,
+          `${e.name} broke free! · ${ballCharges[ball]} ${BALL_META[ball].label} left`,
+          "escape",
+        ),
+        lastCatch: "escaped",
+      });
       return;
     }
 
@@ -1057,6 +1108,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       storage,
       dex,
       stats,
+      ballCharges,
       enemy: { ...e, hp: 0 },
       lastCatch: e.shiny ? "shiny" : "caught",
       log: pushLog(
