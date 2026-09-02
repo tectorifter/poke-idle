@@ -38,50 +38,46 @@ export function TeamView() {
         to prestige the player (needs a Lv.100 on the team).
       </p>
 
-      <div className={cn("mt-3", showPc && "flex gap-3")}>
-        {/* Party — left */}
-        <section className="min-w-0 flex-1">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Party</h3>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            {team.map((p, i) => (
+      {/* Party — 3 columns */}
+      <h3 className="mt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Party</h3>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {team.map((p, i) => (
+          <PokeCell
+            key={p.uid}
+            poke={p}
+            active={i === active}
+            playerPrestige={playerPrestige}
+            uniqueBonus={uniqueBonus}
+            onSelect={() => setActive(i)}
+            onEvolve={(to) => evolve(p.uid, to)}
+            onMove={team.length > 1 ? () => moveToStorage(p.uid) : undefined}
+            MoveIcon={ArrowDownToLine}
+            moveTitle="Send to PC"
+          />
+        ))}
+      </div>
+
+      {/* PC storage — under Party, 2 columns */}
+      {showPc && (
+        <>
+          <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">PC storage</h3>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {storage.map((p) => (
               <PokeCell
                 key={p.uid}
                 poke={p}
-                active={i === active}
                 playerPrestige={playerPrestige}
                 uniqueBonus={uniqueBonus}
-                onSelect={() => setActive(i)}
                 onEvolve={(to) => evolve(p.uid, to)}
-                onMove={team.length > 1 ? () => moveToStorage(p.uid) : undefined}
-                MoveIcon={ArrowDownToLine}
-                moveTitle="Send to PC"
+                onMove={team.length < TEAM_SIZE ? () => moveToTeam(p.uid) : undefined}
+                MoveIcon={ArrowUpFromLine}
+                moveTitle="Send to Team"
+                onRelease={() => release(p.uid, "storage")}
               />
             ))}
           </div>
-        </section>
-
-        {/* PC — right */}
-        {showPc && (
-          <aside className="w-[44%] shrink-0">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">PC storage</h3>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {storage.map((p) => (
-                <PokeCell
-                  key={p.uid}
-                  poke={p}
-                  playerPrestige={playerPrestige}
-                  uniqueBonus={uniqueBonus}
-                  onEvolve={(to) => evolve(p.uid, to)}
-                  onMove={team.length < TEAM_SIZE ? () => moveToTeam(p.uid) : undefined}
-                  MoveIcon={ArrowUpFromLine}
-                  moveTitle="Send to Team"
-                  onRelease={() => release(p.uid, "storage")}
-                />
-              ))}
-            </div>
-          </aside>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
