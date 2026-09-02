@@ -18,7 +18,7 @@ import {
 } from "./dex";
 import type { AnomalyKind } from "./dex";
 import { rollNature, NATURE_NAMES } from "./natures";
-import { learnableMoveNames, moveAcquisitionCost, chosenMoves } from "./learnsets";
+import { learnableMoveNames, moveAcquisitionCost, chosenMoves, bestMoveAgainst } from "./learnsets";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
 import {
@@ -756,6 +756,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         attackerIsPlayer: false,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
+        move: bestMoveAgainst(enemy, levelOf(enemy), combatStats(defPoke).types),
       });
 
       playerHp = Math.max(0, playerHp - damage);

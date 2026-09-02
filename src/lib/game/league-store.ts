@@ -8,7 +8,7 @@ import {
   levelOf,
 } from "./formulas";
 import type { FormKind } from "./formulas";
-import { chosenMoves } from "./learnsets";
+import { bestMoveAgainst, chosenMoves } from "./learnsets";
 import {
   baseSpeciesOf,
   megaFormsFor,
@@ -472,7 +472,9 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     guard = 0;
     while (enemyTimer >= enemySpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
       enemyTimer -= enemySpeed;
-      const { damage } = attackDamage(enemy, player);
+      const { damage } = attackDamage(enemy, player, {
+        move: bestMoveAgainst(enemy, levelOf(enemy), combatStats(player).types),
+      });
       const dmg = now < buffs.resistUntil ? Math.round(damage * LEAGUE_RESIST_TAKEN_MULT) : damage;
       player = { ...player, hp: Math.max(0, player.hp - dmg) };
       log = [...log, `${enemy.name} hits ${player.name} for ${dmg}.`];
