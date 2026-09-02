@@ -261,7 +261,7 @@ export function FighterCard({
           shiny={poke.shiny}
           animated
           size={96}
-          facing={side === "you" ? "back" : "front"}
+          isBack={side === "you"}
         />
       </div>
       <div className={cn("min-w-0 flex-1", side === "you" && "text-right")}>
