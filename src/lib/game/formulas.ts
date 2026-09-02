@@ -7,20 +7,35 @@ import { chosenMove } from "./learnsets";
 import type { CatchTier, GrowthRate, OwnedPoke, Species, StatKey, StatSpread } from "./types";
 
 // ─── Auto-tap & store constants ───────────────────────────────────────────
-export const BASE_AUTO_MS = 3000;
-export const MIN_AUTO_MS = 500;
-export const AUTO_STEP_MS = 100; // −100 ms per level
-export const MAX_AUTO_LEVEL = 29; // 3000 → 100
+export const MAX_AUTO_LEVEL = 15;
+
+/** Auto-tap request cadence (ms) at each upgrade level — index = level, a
+ *  hand-tuned curve with front-loaded gains that taper toward 300 ms. */
+const AUTO_TAP_MS_BY_LEVEL = [
+  3000, 2000, 1500, 1100, 900, 750, 650, 570, 510, 460, 420, 390, 360, 340, 320, 300,
+] as const;
+
+export const BASE_AUTO_MS = AUTO_TAP_MS_BY_LEVEL[0];
+export const MIN_AUTO_MS = AUTO_TAP_MS_BY_LEVEL[MAX_AUTO_LEVEL];
 
 export const MIN_MANUAL_MS = 50;
 
-/** Cost for the next auto-tap level (currentLevel is 0-based). */
+/** Flat prices for the first few upgrades; index = currentLevel (0 → level 1). */
+const AUTO_TAP_FLAT_COST = [500, 600, 700, 800] as const;
+/** Exponential ramp after the flat tier, tuned so the final level costs ≈¥500k. */
+const AUTO_TAP_COST_BASE = 1200;
+const AUTO_TAP_COST_GROWTH = 1.828;
+
+/** Cost to buy the NEXT auto-tap level (currentLevel is 0-based, 0 → level 1). */
 export function autoTapCost(currentLevel: number): number {
-   return Math.floor(5000 * Math.pow(1.20, currentLevel - 1));
+  if (currentLevel < AUTO_TAP_FLAT_COST.length) return AUTO_TAP_FLAT_COST[currentLevel];
+  const n = currentLevel - AUTO_TAP_FLAT_COST.length; // 0 at the first exponential step
+  return Math.round((AUTO_TAP_COST_BASE * Math.pow(AUTO_TAP_COST_GROWTH, n)) / 100) * 100;
 }
 
 export function autoTapMsFromLevel(level: number): number {
-  return Math.max(MIN_AUTO_MS, BASE_AUTO_MS - level * AUTO_STEP_MS);
+  const l = Math.max(0, Math.min(MAX_AUTO_LEVEL, Math.floor(level)));
+  return AUTO_TAP_MS_BY_LEVEL[l];
 }
 
 // ─── Catch tiers (permanent power, no consumables) ────────────────────────

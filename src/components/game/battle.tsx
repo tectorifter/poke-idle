@@ -189,7 +189,7 @@ const CATEGORY_ICON: Record<MoveData["category"], typeof Swords> = {
 
 /** The active mon's four move slots. While Dynamaxed / Gigantamaxed the slots
  *  show the Max / G-Max versions (correct Max-move base power). */
-function movesFor(
+export function movesFor(
   mon: OwnedPoke | undefined,
   dyna: { formName: string | null } | null,
 ): (MoveData | null)[] {
@@ -200,7 +200,7 @@ function movesFor(
   return [0, 1, 2, 3].map((i) => picked[i] ?? null);
 }
 
-function MoveButton({
+export function MoveButton({
   index,
   move,
   selected,
@@ -240,19 +240,19 @@ function MoveButton({
   );
 }
 
-/** 2×2 grid of move buttons. */
+/** 2×2 grid of move buttons. The chosen slot is the move fired each attack turn. */
 function MoveGrid() {
   const team = useGame((s) => s.team);
   const active = useGame((s) => s.active);
   const wildActivations = useGame((s) => s.wildActivations);
+  const selectedMove = useGame((s) => s.selectedMove);
+  const setSelectedMove = useGame((s) => s.setSelectedMove);
   const mon = team[active];
   const dyna =
     mon && wildActivations.dynamax?.uid === mon.uid
       ? { formName: wildActivations.dynamax.formName }
       : null;
   const moves = movesFor(mon, dyna);
-  // HOOK: which slot is the "selected" move to use in battle.
-  const [selected, setSelected] = useState(0);
   return (
     <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-1.5">
       {moves.map((m, i) => (
@@ -260,8 +260,8 @@ function MoveGrid() {
           key={i}
           index={i}
           move={m}
-          selected={i === selected}
-          onSelect={() => setSelected(i)}
+          selected={i === selectedMove}
+          onSelect={() => setSelectedMove(i)}
         />
       ))}
     </div>

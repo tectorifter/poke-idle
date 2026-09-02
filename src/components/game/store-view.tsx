@@ -67,7 +67,8 @@ export function StoreView() {
           </span>
         </p>
         <p className="text-xs text-muted">
-          Level {autoTapLevel} / {MAX_AUTO_LEVEL} · −100 ms each
+          Level {autoTapLevel} / {MAX_AUTO_LEVEL}
+          {!autoMaxed && ` · next ${autoTapMsFromLevel(autoTapLevel + 1)} ms`}
         </p>
         <button
           type="button"
@@ -81,8 +82,8 @@ export function StoreView() {
           )}
         >
           {autoMaxed
-            ? "Maxed (500 ms)"
-            : `Buy −100 ms · ¥ ${autoCost.toLocaleString()}`}
+            ? `Maxed (${autoTapMsFromLevel(MAX_AUTO_LEVEL)} ms)`
+            : `Buy → ${autoTapMsFromLevel(autoTapLevel + 1)} ms · ¥ ${autoCost.toLocaleString()}`}
         </button>
       </section>
 

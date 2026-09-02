@@ -244,7 +244,7 @@ export type GameState = {
   playerPrestige: number;
   playerHp: number;
   playerExp: number;
-  autoTapLevel: number; // 0–25
+  autoTapLevel: number; // 0–15
   catchTier: CatchTier;
   catchLevel: number; // 1–10
   /** Ball the manual-catch button throws AND the Store buys charges for. */
@@ -267,6 +267,8 @@ export type GameState = {
   wildRecharge: RechargeCounts;
   /** When on, wild HP is clamped to a floor of 1 (nothing can be knocked out). */
   falseSwipe: boolean;
+  /** Which of the active mon's 4 move slots is fired (0–3). Resets on mon swap. */
+  selectedMove: number;
   log: LogLine[];
   paused: boolean;
   playerHit: number;
@@ -292,6 +294,8 @@ type GameActions = {
   /** Buy `qty` throw charges of a ball type (must be an unlocked tier). */
   buyBall: (ball: CatchTier, qty?: number) => void;
   toggleFalseSwipe: () => void;
+  /** Pick which of the active mon's 4 move slots is fired (0–3). */
+  setSelectedMove: (index: number) => void;
   buyAutoTap: () => void;
   buyCatchUpgrade: () => void;
   /** Prestige the player (global). Requires at least one mon at Lv.100. */
@@ -337,6 +341,7 @@ function emptyState(): GameState {
     wildActivations: freshWildForms(),
     wildRecharge: freshRecharge(),
     falseSwipe: false,
+    selectedMove: 0,
     log: [],
     paused: false,
     playerHit: 0,
@@ -728,12 +733,14 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       const atkPoke = team[activeIndex];
       if (!atkPoke || playerHp <= 0 || enemy.hp <= 0) return;
       const eff = wildEffective(atkPoke, wildActivations);
+      const picked = chosenMoves(atkPoke, levelOf(atkPoke))[s.selectedMove] ?? undefined;
       const { damage } = attackDamage(eff.poke, enemy, {
         attackerIsPlayer: true,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
         form: eff.form,
         teraType: eff.teraType,
+        move: picked,
       });
       enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
       stats = { ...stats, damage: stats.damage + damage };
@@ -1133,7 +1140,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const team = get().team;
     if (!team[index]) return;
     playerAtkCd = 0;
-    set({ active: index });
+    set({ active: index, selectedMove: 0 });
+  },
+
+  setSelectedMove: (index) => {
+    set({ selectedMove: Math.max(0, Math.min(3, Math.floor(index) || 0)) });
   },
 
   setCatchMode: (catchMode) => {

@@ -467,11 +467,12 @@ export function isRouteUnlocked(
   region: string,
   routeId: string,
   dex: Dex,
-  playerPrestige: number,
+  // Kept in the signature (and `requiredPrestige` kept in the data) but no longer
+  // gates anything — no route requires prestige for now.
+  _playerPrestige?: number,
 ): boolean {
   const def = ROUTES[region]?.[routeId];
   if (!def) return false;
-  if (def.requiredPrestige != null && playerPrestige < def.requiredPrestige) return false;
   const pred = ROUTE_UNLOCK[`${region}/${routeId}`];
   return pred ? pred(dex) : true;
 }
@@ -479,8 +480,6 @@ export function isRouteUnlocked(
 /** Short human label for what a locked route still needs (Map view). */
 export function routeRequirementLabel(region: string, routeId: string): string | null {
   if (`${region}/${routeId}` === "Kalos Anomaly/primal") return "Catch every Mega Evolution";
-  const def = ROUTES[region]?.[routeId];
-  if (def?.requiredPrestige != null) return `Prestige ${def.requiredPrestige}`;
   return null;
 }
 
