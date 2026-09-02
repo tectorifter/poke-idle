@@ -17,6 +17,11 @@ export const TYPE_CHART: Record<string, Record<string, number>> = {
   Dark: { Fire: 1, Water: 1, Grass: 1, Electric: 1, Ice: 1, Psychic: 2, Normal: 1, Fighting: 0.5, Flying: 1, Ground: 1, Rock: 1, Bug: 1, Poison: 1, Ghost: 2, Dragon: 1, Dark: 0.5, Steel: 1, Fairy: 0.5 },
   Steel: { Fire: 0.5, Water: 0.5, Grass: 1, Electric: 0.5, Ice: 2, Psychic: 1, Normal: 1, Fighting: 1, Flying: 1, Ground: 1, Rock: 2, Bug: 1, Poison: 1, Ghost: 1, Dragon: 1, Dark: 1, Steel: 0.5, Fairy: 2 },
   Fairy: { Fire: 0.5, Water: 1, Grass: 1, Electric: 1, Ice: 1, Psychic: 1, Normal: 1, Fighting: 2, Flying: 1, Ground: 1, Rock: 1, Bug: 1, Poison: 0.5, Ghost: 1, Dragon: 2, Dark: 2, Steel: 0.5, Fairy: 1 },
+  // Stellar (Terapagos-Stellar's exclusive typing): no resistances or weaknesses
+  // taken (every other attacking type's chart lacks a Stellar column, so it
+  // falls through to the neutral 1x default) -- and deals super effective only
+  // against a Stellar-type defender, neutral against everything else.
+  Stellar: { Stellar: 2 },
 };
 
 export const TYPE_COLOR: Record<string, string> = {
@@ -38,6 +43,7 @@ export const TYPE_COLOR: Record<string, string> = {
   Dark: "#705848",
   Steel: "#b8b8d0",
   Fairy: "#ee99ac",
+  Stellar: "#40b5a5",
 };
 
 // Rounds an additive multiplier adjustment to 2 decimals, clearing the float

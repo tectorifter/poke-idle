@@ -18827,7 +18827,7 @@
     "id": 1139,
     "name": "Terapagos-Stellar",
     "types": [
-      "Normal"
+      "Stellar"
     ],
     "catch": 12,
     "growth": "Slow",
@@ -18838,7 +18838,7 @@
     "spd": 110,
     "spe": 85,
     "exp": 434,
-    "teraType": "Normal"
+    "teraType": "Stellar"
   },
   {
     "id": 1140,
