@@ -127,8 +127,15 @@ function loadSave(): Partial<SaveBlob> | null {
 }
 
 let logSeq = 1;
-let playerTimer = 0; // auto-tap accumulator (ms)
-let enemyTimer = 0;
+/** ms until the player's active mon is *allowed* its next attack (Speed cap). 0 = ready. */
+let playerAtkCd = 0;
+/** ms until the enemy takes its next (automatic) attack. 0 = ready. */
+let enemyAtkCd = 0;
+/** Auto-tap timer accumulator (ms). */
+let autoTapAcc = 0;
+/** Queued tap requests (auto-tap + manual). Consumed at the Speed-allowed rate. */
+let pendingTaps = 0;
+const MAX_PENDING_TAPS = 6;
 let uiAcc = 0;
 let saveAcc = 0;
 let lastManualTap = 0;
@@ -495,8 +502,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   rehydrate: () => {
     const next = hydrate();
-    playerTimer = 0;
-    enemyTimer = 0;
+    playerAtkCd = 0;
+    enemyAtkCd = 0;
+    autoTapAcc = 0;
+    pendingTaps = 0;
     lastManualTap = 0;
     respawnAt = 0;
     set(next);
@@ -526,8 +535,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       now: Date.now(),
     };
     persist(next);
-    playerTimer = 0;
-    enemyTimer = 0;
+    playerAtkCd = 0;
+    enemyAtkCd = 0;
+    autoTapAcc = 0;
+    pendingTaps = 0;
     lastManualTap = 0;
     respawnAt = 0;
     set(next);
@@ -537,43 +548,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const s = get();
     if (!s.started || s.paused || s.playerHp <= 0) return;
     const now = Date.now();
-    if (now - lastManualTap < 30) return;
+    if (now - lastManualTap < 20) return;
     if (now < respawnAt || !s.enemy || s.enemy.hp <= 0) return;
     lastManualTap = now;
-
-    const atkPoke = s.team[s.active];
-    if (!atkPoke) return;
-
-    const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
-    const eff = wildEffective(atkPoke, s.wildActivations);
-    // Manual taps share the Speed-based attack-turn budget with auto-tap, so
-    // they can never push a mon above its attacks-per-second cap.
-    const int = attackIntervalMs(
-      combatStats(eff.poke, {
-        isPlayer: true,
-        playerPrestige: s.playerPrestige,
-        uniqueBonus,
-        form: eff.form,
-      }).spe,
-    );
-    if (playerTimer < int) return; // attack turn not ready yet
-    playerTimer -= int;
-
-    const enemy = { ...s.enemy };
-    const { damage } = attackDamage(eff.poke, enemy, {
-      attackerIsPlayer: true,
-      playerPrestige: s.playerPrestige,
-      uniqueBonus,
-      form: eff.form,
-      teraType: eff.teraType,
-    });
-    enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
-    set({
-      enemy,
-      stats: { ...s.stats, damage: s.stats.damage + damage },
-      enemyHit: now,
-      now,
-    });
+    // A tap just *requests* an attack. The step loop fires it on the next turn
+    // the mon's Speed allows; extra taps beyond the cap are dropped.
+    pendingTaps = Math.min(MAX_PENDING_TAPS, pendingTaps + 1);
   },
 
   step: (dt) => {
@@ -608,8 +588,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     }
 
     if (playerHp <= 0) {
-      playerTimer = 0;
-      enemyTimer = 0;
+      playerAtkCd = 0;
+      enemyAtkCd = 0;
       if (dirty || uiAcc > 0.2) {
         uiAcc = 0;
         set({ now, playerHp, team, lastHeal, log });
@@ -825,13 +805,18 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     if (pendingFaint) {
       onEnemyFaint();
-      playerTimer = 0;
-      enemyTimer = 0;
+      playerAtkCd = 0;
+      enemyAtkCd = 0;
     }
 
-    // ── Attack cadence driven by each mon's resolved Speed stat ──────────────
-    // Player and enemy each get 1–4 attack turns per second (attackIntervalMs).
-    // Auto-tap fills every available player turn; manual taps can't exceed it.
+    // ── Attack cadence ─────────────────────────────────────────────────────
+    // Speed only JUDGES what's possible: it sets the minimum gap between a mon's
+    // attacks (attackIntervalMs). It never fires an attack on its own.
+    //   • Player: attacks come from TAP REQUESTS — auto-tap adds one every
+    //     autoTapMsFromLevel(level) ms; manual taps add one each. A queued tap
+    //     only lands when the Speed gap has elapsed; excess taps are dropped.
+    //   • Enemy: attacks automatically every Speed-allowed turn.
+    const dtms = dt * 1000;
     const effActive = wildEffective(team[activeIndex], wildActivations);
     const playerSpe = combatStats(effActive.poke, {
       isPlayer: true,
@@ -843,26 +828,37 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const playerInt = attackIntervalMs(playerSpe);
     const enemyInt = attackIntervalMs(enemySpe);
 
-    playerTimer += dt * 1000;
-    enemyTimer += dt * 1000;
+    // Speed-cap cooldowns count down toward "ready".
+    playerAtkCd = Math.max(0, playerAtkCd - dtms);
+    enemyAtkCd = Math.max(0, enemyAtkCd - dtms);
+
+    // Auto-tap: queue a tap request at the upgrade-controlled cadence.
+    autoTapAcc += dtms;
+    const autoMs = autoTapMsFromLevel(s.autoTapLevel);
+    let aGuard = 0;
+    while (autoTapAcc >= autoMs && aGuard++ < 8) {
+      autoTapAcc -= autoMs;
+      pendingTaps = Math.min(MAX_PENDING_TAPS, pendingTaps + 1);
+    }
 
     const runPlayerTurns = () => {
       let g = 0;
-      while (playerTimer >= playerInt && g++ < 8) {
-        playerTimer -= playerInt;
-        if (enemy.hp > 0 && playerHp > 0) playerAtk();
+      while (pendingTaps > 0 && playerAtkCd <= 0 && enemy.hp > 0 && playerHp > 0 && g++ < 8) {
+        pendingTaps -= 1;
+        playerAtkCd = playerInt;
+        playerAtk();
         if (enemy.hp <= 0) {
           onEnemyFaint();
-          playerTimer = 0;
-          enemyTimer = 0;
+          playerAtkCd = 0;
+          enemyAtkCd = 0;
           break;
         }
       }
     };
     const runEnemyTurns = () => {
       let g = 0;
-      while (enemyTimer >= enemyInt && g++ < 8 && enemy.hp > 0 && playerHp > 0) {
-        enemyTimer -= enemyInt;
+      while (enemyAtkCd <= 0 && enemy.hp > 0 && playerHp > 0 && g++ < 8) {
+        enemyAtkCd = enemyInt;
         enemyAtk();
       }
     };
@@ -1034,8 +1030,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const def = ROUTES[region]?.[route];
     if (!def) return;
     if (!isRouteUnlocked(region, route, get().dex, get().playerPrestige)) return;
-    playerTimer = 0;
-    enemyTimer = 0;
+    playerAtkCd = 0;
+    enemyAtkCd = 0;
+    autoTapAcc = 0;
+    pendingTaps = 0;
     respawnAt = 0;
     const enemy = spawnEnemy(region, route, get().anomalyCleared, get().dex, get().gmaxChanceMult);
     let dex = get().dex;
@@ -1055,7 +1053,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
   setActive: (index) => {
     const team = get().team;
     if (!team[index]) return;
-    playerTimer = 0;
+    playerAtkCd = 0;
     set({ active: index });
   },
 
@@ -1251,8 +1249,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         JSON.stringify({ ...parsed, version: SAVE_VERSION }),
       );
       const next = hydrate();
-      playerTimer = 0;
-      enemyTimer = 0;
+      playerAtkCd = 0;
+      enemyAtkCd = 0;
+      autoTapAcc = 0;
+      pendingTaps = 0;
       set(next);
       return true;
     } catch {
@@ -1262,8 +1262,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   resetGame: () => {
     localStorage.removeItem(SAVE_KEY);
-    playerTimer = 0;
-    enemyTimer = 0;
+    playerAtkCd = 0;
+    enemyAtkCd = 0;
+    autoTapAcc = 0;
+    pendingTaps = 0;
     set(emptyState());
   },
 }));
