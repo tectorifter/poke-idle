@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { speciesByName } from "@/lib/game/dex";
 import {
@@ -9,6 +10,9 @@ import {
   playerLevelOf,
   playerThisLevelExp,
   playerNextLevelExp,
+  BALL_META,
+  CATCH_TIER_ORDER,
+  tierIndex,
 } from "@/lib/game/formulas";
 import { ROUTES, useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
@@ -16,21 +20,66 @@ import { Meter } from "./bars";
 import { Sprite } from "./sprite";
 import { TypeBadge } from "./type-badge";
 import { WildActivationBar } from "./activation-bar";
+import { BallIcon } from "./ball-icon";
 
-function PokeballIcon({ className }: { className?: string }) {
+/** Manual-catch button: tap to throw the selected ball, hold to pick a ball. */
+function CatchBallButton() {
+  const selectedBall = useGame((s) => s.selectedBall);
+  const catchTier = useGame((s) => s.catchTier);
+  const manualCatch = useGame((s) => s.manualCatch);
+  const setSelectedBall = useGame((s) => s.setSelectedBall);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const holdTimer = useRef<number | undefined>(undefined);
+  const held = useRef(false);
+
+  const unlocked = CATCH_TIER_ORDER.slice(0, tierIndex(catchTier) + 1);
+
   return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <clipPath id="pokeball-clip">
-        <circle cx="12" cy="12" r="10" />
-      </clipPath>
-      <g clipPath="url(#pokeball-clip)">
-        <rect x="0" y="0" width="24" height="12" fill="#ef4444" />
-        <rect x="0" y="12" width="24" height="12" fill="#f8fafc" />
-      </g>
-      <circle cx="12" cy="12" r="10" fill="none" stroke="#0f172a" strokeWidth="2" />
-      <line x1="2" y1="12" x2="22" y2="12" stroke="#0f172a" strokeWidth="2" />
-      <circle cx="12" cy="12" r="3.2" fill="#f8fafc" stroke="#0f172a" strokeWidth="2" />
-    </svg>
+    <div className="relative shrink-0">
+      {pickerOpen && (
+        <>
+          <div className="fixed inset-0 z-10" onPointerDown={() => setPickerOpen(false)} />
+          <div className="absolute bottom-full left-0 z-20 mb-2 flex gap-1 rounded-2xl bg-surface p-1.5 shadow-border">
+            {unlocked.map((b) => (
+              <button
+                key={b}
+                type="button"
+                title={BALL_META[b].label}
+                onClick={() => {
+                  setSelectedBall(b);
+                  setPickerOpen(false);
+                }}
+                className={cn(
+                  "grid size-10 place-items-center rounded-xl",
+                  b === selectedBall ? "bg-accent/20 ring-1 ring-accent" : "bg-surface-2",
+                )}
+              >
+                <BallIcon ball={b} className="size-6" />
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      <button
+        type="button"
+        aria-label={`Throw ${BALL_META[selectedBall].label} — hold to switch`}
+        onPointerDown={() => {
+          held.current = false;
+          holdTimer.current = window.setTimeout(() => {
+            held.current = true;
+            setPickerOpen(true);
+          }, 350);
+        }}
+        onPointerUp={() => {
+          window.clearTimeout(holdTimer.current);
+          if (!held.current && !pickerOpen) manualCatch();
+        }}
+        onPointerLeave={() => window.clearTimeout(holdTimer.current)}
+        className="grid size-11 place-items-center rounded-full bg-surface shadow-border active:scale-95"
+      >
+        <BallIcon ball={selectedBall} className="size-6" />
+      </button>
+    </div>
   );
 }
 
@@ -51,7 +100,6 @@ export function BattleView() {
   const paused = useGame((s) => s.paused);
   const setActive = useGame((s) => s.setActive);
   const manualTap = useGame((s) => s.manualTap);
-  const manualCatch = useGame((s) => s.manualCatch);
   const toggleFalseSwipe = useGame((s) => s.toggleFalseSwipe);
   const falseSwipe = useGame((s) => s.falseSwipe);
   const log = useGame((s) => s.log);
@@ -220,14 +268,7 @@ export function BattleView() {
         <WildActivationBar />
         {enemy && (
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={manualCatch}
-              aria-label="Throw ball"
-              className="grid size-11 shrink-0 place-items-center rounded-full bg-surface shadow-border active:scale-95"
-            >
-              <PokeballIcon className="size-6" />
-            </button>
+            <CatchBallButton />
             <button
               type="button"
               onClick={toggleFalseSwipe}

@@ -24,49 +24,68 @@ export const CATCH_TIER_ORDER: CatchTier[] = [
   "pokeball",
   "greatball",
   "ultraball",
-  "masterball",
+  "timerball",
 ];
+
+/** Display name + flat store price per level for each ball tier. */
+export const BALL_META: Record<CatchTier, { label: string; price: number }> = {
+  pokeball: { label: "Poké Ball", price: 200 },
+  greatball: { label: "Great Ball", price: 600 },
+  ultraball: { label: "Ultra Ball", price: 800 },
+  timerball: { label: "Timer Ball", price: 1000 },
+};
 
 const TIER_BASE_MULT: Record<CatchTier, number> = {
   pokeball: 1,
   greatball: 4,
   ultraball: 7,
-  masterball: 10,
-};
-
-const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
-  pokeball: 0,    // Lv. 1  – 10  (totalLevel = 1  to 10)
-  greatball: 10,  // Lv. 11 – 20  (totalLevel = 11 to 20)
-  ultraball: 20,  // Lv. 21 – 30  (totalLevel = 21 to 30)
-  masterball: 30, // Lv. 31 – 40  (totalLevel = 31 to 40)
+  timerball: 10,
 };
 
 const MAX_CATCH_MULT = 20;
-/** Final catch multiplier for a given tier + level (1–10). Caps at 50. */
+/** Final catch multiplier for a given tier + level (1–10). */
 /** Dynamically spreads the tier difference across 10 levels */
 export function catchMultiplier(tier: CatchTier, level: number): number {
   const lvl = Math.max(1, Math.min(10, level));
   const idx = CATCH_TIER_ORDER.indexOf(tier);
   const currentBase = TIER_BASE_MULT[tier];
-  
+
   const isLastTier = idx === CATCH_TIER_ORDER.length - 1;
-  const nextBase = isLastTier 
-    ? MAX_CATCH_MULT 
+  const nextBase = isLastTier
+    ? MAX_CATCH_MULT
     : TIER_BASE_MULT[CATCH_TIER_ORDER[idx + 1]];
 
-  // Standard tiers divide by 10 so the tier upgrade grants the 10th step
-  // Master Ball divides by 9 so Level 10 lands exactly on 20.0x
-  const step = isLastTier 
-    ? (nextBase - currentBase) / 9 
+  // Standard tiers divide by 10 so the tier upgrade grants the 10th step;
+  // the last tier (Timer Ball) divides by 9 so Level 10 lands exactly on 20.0x.
+  const step = isLastTier
+    ? (nextBase - currentBase) / 9
     : (nextBase - currentBase) / 10;
 
   return Number((currentBase + (lvl - 1) * step).toFixed(1));
 }
 
-/** Continuous cost growth without tier resets */
-export function catchUpgradeCost(currentLevel: number, tier: CatchTier = "pokeball"): number {
-  const totalLevel = TIER_LEVEL_OFFSET[tier] + Math.max(1, Math.min(10, currentLevel));
-  return Math.floor(5000 * Math.pow(1.15, totalLevel - 1));
+export function tierIndex(tier: CatchTier): number {
+  return CATCH_TIER_ORDER.indexOf(tier);
+}
+
+/** Effective level a given ball throws at, given the player's current catch rank:
+ *  a lower-tier ball is maxed (10) once you've ranked past it; the current tier
+ *  uses your current level; a not-yet-unlocked tier returns 0. */
+export function effectiveBallLevel(
+  ball: CatchTier,
+  curTier: CatchTier,
+  curLevel: number,
+): number {
+  const b = tierIndex(ball);
+  const c = tierIndex(curTier);
+  if (b < c) return 10;
+  if (b === c) return Math.max(1, Math.min(10, curLevel));
+  return 0; // locked
+}
+
+/** Flat per-level upgrade price for the tier currently being upgraded. */
+export function catchUpgradeCost(_currentLevel: number, tier: CatchTier = "pokeball"): number {
+  return BALL_META[tier].price;
 }
 
 /** Chance % using permanent catch power (always available, no balls consumed). */
@@ -76,6 +95,19 @@ export function catchChancePercentPermanent(
   level: number,
 ): number {
   return (catchRate * catchMultiplier(tier, level)) / 3;
+}
+
+/** Manual (hand-thrown) catch chance: the chosen ball's rate, 10% better than
+ *  the equivalent auto-catch. Returns 0 if the ball isn't unlocked yet. */
+export function manualCatchChance(
+  catchRate: number,
+  ball: CatchTier,
+  curTier: CatchTier,
+  curLevel: number,
+): number {
+  const lvl = effectiveBallLevel(ball, curTier, curLevel);
+  if (lvl === 0) return 0;
+  return catchChancePercentPermanent(catchRate, ball, lvl) * 1.1;
 }
 
 // ─── Pokeyen reward ───────────────────────────────────────────────────────

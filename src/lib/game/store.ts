@@ -42,6 +42,8 @@ import {
   autoTapMsFromLevel,
   catchUpgradeCost,
   CATCH_TIER_ORDER,
+  manualCatchChance,
+  tierIndex,
   pokeyenReward,
   uniqueCaughtBonus,
   playerMaxHp,
@@ -204,6 +206,8 @@ export type GameState = {
   autoTapLevel: number; // 0–25
   catchTier: CatchTier;
   catchLevel: number; // 1–10
+  /** Ball the manual-catch button throws (an unlocked tier ≤ catchTier). */
+  selectedBall: CatchTier;
   /** Always-on catch; only filters which mons are attempted. */
   catchMode: CatchMode;
   region: string;
@@ -238,8 +242,10 @@ type GameActions = {
   setCatchMode: (mode: CatchMode) => void;
   /** Fire a temporary anomaly activation on the active wild-combat mon. */
   activateWild: (kind: AnomalyKind, formChoice?: string) => void;
-  /** Manually attempt to catch the current wild enemy right now. */
+  /** Manually attempt to catch the current wild enemy right now (uses selectedBall). */
   manualCatch: () => void;
+  /** Choose which ball the manual-catch button throws. */
+  setSelectedBall: (ball: CatchTier) => void;
   toggleFalseSwipe: () => void;
   buyAutoTap: () => void;
   buyCatchUpgrade: () => void;
@@ -270,6 +276,7 @@ function emptyState(): GameState {
     autoTapLevel: 0,
     catchTier: "pokeball",
     catchLevel: 1,
+    selectedBall: "pokeball",
     catchMode: "new",
     region: "Kanto",
     route: "route",
@@ -303,6 +310,7 @@ function persist(state: GameState) {
     autoTapLevel: state.autoTapLevel,
     catchTier: state.catchTier,
     catchLevel: state.catchLevel,
+    selectedBall: state.selectedBall,
     catchMode: state.catchMode,
     region: state.region,
     route: state.route,
@@ -390,6 +398,16 @@ function hydrate(): GameState {
     route = ROUTES[region]?.route ? "route" : Object.keys(ROUTES[region] ?? {})[0] ?? "route";
   }
 
+  // Master Ball was replaced by Timer Ball.
+  const rawTier = (saved.catchTier as string) === "masterball" ? "timerball" : saved.catchTier;
+  const catchTier: CatchTier = CATCH_TIER_ORDER.includes(rawTier as CatchTier)
+    ? (rawTier as CatchTier)
+    : "pokeball";
+  const savedBall = (saved.selectedBall as string) === "masterball" ? "timerball" : saved.selectedBall;
+  const selectedBall = CATCH_TIER_ORDER.includes(savedBall as CatchTier)
+    ? (savedBall as CatchTier)
+    : undefined;
+
   // Backfill the Terastal type on saves that predate it.
   const withTera = (p: OwnedPoke): OwnedPoke =>
     p.teraType ? p : { ...p, teraType: rollTeraType(p.name) };
@@ -416,8 +434,10 @@ function hydrate(): GameState {
     playerHp: Math.min(saved.playerHp ?? maxHp, maxHp),
     playerExp,
     autoTapLevel: Math.min(MAX_AUTO_LEVEL, saved.autoTapLevel ?? 0),
-    catchTier: saved.catchTier ?? "pokeball",
+    catchTier: catchTier,
     catchLevel: Math.max(1, Math.min(10, saved.catchLevel ?? 1)),
+    selectedBall:
+      selectedBall && tierIndex(selectedBall) <= tierIndex(catchTier) ? selectedBall : catchTier,
     catchMode: saved.catchMode === "all" ? "all" : "new",
     region,
     route,
@@ -854,16 +874,27 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       nextLevel = 1;
     }
 
+    // Auto-select the newly unlocked ball for manual throws.
+    const selectedBall = nextTier !== s.catchTier ? nextTier : s.selectedBall;
+
     set({
       pokeyen: s.pokeyen - cost,
       catchTier: nextTier,
       catchLevel: nextLevel,
+      selectedBall,
       log: pushLog(
         s.log,
         `Catch power up! ${nextTier} Lv.${nextLevel}`,
         "system",
       ),
     });
+    persist({ ...get() });
+  },
+
+  setSelectedBall: (ball) => {
+    const s = get();
+    if (tierIndex(ball) > tierIndex(s.catchTier)) return; // not unlocked
+    set({ selectedBall: ball });
     persist({ ...get() });
   },
 
@@ -999,10 +1030,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     lastManualCatch = now;
 
     const spec = speciesByName(e.name);
-    const eMax = Math.max(1, combatStats(e).maxHp);
-    const missFrac = Math.max(0, Math.min(1, 1 - e.hp / eMax));
-    const base = catchChancePercentPermanent(spec?.catch ?? 45, s.catchTier, s.catchLevel);
-    const chance = Math.max(15, base * (0.3 + 0.7 * missFrac));
+    // Chosen ball, 10% better than the equivalent auto-catch.
+    const chance = manualCatchChance(spec?.catch ?? 45, s.selectedBall, s.catchTier, s.catchLevel);
 
     if (Math.random() * 100 >= chance) {
       set({ log: pushLog(s.log, `${e.name} broke free!`, "escape"), lastCatch: "escaped" });

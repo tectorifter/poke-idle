@@ -1,10 +1,12 @@
-import { useState } from "react";
 import { useGame } from "@/lib/game/store";
 import {
   autoTapCost,
   autoTapMsFromLevel,
   catchUpgradeCost,
   catchMultiplier,
+  BALL_META,
+  CATCH_TIER_ORDER,
+  tierIndex,
   MAX_AUTO_LEVEL,
   uniqueCaughtBonus,
   levelOf,
@@ -12,6 +14,7 @@ import {
 import { POKEDEX } from "@/lib/game/dex";
 import { cn } from "@/lib/utils";
 import type { CatchMode } from "@/lib/game/types";
+import { BallIcon } from "./ball-icon";
 
 export function StoreView() {
   const pokeyen = useGame((s) => s.pokeyen);
@@ -26,23 +29,17 @@ export function StoreView() {
   const setCatchMode = useGame((s) => s.setCatchMode);
   const prestigePlayer = useGame((s) => s.prestigePlayer);
   const stats = useGame((s) => s.stats);
-  const exportSave = useGame((s) => s.exportSave);
-  const importSave = useGame((s) => s.importSave);
-  const resetGame = useGame((s) => s.resetGame);
   const dex = useGame((s) => s.dex);
-
-  const [saveText, setSaveText] = useState("");
-  const [msg, setMsg] = useState("");
 
   const owned = Object.values(dex).filter((f) => f >= 5).length;
   const uniqueBonus = uniqueCaughtBonus(owned);
   const autoCost = autoTapCost(autoTapLevel);
   const autoMaxed = autoTapLevel >= MAX_AUTO_LEVEL;
   
-  // Updated to pass catchTier into formula:
   const catchCost = catchUpgradeCost(catchLevel, catchTier);
-  const catchMaxed = catchTier === "masterball" && catchLevel >= 10;
-  
+  const catchMaxed = catchTier === "timerball" && catchLevel >= 10;
+  const curBall = BALL_META[catchTier].label;
+
   const mult = catchMultiplier(catchTier, catchLevel);
   const canPrestige = team.some((p) => levelOf(p) >= 100);
 
@@ -89,16 +86,35 @@ export function StoreView() {
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
           Catch Power
         </h3>
-        <p className="mt-1 text-sm capitalize">
-          {catchTier.replace("ball", " Ball")} Lv.{catchLevel}
+        <p className="mt-1 text-sm">
+          {curBall} Lv.{catchLevel}
         </p>
         <p className="text-xs text-muted">
           Multiplier ×{mult.toFixed(1)}
-          {catchTier !== "masterball" && " · next tier at Lv.10"}
+          {catchTier !== "timerball" && " · next ball at Lv.10"}
         </p>
         <p className="mt-1 text-xs text-muted">
-          No balls consumed — catch is always active.
+          No balls consumed — auto-catch is always active. Manual throws are 10% better.
         </p>
+
+        {/* Which ball tiers are unlocked for manual throws */}
+        <div className="mt-3 flex gap-2">
+          {CATCH_TIER_ORDER.map((b) => {
+            const unlocked = tierIndex(b) <= tierIndex(catchTier);
+            return (
+              <div
+                key={b}
+                title={`${BALL_META[b].label}${unlocked ? "" : ` · ¥${BALL_META[b].price} / Lv`}`}
+                className={cn(
+                  "grid size-9 place-items-center rounded-xl",
+                  unlocked ? "bg-surface-2" : "bg-surface-2 opacity-30",
+                )}
+              >
+                <BallIcon ball={b} className="size-5" />
+              </div>
+            );
+          })}
+        </div>
 
         {/* Catch mode toggle lives here under the ball shop */}
         <div className="mt-3">
@@ -134,8 +150,8 @@ export function StoreView() {
           )}
         >
           {catchMaxed
-            ? "Maxed (×50)"
-            : `Upgrade · ¥ ${catchCost.toLocaleString()}`}
+            ? "Maxed (×20)"
+            : `Upgrade ${curBall} · ¥ ${catchCost.toLocaleString()}`}
         </button>
       </section>
 
@@ -195,98 +211,9 @@ export function StoreView() {
         ))}
       </dl>
 
-      {/* ── Settings + save ── */}
-      <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-        Settings
-      </h3>
-
-      <div className="mt-3 space-y-2">
-        <button
-          type="button"
-          className="h-11 w-full rounded-2xl bg-accent text-sm font-medium text-white shadow-border"
-          onClick={() => {
-            const data = exportSave();
-            const blob = new Blob([data], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `pokeidle-save-${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            setMsg("Save file downloaded.");
-          }}
-        >
-          Download save file
-        </button>
-        <label className="flex h-11 w-full cursor-pointer items-center justify-center rounded-2xl bg-surface text-sm font-medium shadow-border">
-          Load save file
-          <input
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = () => {
-                const text =
-                  typeof reader.result === "string" ? reader.result : "";
-                setMsg(
-                  importSave(text) ? "Save file loaded." : "Invalid save file.",
-                );
-              };
-              reader.readAsText(file);
-            }}
-          />
-        </label>
-
-        <details className="rounded-2xl bg-surface px-4 py-2.5 text-xs text-muted shadow-border">
-          <summary className="cursor-pointer select-none">Copy/paste save</summary>
-          <div className="mt-2 space-y-2">
-            <button
-              type="button"
-              className="h-9 w-full rounded-xl bg-surface-2 text-xs font-medium"
-              onClick={() => {
-                const data = exportSave();
-                setSaveText(data);
-                void navigator.clipboard?.writeText(data);
-                setMsg("Save copied to clipboard.");
-              }}
-            >
-              Copy save to clipboard
-            </button>
-            <textarea
-              value={saveText}
-              onChange={(e) => setSaveText(e.target.value)}
-              placeholder="Paste save data to import"
-              className="h-24 w-full rounded-2xl bg-surface-2 p-3 font-mono text-[11px] outline-none"
-            />
-            <button
-              type="button"
-              className="h-9 w-full rounded-xl bg-surface-2 text-xs font-medium"
-              onClick={() =>
-                setMsg(importSave(saveText) ? "Save loaded." : "Invalid save.")
-              }
-            >
-              Import pasted save
-            </button>
-          </div>
-        </details>
-
-        <button
-          type="button"
-          className="h-11 w-full rounded-2xl bg-surface text-sm font-medium text-danger shadow-border"
-          onClick={() => {
-            if (confirm("Reset all progress?")) resetGame();
-          }}
-        >
-          Reset game
-        </button>
-        {msg && <p className="text-center text-xs text-muted">{msg}</p>}
-      </div>
+      <p className="mt-6 text-center text-xs text-muted">
+        Save management moved to the Settings tab.
+      </p>
     </div>
   );
 }
