@@ -1,15 +1,62 @@
 import { useEffect, useMemo, useState } from "react";
 import { Heart, Swords, Trophy } from "lucide-react";
 import { useGame } from "@/lib/game/store";
-import { combatStats } from "@/lib/game/formulas";
+import { attacksPerSecond, combatStats } from "@/lib/game/formulas";
 import { currentStage, leagueOrder, trainerOf } from "@/lib/game/league";
 import { useLeague } from "@/lib/game/league-store";
 import type { LeagueProgress } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
-import { FighterCard } from "./battle";
+import { FighterCard, MoveButton, movesFor } from "./battle";
 import { Meter } from "./bars";
 import { Sprite } from "./sprite";
 import { LeagueActivationBar } from "./activation-bar";
+
+/** The active mon's four move slots for the league fight. Combat is fully
+ *  automatic here — the Speed judge decides how often the mon attacks — so this
+ *  only picks WHICH of the equipped moves each auto-attack fires. */
+function LeagueMoveGrid() {
+  const team = useGame((s) => s.team);
+  const active = useGame((s) => s.active);
+  const battle = useLeague((s) => s.battle);
+  const selectMove = useLeague((s) => s.selectMove);
+  const mon = team[active];
+  const selectedMove = battle?.selectedMove ?? 0;
+
+  // Reset to slot 1 whenever the active mon changes (different moveset).
+  useEffect(() => {
+    selectMove(0);
+  }, [mon?.uid, selectMove]);
+
+  const dyna =
+    mon && battle?.leagueForms.dynamax?.uid === mon.uid
+      ? { formName: battle.leagueForms.dynamax.formName }
+      : null;
+  const moves = movesFor(mon, dyna);
+  const aps = mon ? attacksPerSecond(combatStats(mon).spe) : 1;
+
+  return (
+    <div>
+      <div className="mb-1 flex items-center gap-2 px-1">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-muted">
+          Auto · {aps.toFixed(1)} atk/s
+        </span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+      <div className="grid h-28 grid-cols-2 grid-rows-2 gap-1.5">
+        {moves.map((m, i) => (
+          <MoveButton
+            key={i}
+            index={i}
+            move={m}
+            selected={i === selectedMove}
+            onSelect={() => selectMove(i)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function LeagueView() {
   const team = useGame((s) => s.team);
@@ -165,53 +212,53 @@ export function LeagueView() {
       </div>
 
       {!finished && (
-        <div className="mt-3">
-          <LeagueActivationBar />
-        </div>
-      )}
+        <div className="mt-3 space-y-1.5">
+          <LeagueActivationBar compact />
 
-      {!finished && (
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={cheerUp}
-            disabled={cheerLeft > 0}
-            className={cn(
-              "flex h-14 flex-col items-center justify-center rounded-2xl text-xs font-semibold text-white",
-              cheerActive ? "bg-hp ring-2 ring-hp" : cheerLeft > 0 ? "bg-surface-2 text-muted" : "bg-hp",
-            )}
-          >
-            Cheer up!
-            <span className="text-[10px] font-normal opacity-80">
-              {cheerActive ? "Active" : cheerLeft > 0 ? `${Math.ceil(cheerLeft / 1000)}s` : "Ready"}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={resist}
-            disabled={resistLeft > 0}
-            className={cn(
-              "flex h-14 flex-col items-center justify-center rounded-2xl text-xs font-semibold text-white",
-              resistActive ? "bg-sky-500 ring-2 ring-sky-400" : resistLeft > 0 ? "bg-surface-2 text-muted" : "bg-sky-500",
-            )}
-          >
-            Resist!
-            <span className="text-[10px] font-normal opacity-80">
-              {resistActive ? "Active" : resistLeft > 0 ? `${Math.ceil(resistLeft / 1000)}s` : "Ready"}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={healOverTime}
-            disabled={healLeft > 0}
-            className={cn(
-              "flex h-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-xs font-semibold",
-              healLeft > 0 ? "bg-surface-2 text-muted" : "bg-accent text-accent-fg",
-            )}
-          >
-            <Heart className="size-4" />
-            {healLeft > 0 ? `${Math.ceil(healLeft / 1000)}s` : "Heal"}
-          </button>
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              type="button"
+              onClick={cheerUp}
+              disabled={cheerLeft > 0}
+              className={cn(
+                "flex h-11 flex-col items-center justify-center rounded-2xl text-[11px] font-semibold leading-tight text-white",
+                cheerActive ? "bg-hp ring-2 ring-hp" : cheerLeft > 0 ? "bg-surface-2 text-muted" : "bg-hp",
+              )}
+            >
+              Cheer up!
+              <span className="text-[9px] font-normal opacity-80">
+                {cheerActive ? "Active" : cheerLeft > 0 ? `${Math.ceil(cheerLeft / 1000)}s` : "Ready"}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={resist}
+              disabled={resistLeft > 0}
+              className={cn(
+                "flex h-11 flex-col items-center justify-center rounded-2xl text-[11px] font-semibold leading-tight text-white",
+                resistActive ? "bg-sky-500 ring-2 ring-sky-400" : resistLeft > 0 ? "bg-surface-2 text-muted" : "bg-sky-500",
+              )}
+            >
+              Resist!
+              <span className="text-[9px] font-normal opacity-80">
+                {resistActive ? "Active" : resistLeft > 0 ? `${Math.ceil(resistLeft / 1000)}s` : "Ready"}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={healOverTime}
+              disabled={healLeft > 0}
+              className={cn(
+                "flex h-11 flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-semibold leading-tight",
+                healLeft > 0 ? "bg-surface-2 text-muted" : "bg-accent text-accent-fg",
+              )}
+            >
+              <Heart className="size-3.5" />
+              {healLeft > 0 ? `${Math.ceil(healLeft / 1000)}s` : "Heal"}
+            </button>
+          </div>
+
+          <LeagueMoveGrid />
         </div>
       )}
 
@@ -235,8 +282,8 @@ export function LeagueView() {
         </div>
       )}
 
-      <div className="mt-3 max-h-40 space-y-1 overflow-y-auto rounded-2xl bg-surface p-3 font-mono text-[11px] text-muted shadow-border">
-        {[...battle.log].reverse().slice(0, 12).map((line, i) => (
+      <div className="mt-2 max-h-24 space-y-0.5 overflow-y-auto rounded-2xl bg-surface p-2.5 font-mono text-[10px] leading-relaxed text-muted shadow-border">
+        {[...battle.log].reverse().slice(0, 8).map((line, i) => (
           <div key={i}>{line}</div>
         ))}
       </div>

@@ -1,6 +1,14 @@
 import { create } from "zustand";
-import { combatStats, attackDamage, HEAL_COOLDOWN_MS, LEAGUE_DYNAMAX_MS } from "./formulas";
+import {
+  attackDamage,
+  attackIntervalMs,
+  combatStats,
+  HEAL_COOLDOWN_MS,
+  LEAGUE_DYNAMAX_MS,
+  levelOf,
+} from "./formulas";
 import type { FormKind } from "./formulas";
+import { chosenMoves } from "./learnsets";
 import {
   baseSpeciesOf,
   megaFormsFor,
@@ -16,7 +24,6 @@ import {
   initialLeagueProgress,
   leagueEnemyPrestige,
   leagueOrder,
-  leagueSpeedMs,
   loseStage,
   trainerOf,
   winStage,
@@ -160,6 +167,8 @@ export type LeagueBattleSession = {
   buffs: LeagueBuffs;
   leagueForms: LeagueForms;
   formsUsed: { mega: boolean; dynamax: boolean; tera: boolean };
+  /** Which of the active mon's 4 move slots is fired each speed-paced turn (0–3). */
+  selectedMove: number;
   log: string[];
   result: "fighting" | "win" | "lose";
 };
@@ -174,6 +183,8 @@ export type LeagueBattleState = {
   resist: () => void;
   healOverTime: () => void;
   activateLeague: (kind: AnomalyKind, formChoice?: string) => void;
+  /** Pick which of the active mon's 4 move slots is fired (0–3). */
+  selectMove: (index: number) => void;
   clearBattle: () => void;
 };
 
@@ -205,6 +216,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         buffs: freshBuffs(),
         leagueForms: freshLeagueForms(),
         formsUsed: freshFormsUsed(),
+        selectedMove: 0,
         log: [`${trainer.name} wants to battle!`],
         result: "fighting",
       },
@@ -217,6 +229,12 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
   clearBattle: () => {
     set({ battle: null });
     useGame.setState({ paused: false });
+  },
+
+  selectMove: (index) => {
+    const b = get().battle;
+    if (!b || b.result !== "fighting") return;
+    set({ battle: { ...b, selectedMove: Math.max(0, Math.min(3, Math.floor(index) || 0)) } });
   },
 
   cheerUp: () => {
@@ -389,10 +407,14 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     let enemy = enemyTeam[enemyIndex];
     let enemyFainted = b.enemyFainted;
 
-    const playerSpeed = leagueSpeedMs(combatStats(player).speedMs);
-    const enemySpeed = leagueSpeedMs(combatStats(enemy).speedMs);
+    // Same Speed "judge" as wild combat — but here it directly owns how often a
+    // mon attacks (no tapping in the league). 1–4 attacks/s from resolved Speed.
+    const pSpeedEff = leagueEffective(player, lf, now);
+    const playerSpeed = attackIntervalMs(combatStats(pSpeedEff.poke, { form: pSpeedEff.form }).spe);
+    const enemySpeed = attackIntervalMs(combatStats(enemy).spe);
     let playerTimer = b.playerTimer + dt * 1000;
     let enemyTimer = b.enemyTimer + dt * 1000;
+    const pickedMove = chosenMoves(player, levelOf(player))[b.selectedMove] ?? undefined;
 
     let guard = 0;
     while (playerTimer >= playerSpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
@@ -401,6 +423,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       const { damage, multiplier, crit } = attackDamage(eff.poke, enemy, {
         form: eff.form,
         teraType: eff.teraType,
+        move: pickedMove,
       });
       const dmg = now < buffs.cheerUntil ? Math.round(damage * LEAGUE_CHEER_MULT) : damage;
       enemy = { ...enemy, hp: Math.max(0, enemy.hp - dmg) };

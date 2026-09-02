@@ -149,7 +149,7 @@ export type SaveBlob = {
   /** Current wild-combat HP pool (not per-mon). */
   playerHp: number;
   playerExp: number;
-  autoTapLevel: number; // 0–25
+  autoTapLevel: number; // 0–15
   catchTier: CatchTier;
   catchLevel: number; // 1–10 inside current tier
   /** Ball the manual-catch button throws AND the Store buys charges for. */

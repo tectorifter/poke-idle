@@ -31,13 +31,24 @@ type Btn = {
   onClick: () => void;
 };
 
-function ActivationButton({ b, forms, onPick }: { b: Btn; forms: string[]; onPick: (f: string) => void }) {
+function ActivationButton({
+  b,
+  forms,
+  onPick,
+  compact,
+}: {
+  b: Btn;
+  forms: string[];
+  onPick: (f: string) => void;
+  compact?: boolean;
+}) {
   const [picking, setPicking] = useState(false);
   const st = KIND_STYLE[b.kind];
+  const h = compact ? "h-10" : "h-14";
 
   if (picking && forms.length > 1) {
     return (
-      <div className="flex h-14 gap-1">
+      <div className={cn("flex gap-1", h)}>
         {forms.map((f) => (
           <button
             key={f}
@@ -64,22 +75,46 @@ function ActivationButton({ b, forms, onPick }: { b: Btn; forms: string[]; onPic
         else b.onClick();
       }}
       className={cn(
-        "flex h-14 flex-col items-center justify-center rounded-2xl text-xs font-semibold text-white",
+        "flex flex-col items-center justify-center rounded-2xl font-semibold text-white",
+        h,
+        compact ? "text-[10px] leading-tight" : "text-xs",
         b.active ? st.on : b.muted ? "bg-surface-2 text-muted" : st.ready,
       )}
     >
       {st.label}
-      <span className="text-[10px] font-normal opacity-80">{b.status}</span>
+      <span className={cn("font-normal opacity-80", compact ? "text-[9px]" : "text-[10px]")}>{b.status}</span>
     </button>
   );
 }
 
-function Bar({ btns, forms, onPick }: { btns: Btn[]; forms: string[]; onPick: (f: string) => void }) {
+function Bar({
+  btns,
+  forms,
+  onPick,
+  compact,
+}: {
+  btns: Btn[];
+  forms: string[];
+  onPick: (f: string) => void;
+  compact?: boolean;
+}) {
   if (!btns.length) return null;
   return (
-    <div className={cn("grid gap-2", btns.length === 3 ? "grid-cols-3" : btns.length === 2 ? "grid-cols-2" : "grid-cols-1")}>
+    <div
+      className={cn(
+        "grid",
+        compact ? "gap-1.5" : "gap-2",
+        btns.length === 3 ? "grid-cols-3" : btns.length === 2 ? "grid-cols-2" : "grid-cols-1",
+      )}
+    >
       {btns.map((b) => (
-        <ActivationButton key={b.kind} b={b} forms={b.kind === "mega" ? forms : []} onPick={onPick} />
+        <ActivationButton
+          key={b.kind}
+          b={b}
+          forms={b.kind === "mega" ? forms : []}
+          onPick={onPick}
+          compact={compact}
+        />
       ))}
     </div>
   );
@@ -145,7 +180,7 @@ export function WildActivationBar() {
 }
 
 /** League activation row — one Mega + one Tera + one Dyna/Gmax per trainer fight. */
-export function LeagueActivationBar() {
+export function LeagueActivationBar({ compact }: { compact?: boolean } = {}) {
   const dex = useGame((s) => s.dex);
   const anomalyCleared = useGame((s) => s.anomalyCleared);
   const team = useGame((s) => s.team);
@@ -201,5 +236,5 @@ export function LeagueActivationBar() {
   if (showDyn) btns.push(build("dynamax", true));
   if (showTera) btns.push(build("tera", true));
 
-  return <Bar btns={btns} forms={megaForms} onPick={(f) => activate("mega", f)} />;
+  return <Bar btns={btns} forms={megaForms} onPick={(f) => activate("mega", f)} compact={compact} />;
 }
