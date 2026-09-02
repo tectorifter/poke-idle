@@ -1,6 +1,9 @@
 import { EXP_TABLE, EVOLUTIONS, speciesByName } from "./dex";
-import { typeMultiplier } from "./type-chart";
+import { defenseMultiplier } from "./type-chart";
 import { natureMult, rollNature } from "./natures";
+import { CRIT_CHANCE, CRIT_MULT } from "./moves";
+import type { MoveData } from "./moves";
+import { chosenMove } from "./learnsets";
 import type { CatchTier, GrowthRate, OwnedPoke, Species, StatKey, StatSpread } from "./types";
 
 // ─── Auto-tap & store constants ───────────────────────────────────────────
@@ -327,10 +330,12 @@ export function combatStats(
 
 // ─── Attack cadence from Speed (wild combat) ─────────────────────────────────
 const APS_MIN_SPEED = 4;
-const APS_MAX_SPEED = 548;
+// Speed that would reach the 4 atk/s ceiling. Kept far above any realistic stat
+// so the practical curve stays gentle (Spe 34 ≈ 1.9, 100 ≈ 2.4, 500 ≈ 3.1).
+const APS_MAX_SPEED = 4000;
 
-/** Attacks a mon is allowed per second from its resolved Speed stat: guaranteed
- *  1/s, up to 4/s at the highest reachable speed, log-scaled between. */
+/** Attacks a mon is *allowed* per second from its resolved Speed stat: a
+ *  guaranteed 1/s at Spe ≤ 4, approaching 4/s only at extreme speed. */
 export function attacksPerSecond(speed: number): number {
   const s = Math.max(APS_MIN_SPEED, speed);
   const aps =
@@ -398,8 +403,17 @@ export function attackDamage(
     form?: FormKind;
     /** Terastal offense type — overrides the species' own `teraType`. */
     teraType?: string;
+    /** The move being used. Defaults to a STAB attack for the mon's type. */
+    move?: MoveData;
   } = {},
-): { damage: number; multiplier: number } {
+): { damage: number; multiplier: number; crit: boolean } {
+  const move = opts.move ?? chosenMove(attacker, levelOf(attacker));
+
+  // Status moves have no effect in this model (still listed elsewhere).
+  if (move.category === "Status" || move.power <= 0) {
+    return { damage: 0, multiplier: 1, crit: false };
+  }
+
   const a = combatStats(attacker, {
     isPlayer: opts.attackerIsPlayer,
     playerPrestige: opts.playerPrestige,
@@ -413,25 +427,42 @@ export function attackDamage(
   });
 
   const attackerSpec = speciesByName(attacker.name);
+  // Terastal collapses the attacker's offensive typing to its one tera type.
   const teraType =
     opts.form === "tera"
       ? opts.teraType ?? attacker.teraType
       : isTeraName(attacker.name)
         ? attackerSpec?.teraType
         : undefined;
-  const multiplier = typeMultiplier(a.types, d.types, teraType);
+  const moveType = teraType ?? move.type;
 
-  const prestigeForBonus = opts.attackerIsPlayer ? (opts.playerPrestige ?? 0) : 0;
-  const bonus = levelDamageBonus(levelOf(attacker), prestigeForBonus, multiplier);
+  const multiplier = defenseMultiplier(moveType, d.types); // move type vs defender
+  if (multiplier === 0) return { damage: 0, multiplier: 0, crit: false };
 
-  let damage = rollDamage(a.avgAtk, d.avgDef, multiplier, bonus);
-  if (damage > 0) {
-    if (isMegaName(attacker.name) || opts.form === "mega") damage = Math.round(damage * MEGA_DAMAGE_MULT);
-    if (opts.form === "gmax") damage = Math.round(damage * GMAX_DAMAGE_MULT);
-    else if (opts.form === "dynamax") damage = Math.round(damage * DYNAMAX_DAMAGE_MULT);
-    if (isTeraName(attacker.name) || opts.form === "tera") damage = Math.round(damage * TERA_DAMAGE_MULT);
-  }
-  return { damage, multiplier };
+  const physical = move.category === "Physical";
+  const atkStat = physical ? a.atk : a.spa;
+  const defStat = Math.max(1, physical ? d.def : d.spd);
+  const lvl = levelOf(attacker);
+
+  // Pokémon Showdown base-damage formula.
+  let dmg =
+    Math.floor(
+      (Math.floor((Math.floor((2 * lvl) / 5) + 2) * move.power * atkStat) / defStat) / 50,
+    ) + 2;
+
+  const crit = Math.random() < CRIT_CHANCE;
+  const spread = (85 + Math.floor(Math.random() * 16)) / 100; // 0.85–1.00
+  const stab = a.types.includes(moveType) ? 1.5 : 1;
+
+  dmg = dmg * (crit ? CRIT_MULT : 1) * spread * stab * multiplier;
+
+  // Temporary anomaly-form damage multipliers.
+  if (isMegaName(attacker.name) || opts.form === "mega") dmg *= MEGA_DAMAGE_MULT;
+  if (opts.form === "gmax") dmg *= GMAX_DAMAGE_MULT;
+  else if (opts.form === "dynamax") dmg *= DYNAMAX_DAMAGE_MULT;
+  if (isTeraName(attacker.name) || opts.form === "tera") dmg *= TERA_DAMAGE_MULT;
+
+  return { damage: Math.max(1, Math.floor(dmg)), multiplier, crit };
 }
 
 export function expReward(enemy: OwnedPoke): number {

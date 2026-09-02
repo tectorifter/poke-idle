@@ -59,7 +59,7 @@ function roundDown2(v: number): number {
  *  double weakness adds an extra flat 20 percentage points the same way.
  *  Mixed (one resists, one is weak/neutral) and single-type cases are
  *  unchanged — still a straight product. */
-function defenseMultiplier(atkType: string, defTypes: string[]): number {
+export function defenseMultiplier(atkType: string, defTypes: string[]): number {
   const chart = TYPE_CHART[atkType];
   if (!chart) return 1;
   const m1 = chart[defTypes[0]] ?? 1;

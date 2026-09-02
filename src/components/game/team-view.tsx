@@ -15,6 +15,7 @@ import { useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { Meter } from "./bars";
 import { Sprite } from "./sprite";
+import { PokeEditor } from "./poke-editor";
 
 export function TeamView() {
   const team = useGame((s) => s.team);
@@ -32,8 +33,12 @@ export function TeamView() {
   const uniqueBonus = uniqueCaughtBonus(uniqueCaught(dex));
   const showPc = storage.length > 0;
 
+  const [editingUid, setEditingUid] = useState<string | null>(null);
+  const editing = editingUid ? team.find((p) => p.uid === editingUid) : undefined;
+
   return (
     <div className="h-full overflow-y-auto px-4 pb-4 pt-3">
+      {editing && <PokeEditor poke={editing} onClose={() => setEditingUid(null)} />}
       <h2 className="font-display text-xl font-semibold tracking-tight">Team</h2>
       <p className="text-xs text-muted">
         {team.length}/{TEAM_SIZE} fighting · {storage.length} in PC
@@ -59,6 +64,7 @@ export function TeamView() {
             playerPrestige={playerPrestige}
             uniqueBonus={uniqueBonus}
             onSelect={() => setActive(i)}
+            onEdit={() => setEditingUid(p.uid)}
             onEvolve={(to) => evolve(p.uid, to)}
             onMove={team.length > 1 ? () => moveToStorage(p.uid) : undefined}
             MoveIcon={ArrowDownToLine}
@@ -98,6 +104,7 @@ function PokeCell({
   playerPrestige,
   uniqueBonus,
   onSelect,
+  onEdit,
   onEvolve,
   onMove,
   MoveIcon,
@@ -109,6 +116,8 @@ function PokeCell({
   playerPrestige: number;
   uniqueBonus: number;
   onSelect?: () => void;
+  /** Party only: hold the cell to open the IV/EV/nature/move editor. */
+  onEdit?: () => void;
   onEvolve: (to: string) => void;
   onMove?: () => void;
   MoveIcon: typeof ArrowDownToLine;
@@ -122,15 +131,30 @@ function PokeCell({
   const evSum = evTotal(poke.evs);
   const [confirmRelease, setConfirmRelease] = useState(false);
   const confirmTimer = useRef<number | undefined>(undefined);
+  const holdTimer = useRef<number | undefined>(undefined);
+  const held = useRef(false);
 
   return (
     <div
       className={cn(
         "flex flex-col gap-1 rounded-2xl bg-surface p-2 shadow-border",
-        onSelect && "cursor-pointer",
+        (onSelect || onEdit) && "cursor-pointer",
         active && "ring-1 ring-accent",
       )}
-      onClick={onSelect}
+      onPointerDown={() => {
+        held.current = false;
+        if (onEdit) {
+          holdTimer.current = window.setTimeout(() => {
+            held.current = true;
+            onEdit();
+          }, 500);
+        }
+      }}
+      onPointerUp={() => {
+        window.clearTimeout(holdTimer.current);
+        if (!held.current) onSelect?.();
+      }}
+      onPointerLeave={() => window.clearTimeout(holdTimer.current)}
     >
       <div className="grid place-items-center">
         <Sprite name={poke.name} shiny={poke.shiny} animated size={44} />
@@ -150,7 +174,11 @@ function PokeCell({
         IV {ivSum}/{IV_MAX * 6} · EV {evSum}/510
       </div>
 
-      <div className="mt-0.5 flex flex-wrap gap-1">
+      <div
+        className="mt-0.5 flex flex-wrap gap-1"
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+      >
         {evos.map((e) => (
           <button
             key={e.to}

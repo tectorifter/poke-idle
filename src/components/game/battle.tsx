@@ -15,6 +15,9 @@ import {
   CATCH_TIER_ORDER,
   tierIndex,
 } from "@/lib/game/formulas";
+import { chosenMoves } from "@/lib/game/learnsets";
+import type { MoveData } from "@/lib/game/moves";
+import type { OwnedPoke } from "@/lib/game/types";
 import { ROUTES, useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { Meter } from "./bars";
@@ -177,22 +180,17 @@ function FalseSwipeButton() {
   );
 }
 
-/** Placeholder for a battle move category — future: real move data. */
-export type MoveSlot = {
-  name: string;
-  type: string;
-  category: "physical" | "special" | "status";
+const CATEGORY_ICON: Record<MoveData["category"], typeof Swords> = {
+  Physical: Swords,
+  Special: Sparkles,
+  Status: Shield,
 };
 
-const CATEGORY_ICON: Record<MoveSlot["category"], typeof Swords> = {
-  physical: Swords,
-  special: Sparkles,
-  status: Shield,
-};
-
-/** HOOK: the active mon's four move slots. Empty stubs until movesets are wired in. */
-function movesFor(_pokeName: string): (MoveSlot | null)[] {
-  return [null, null, null, null];
+/** The active mon's four move slots — its best learnable moves for now; the
+ *  move editor (next phase) will let the player choose. */
+function movesFor(mon: OwnedPoke | undefined): (MoveData | null)[] {
+  const picked = mon ? chosenMoves(mon, levelOf(mon)) : [];
+  return [0, 1, 2, 3].map((i) => picked[i] ?? null);
 }
 
 function MoveButton({
@@ -202,7 +200,7 @@ function MoveButton({
   onSelect,
 }: {
   index: number;
-  move: MoveSlot | null;
+  move: MoveData | null;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -213,7 +211,9 @@ function MoveButton({
       type="button"
       disabled={!move}
       onClick={onSelect}
-      aria-label={move ? `${move.name} — ${move.type} ${move.category}` : `Move ${index + 1} (empty)`}
+      aria-label={
+        move ? `${move.name} — ${move.type} ${move.category}, ${move.power} power` : `Move ${index + 1} (empty)`
+      }
       style={move ? { backgroundColor: color } : undefined}
       className={cn(
         "flex min-h-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-bold leading-tight",
@@ -226,15 +226,18 @@ function MoveButton({
     >
       {Icon ? <Icon className="size-3.5" /> : <span className="text-sm leading-none">·</span>}
       <span className="w-full truncate text-center">{move ? move.name : `Move ${index + 1}`}</span>
+      {move && move.category !== "Status" && (
+        <span className="text-[9px] font-normal opacity-80">{move.power}</span>
+      )}
     </button>
   );
 }
 
-/** 2×2 grid of move buttons (stubs for now). */
+/** 2×2 grid of move buttons. */
 function MoveGrid() {
   const team = useGame((s) => s.team);
   const active = useGame((s) => s.active);
-  const moves = movesFor(team[active]?.name ?? "");
+  const moves = movesFor(team[active]);
   // HOOK: which slot is the "selected" move to use in battle.
   const [selected, setSelected] = useState(0);
   return (
