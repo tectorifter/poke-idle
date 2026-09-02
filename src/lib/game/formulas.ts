@@ -43,13 +43,13 @@ const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
 };
 
 const TIER_BASE_MULT: Record<CatchTier, number> = {
-  pokeball: 1,
-  greatball: 4,
-  ultraball: 7,
-  timerball: 10,
+  pokeball: 0.5,
+  greatball: 1.5,
+  ultraball: 3,
+  timerball: 5,
 };
 
-const MAX_CATCH_MULT = 20;
+const MAX_CATCH_MULT = 10;
 /** Final catch multiplier for a given tier + level (1–10). */
 /** Dynamically spreads the tier difference across 10 levels */
 export function catchMultiplier(tier: CatchTier, level: number): number {
@@ -110,7 +110,7 @@ export function catchChancePercentPermanent(
   return (catchRate * catchMultiplier(tier, level)) / 3;
 }
 
-/** Manual (hand-thrown) catch chance: the chosen ball's rate, 10% better than
+/** Manual (hand-thrown) catch chance: the chosen ball's rate, 50% better than
  *  the equivalent auto-catch. Returns 0 if the ball isn't unlocked yet. */
 export function manualCatchChance(
   catchRate: number,
@@ -120,7 +120,7 @@ export function manualCatchChance(
 ): number {
   const lvl = effectiveBallLevel(ball, curTier, curLevel);
   if (lvl === 0) return 0;
-  return catchChancePercentPermanent(catchRate, ball, lvl) * 1.1;
+  return catchChancePercentPermanent(catchRate, ball, lvl) * 1.5;
 }
 
 // ─── Pokeyen reward ───────────────────────────────────────────────────────
