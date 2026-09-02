@@ -325,6 +325,24 @@ export function combatStats(
   };
 }
 
+// ─── Attack cadence from Speed (wild combat) ─────────────────────────────────
+const APS_MIN_SPEED = 4;
+const APS_MAX_SPEED = 548;
+
+/** Attacks a mon is allowed per second from its resolved Speed stat: guaranteed
+ *  1/s, up to 4/s at the highest reachable speed, log-scaled between. */
+export function attacksPerSecond(speed: number): number {
+  const s = Math.max(APS_MIN_SPEED, speed);
+  const aps =
+    1 + 3 * ((Math.log(s) - Math.log(APS_MIN_SPEED)) / (Math.log(APS_MAX_SPEED) - Math.log(APS_MIN_SPEED)));
+  return Math.max(1, Math.min(4, aps));
+}
+
+/** Minimum ms between a mon's attack turns at the given resolved Speed. */
+export function attackIntervalMs(speed: number): number {
+  return 1000 / attacksPerSecond(speed);
+}
+
 export function rollDamage(
   attackerAtk: number,
   defenderDef: number,

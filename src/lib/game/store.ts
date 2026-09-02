@@ -37,6 +37,7 @@ import {
   zeroEVs,
   evYield,
   addEVs,
+  attackIntervalMs,
   WILD_FORM_DEFEATS,
   WILD_RECHARGE_DEFEATS,
   SHINY_ODDS,
@@ -536,18 +537,29 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const s = get();
     if (!s.started || s.paused || s.playerHp <= 0) return;
     const now = Date.now();
-    if (now - lastManualTap < 50) return;
+    if (now - lastManualTap < 30) return;
     if (now < respawnAt || !s.enemy || s.enemy.hp <= 0) return;
     lastManualTap = now;
 
-    const team = s.team.map((p) => ({ ...p }));
-    const activeIndex = s.active;
-    const atkPoke = team[activeIndex];
+    const atkPoke = s.team[s.active];
     if (!atkPoke) return;
 
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
-    let enemy = { ...s.enemy };
     const eff = wildEffective(atkPoke, s.wildActivations);
+    // Manual taps share the Speed-based attack-turn budget with auto-tap, so
+    // they can never push a mon above its attacks-per-second cap.
+    const int = attackIntervalMs(
+      combatStats(eff.poke, {
+        isPlayer: true,
+        playerPrestige: s.playerPrestige,
+        uniqueBonus,
+        form: eff.form,
+      }).spe,
+    );
+    if (playerTimer < int) return; // attack turn not ready yet
+    playerTimer -= int;
+
+    const enemy = { ...s.enemy };
     const { damage } = attackDamage(eff.poke, enemy, {
       attackerIsPlayer: true,
       playerPrestige: s.playerPrestige,
@@ -556,12 +568,9 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       teraType: eff.teraType,
     });
     enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
-    const stats = { ...s.stats, damage: s.stats.damage + damage };
-
     set({
-      team,
       enemy,
-      stats,
+      stats: { ...s.stats, damage: s.stats.damage + damage },
       enemyHit: now,
       now,
     });
@@ -820,27 +829,52 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       enemyTimer = 0;
     }
 
-    const autoMs = autoTapMsFromLevel(s.autoTapLevel);
+    // ── Attack cadence driven by each mon's resolved Speed stat ──────────────
+    // Player and enemy each get 1–4 attack turns per second (attackIntervalMs).
+    // Auto-tap fills every available player turn; manual taps can't exceed it.
+    const effActive = wildEffective(team[activeIndex], wildActivations);
+    const playerSpe = combatStats(effActive.poke, {
+      isPlayer: true,
+      playerPrestige: s.playerPrestige,
+      uniqueBonus,
+      form: effActive.form,
+    }).spe;
+    const enemySpe = combatStats(enemy).spe;
+    const playerInt = attackIntervalMs(playerSpe);
+    const enemyInt = attackIntervalMs(enemySpe);
+
     playerTimer += dt * 1000;
     enemyTimer += dt * 1000;
 
-    let guard = 0;
-    while (playerTimer >= autoMs && guard++ < 12) {
-      playerTimer -= autoMs;
-      if (enemy.hp > 0 && playerHp > 0) playerAtk();
-      if (enemy.hp <= 0) {
-        onEnemyFaint();
-        playerTimer = 0;
-        enemyTimer = 0;
-        break;
+    const runPlayerTurns = () => {
+      let g = 0;
+      while (playerTimer >= playerInt && g++ < 8) {
+        playerTimer -= playerInt;
+        if (enemy.hp > 0 && playerHp > 0) playerAtk();
+        if (enemy.hp <= 0) {
+          onEnemyFaint();
+          playerTimer = 0;
+          enemyTimer = 0;
+          break;
+        }
       }
-    }
+    };
+    const runEnemyTurns = () => {
+      let g = 0;
+      while (enemyTimer >= enemyInt && g++ < 8 && enemy.hp > 0 && playerHp > 0) {
+        enemyTimer -= enemyInt;
+        enemyAtk();
+      }
+    };
 
-    const eSpeed = 1000;
-    guard = 0;
-    while (enemyTimer >= eSpeed && guard++ < 8 && enemy.hp > 0) {
-      enemyTimer -= eSpeed;
-      if (playerHp > 0) enemyAtk();
+    // On a simultaneous turn the faster mon resolves first (so it can KO before
+    // the slower one retaliates).
+    if (playerSpe >= enemySpe) {
+      runPlayerTurns();
+      runEnemyTurns();
+    } else {
+      runEnemyTurns();
+      runPlayerTurns();
     }
 
     const shouldUi = dirty || uiAcc > 0.08;
