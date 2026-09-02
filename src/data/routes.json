@@ -5,7 +5,9 @@
       "pokes": [
         "Bulbasaur",
         "Charmander",
-        "Squirtle"
+        "Squirtle",
+        "Partner Pikachu",
+        "Partner Eevee"
       ],
       "minLevel": 5,
       "maxLevel": 5,

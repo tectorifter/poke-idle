@@ -1,19 +1,14 @@
-import { STARTERS, speciesByName } from "@/lib/game/dex";
+import { useState } from "react";
+import { RefreshCw } from "lucide-react";
+import { rollStarters, speciesByName } from "@/lib/game/dex";
 import { useGame } from "@/lib/game/store";
 import { Sprite } from "./sprite";
 import { TypeBadge } from "./type-badge";
 
-const BLURBS: Record<string, string> = {
-  Bulbasaur: "Steady grass starter. Strong early, grows into a wall.",
-  Litten: "Well-rounded with devastating late firepower.",
-  Mudkip: "Balanced tank. Forgives mistakes while you learn the routes.",
-  Fenekin: "A magical fox that will devastate them with glamour.",
-  Grookey: "A devastating rhythmical menace.",
-  Quaxly: "A water starter that will make you a master of the seas and flamboyant kicks.",
-};
-
 export function StarterSelect() {
   const startWith = useGame((s) => s.startWith);
+  const [options, setOptions] = useState<string[]>(() => rollStarters(6));
+
   return (
     <div className="flex min-h-dvh flex-col bg-bg px-5 pb-10 pt-12 text-fg">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">PokeIdle</p>
@@ -21,10 +16,20 @@ export function StarterSelect() {
         Choose your partner
       </h1>
       <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted text-pretty">
-        Auto-battles run while you watch. Catch every species, fill the dex, prestige at 100.
+        Six first-stage partners, rolled at random. Not the one you want? Reroll.
       </p>
-      <div className="mt-8 grid gap-3">
-        {STARTERS.map((name) => {
+
+      <button
+        type="button"
+        onClick={() => setOptions(rollStarters(6))}
+        className="mt-5 flex h-11 w-fit items-center gap-2 rounded-full bg-surface px-4 text-sm font-semibold shadow-border active:scale-[0.98]"
+      >
+        <RefreshCw className="size-4" />
+        Reroll options
+      </button>
+
+      <div className="mt-6 grid gap-3">
+        {options.map((name) => {
           const spec = speciesByName(name);
           return (
             <button
@@ -33,17 +38,14 @@ export function StarterSelect() {
               onClick={() => startWith(name)}
               className="flex items-center gap-4 rounded-3xl bg-surface p-3 text-left shadow-border transition-transform duration-150 ease-out active:scale-[0.98]"
             >
-              <div className="grid size-24 place-items-center rounded-2xl bg-surface-2">
-                <Sprite name={name} size={88} animated />
+              <div className="grid size-20 shrink-0 place-items-center rounded-2xl bg-surface-2">
+                <Sprite name={name} size={72} animated />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-display text-lg font-semibold">{name}</span>
-                  {spec?.types.map((t) => (
-                    <TypeBadge key={t} type={t} />
-                  ))}
-                </div>
-                <p className="mt-1 text-sm leading-snug text-muted">{BLURBS[name]}</p>
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                <span className="font-display text-lg font-semibold">{name}</span>
+                {spec?.types.map((t) => (
+                  <TypeBadge key={t} type={t} />
+                ))}
               </div>
             </button>
           );

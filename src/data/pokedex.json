@@ -22292,5 +22292,37 @@
     "spd": 60,
     "spe": 97,
     "exp": 341
+  },
+  {
+    "id": 1340,
+    "name": "Partner Pikachu",
+    "types": [
+      "Electric"
+    ],
+    "catch": 70,
+    "growth": "Medium Fast",
+    "hp": 45,
+    "atk": 80,
+    "def": 50,
+    "spa": 75,
+    "spd": 60,
+    "spe": 120,
+    "exp": 112
+  },
+  {
+    "id": 1341,
+    "name": "Partner Eevee",
+    "types": [
+      "Normal"
+    ],
+    "catch": 45,
+    "growth": "Medium Fast",
+    "hp": 65,
+    "atk": 75,
+    "def": 70,
+    "spa": 65,
+    "spd": 85,
+    "spe": 75,
+    "exp": 65
   }
 ]
