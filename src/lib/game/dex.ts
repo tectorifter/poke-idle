@@ -22,7 +22,10 @@ export const REGION_UNLOCK: Record<string, number> = {
   Alolan: 380,
   Galar: 460,
   Paldea: 540,
-  Anomalies: 620,
+  "Kalos Anomaly": 620,
+  "Alola Anomaly": 620,
+  "Galar Anomaly": 620,
+  "Paldea Anomaly": 620,
 };
 
 const byName = new Map<string, Species>();
@@ -80,6 +83,9 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Ogerpon-Cornerstone": "ogerpon-cornerstone",
   "Terapagos-Terastal": "terapagos-terastal",
   "Terapagos-Stellar": "terapagos-stellar",
+  "Necrozma-Dusk-Mane": "necrozma-duskmane",
+  "Necrozma-Dawn-Wings": "necrozma-dawnwings",
+  "Necrozma-Ultra": "necrozma-ultra",
   "A-Rattata": "rattata-alola",
   "A-Raticate": "raticate-alola",
   "A-Sandshrew": "sandshrew-alola",
@@ -193,13 +199,22 @@ const KNOWN_MISSING_GIFS = new Set<string>([
   "Miraidon",
   "Dynamax Miraidon",
   "Pecharunt",
+
+  // Gigantamax forms whose *-gmax slug has only a static 'home' render on
+  // Showdown (no ani/ GIF). Verified 2026 — the rest of the G-Max roster has GIFs.
+  "Gigantamax Venusaur",
+  "Gigantamax Blastoise",
+  "Gigantamax Rillaboom",
+  "Gigantamax Cinderace",
+  "Gigantamax Urshifu",
+  "Gigantamax Urshifu-Rapid",
 ]);
 
 export function showdownSlug(name: string): string {
   if (SHOWDOWN_SLUG_OVERRIDES[name]) return SHOWDOWN_SLUG_OVERRIDES[name];
   if (name.startsWith("Dynamax ")) return showdownSlug(name.slice(8));
-  if (name.startsWith("Gigantamax ")) return showdownSlug(name.slice(11));
-  if (name.startsWith("G-Max ")) return showdownSlug(name.slice(6));
+  if (name.startsWith("Gigantamax ")) return `${showdownSlug(name.slice(11))}-gmax`;
+  if (name.startsWith("G-Max ")) return `${showdownSlug(name.slice(6))}-gmax`;
   if (name.startsWith("Tera ")) return showdownSlug(name.slice(5));
 
   if (name.startsWith("Alolan ")) return `${showdownSlug(name.slice(7))}-alola`;
@@ -291,3 +306,137 @@ export function ultimateFallbackUrl(name: string): string | null {
 }
 
 export const STARTERS = ["Bulbasaur", "Charmander", "Squirtle"] as const;
+
+// ─── Anomaly system: base⇄form maps, catch rules, progression gates ──────────
+
+/** Strip an anomaly prefix/suffix down to the base species the form belongs to.
+ *  Ultra-Space mons and the Ogerpon / Terapagos forms have no base — they are
+ *  caught as themselves (see `isPermanentAnomalyCatch`) — and pass through. */
+export function baseSpeciesOf(name: string): string {
+  if (name.startsWith("Gigantamax ")) return name.slice(11);
+  if (name.startsWith("Dynamax ")) return name.slice(8);
+  if (name.startsWith("Tera ")) return name.slice(5);
+  if (name.startsWith("M-")) {
+    const raw = name.slice(2);
+    return raw.endsWith(" X") || raw.endsWith(" Y") ? raw.slice(0, -2) : raw;
+  }
+  if (name.startsWith("P-")) return name.slice(2);
+  return name;
+}
+
+function formsByPrefix(prefix: string): Record<string, string[]> {
+  const map: Record<string, string[]> = {};
+  for (const s of POKEDEX) {
+    if (!s.name.startsWith(prefix)) continue;
+    const base = baseSpeciesOf(s.name);
+    (map[base] ??= []).push(s.name);
+  }
+  return map;
+}
+
+/** base species name → its Mega form species (X and Y both listed where they exist). */
+export const MEGA_FORMS = formsByPrefix("M-");
+/** base species name → its `Dynamax <base>` species (legendaries only). */
+export const DYNAMAX_FORMS = formsByPrefix("Dynamax ");
+/** base species name → its `Gigantamax <base>` species. */
+export const GMAX_FORMS = formsByPrefix("Gigantamax ");
+
+const ULTRA_SPACE = new Set([
+  "Nihilego", "Buzzwole", "Pheromosa", "Xurkitree", "Celesteela", "Kartana", "Guzzlord",
+  "Poipole", "Naganadel", "Stakataka", "Blacephalon",
+  "Necrozma", "Necrozma-Dusk-Mane", "Necrozma-Dawn-Wings", "Necrozma-Ultra",
+]);
+
+/** Anomaly-region species that are caught *as themselves*. Every other anomaly
+ *  species records its Dex flag on catch (that flag is the activation unlock)
+ *  but the mon added to the party is its base form. */
+export function isPermanentAnomalyCatch(name: string): boolean {
+  return ULTRA_SPACE.has(name) || name.startsWith("Ogerpon") || name.startsWith("Terapagos");
+}
+
+// --- progression gates ------------------------------------------------------
+type Dex = Record<string, number>;
+const dexHas = (d: Dex, n: string) => (d[n] ?? 0) >= 5;
+const dexHasAll = (d: Dex, ns: string[]) => ns.every((n) => dexHas(d, n));
+
+const namesWithPrefix = (p: string) => POKEDEX.filter((s) => s.name.startsWith(p)).map((s) => s.name);
+const MEGA_GATE = namesWithPrefix("M-").filter((n) => n !== "M-Rayquaza");
+const DYNAMAX_GATE = namesWithPrefix("Dynamax ").filter((n) => n !== "Dynamax Eternatus");
+const TERA_GATE = namesWithPrefix("Tera ");
+const OGERPON_ALL = ["Ogerpon", "Ogerpon-Wellspring", "Ogerpon-Hearthflame", "Ogerpon-Cornerstone"];
+
+/** Per-species spawn gate: a name here only appears as a wild encounter once its
+ *  predicate holds (checked in `store.spawnEnemy` against the live Dex). */
+export const SPECIES_UNLOCK: Record<string, (dex: Dex) => boolean> = {
+  "M-Rayquaza": (d) => dexHas(d, "P-Groudon") && dexHas(d, "P-Kyogre"),
+  "Eternatus-Eternamax": (d) => dexHas(d, "Eternatus") && dexHasAll(d, DYNAMAX_GATE),
+  Necrozma: (d) => dexHas(d, "Solgaleo") && dexHas(d, "Lunala"),
+  "Necrozma-Dusk-Mane": (d) => dexHas(d, "Necrozma"),
+  "Necrozma-Dawn-Wings": (d) => dexHas(d, "Necrozma"),
+  "Necrozma-Ultra": (d) => dexHasAll(d, ["Necrozma", "Necrozma-Dusk-Mane", "Necrozma-Dawn-Wings"]),
+  Ogerpon: (d) => dexHasAll(d, TERA_GATE),
+  "Ogerpon-Wellspring": (d) => dexHasAll(d, TERA_GATE),
+  "Ogerpon-Hearthflame": (d) => dexHasAll(d, TERA_GATE),
+  "Ogerpon-Cornerstone": (d) => dexHasAll(d, TERA_GATE),
+  Terapagos: (d) => dexHasAll(d, OGERPON_ALL),
+  "Terapagos-Terastal": (d) => dexHas(d, "Terapagos"),
+  "Terapagos-Stellar": (d) => dexHas(d, "Terapagos"),
+};
+
+/** Whole-route gate keyed `"<Region>/<routeId>"`. */
+export const ROUTE_UNLOCK: Record<string, (dex: Dex) => boolean> = {
+  "Kalos Anomaly/primal": (d) => dexHasAll(d, MEGA_GATE),
+};
+
+export function isRouteUnlocked(
+  region: string,
+  routeId: string,
+  dex: Dex,
+  playerPrestige: number,
+): boolean {
+  const def = ROUTES[region]?.[routeId];
+  if (!def) return false;
+  if (def.requiredPrestige != null && playerPrestige < def.requiredPrestige) return false;
+  const pred = ROUTE_UNLOCK[`${region}/${routeId}`];
+  return pred ? pred(dex) : true;
+}
+
+/** Short human label for what a locked route still needs (Map view). */
+export function routeRequirementLabel(region: string, routeId: string): string | null {
+  if (`${region}/${routeId}` === "Kalos Anomaly/primal") return "Catch every Mega Evolution";
+  const def = ROUTES[region]?.[routeId];
+  if (def?.requiredPrestige != null) return `Prestige ${def.requiredPrestige}`;
+  return null;
+}
+
+/** The three player-facing activation buttons. */
+export type AnomalyKind = "mega" | "dynamax" | "tera";
+
+/** Owned Mega form species for a mon's base species (X and Y both if caught).
+ *  Empty ⇒ Mega activation unavailable for this mon. */
+export function megaFormsFor(dex: Dex, monName: string): string[] {
+  const base = baseSpeciesOf(monName);
+  return (MEGA_FORMS[base] ?? []).filter((n) => dexHas(dex, n));
+}
+
+/** True once the player has caught any Mega form at all (⇒ show the Mega button). */
+export function anyMegaOwned(dex: Dex): boolean {
+  return namesWithPrefix("M-").some((n) => dexHas(dex, n));
+}
+
+/** The caught G-Max species for a mon's base, else null (⇒ plain Dynamax). */
+export function gmaxFormFor(dex: Dex, monName: string): string | null {
+  const base = baseSpeciesOf(monName);
+  const form = (GMAX_FORMS[base] ?? [])[0];
+  return form && dexHas(dex, form) ? form : null;
+}
+
+/** Dynamax / Gigantamax activation unlocks once the Eternamax anomaly is beaten. */
+export function dynamaxUnlocked(anomalyCleared: Record<string, boolean>): boolean {
+  return !!anomalyCleared["galar-eternamax"];
+}
+
+/** Party-wide Terastallization unlocks on catching Stellar Terapagos. */
+export function teraUnlocked(dex: Dex): boolean {
+  return dexHas(dex, "Terapagos-Stellar");
+}

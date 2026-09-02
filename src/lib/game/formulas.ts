@@ -150,7 +150,19 @@ export function nextLevelExp(poke: OwnedPoke): number {
 const MEGA_STAT_MULT = 1.05;
 const MEGA_DAMAGE_MULT = 1.02;
 const DYNAMAX_HP_MULT = 1.5;
+const DYNAMAX_DAMAGE_MULT = 1.15;
+const GMAX_DAMAGE_MULT = 1.25;
 const TERA_DAMAGE_MULT = 1.1;
+
+/** Temporary in-battle anomaly activation kinds (player side). */
+export type FormKind = "mega" | "gmax" | "dynamax" | "tera";
+
+/** Wild combat: activations last this many enemy defeats, then that anomaly type
+ *  is locked party-wide for RECHARGE defeats. */
+export const WILD_FORM_DEFEATS = 6;
+export const WILD_RECHARGE_DEFEATS = 10;
+/** League: Dynamax / Gigantamax real-time cap (Mega & Tera last until faint / fight end). */
+export const LEAGUE_DYNAMAX_MS = 15_000;
 
 const TERA_EXCLUSIVE_NAMES = new Set([
   "Ogerpon",
@@ -167,6 +179,9 @@ export function isMegaName(name: string): boolean {
 }
 export function isDynamaxName(name: string): boolean {
   return name.startsWith("Dynamax ");
+}
+export function isGmaxName(name: string): boolean {
+  return name.startsWith("Gigantamax ");
 }
 export function isTeraName(name: string): boolean {
   return name.startsWith("Tera ") || TERA_EXCLUSIVE_NAMES.has(name);
@@ -185,6 +200,9 @@ export function combatStats(
     uniqueBonus?: number;
     /** When true, treat this mon as the player's active fighter (apply global bonuses). */
     isPlayer?: boolean;
+    /** Active temporary anomaly form on this mon (player side). For mega/gmax the
+     *  caller has already swapped `poke.name` to the form species. */
+    form?: FormKind;
   } = {},
 ) {
   const spec = speciesByName(poke.name);
@@ -208,7 +226,7 @@ export function combatStats(
   const unique = opts.isPlayer ? (opts.uniqueBonus ?? 0) : 0;
   const pMult = playerPrestigeMult(prestige);
 
-  const mega = isMegaName(poke.name);
+  const mega = isMegaName(poke.name) || opts.form === "mega";
   const formStatMult = mega ? MEGA_STAT_MULT : 1;
 
   // Anomaly form bonuses also apply to the player when an anomaly is equipped
@@ -230,7 +248,9 @@ export function combatStats(
   const speed = Math.floor((1000 / (500 + spe)) * 800);
   let maxHp = Math.floor(((spec.hp * lvl) / 40) * pMult * 3 * effectiveFormMult);
   maxHp = Math.max(3, maxHp);
-  if (isDynamaxName(poke.name) && (opts.isPlayer || anomalyActive)) {
+  const dynamaxed =
+    isDynamaxName(poke.name) || isGmaxName(poke.name) || opts.form === "dynamax" || opts.form === "gmax";
+  if (dynamaxed && (opts.isPlayer || anomalyActive || opts.form === "dynamax" || opts.form === "gmax")) {
     maxHp = Math.floor(maxHp * DYNAMAX_HP_MULT);
   }
 
@@ -299,12 +319,17 @@ export function attackDamage(
     attackerIsPlayer?: boolean;
     playerPrestige?: number;
     uniqueBonus?: number;
+    /** Active temporary anomaly form on the attacker (player side). */
+    form?: FormKind;
+    /** Terastal offense type — overrides the species' own `teraType`. */
+    teraType?: string;
   } = {},
 ): { damage: number; multiplier: number } {
   const a = combatStats(attacker, {
     isPlayer: opts.attackerIsPlayer,
     playerPrestige: opts.playerPrestige,
     uniqueBonus: opts.uniqueBonus,
+    form: opts.form,
   });
   const d = combatStats(defender, {
     isPlayer: !opts.attackerIsPlayer,
@@ -313,7 +338,12 @@ export function attackDamage(
   });
 
   const attackerSpec = speciesByName(attacker.name);
-  const teraType = isTeraName(attacker.name) ? attackerSpec?.teraType : undefined;
+  const teraType =
+    opts.form === "tera"
+      ? opts.teraType ?? attacker.teraType
+      : isTeraName(attacker.name)
+        ? attackerSpec?.teraType
+        : undefined;
   const multiplier = typeMultiplier(a.types, d.types, teraType);
 
   const prestigeForBonus = opts.attackerIsPlayer ? (opts.playerPrestige ?? 0) : 0;
@@ -321,8 +351,10 @@ export function attackDamage(
 
   let damage = rollDamage(a.avgAtk, d.avgDef, multiplier, bonus);
   if (damage > 0) {
-    if (isMegaName(attacker.name)) damage = Math.round(damage * MEGA_DAMAGE_MULT);
-    if (isTeraName(attacker.name)) damage = Math.round(damage * TERA_DAMAGE_MULT);
+    if (isMegaName(attacker.name) || opts.form === "mega") damage = Math.round(damage * MEGA_DAMAGE_MULT);
+    if (opts.form === "gmax") damage = Math.round(damage * GMAX_DAMAGE_MULT);
+    else if (opts.form === "dynamax") damage = Math.round(damage * DYNAMAX_DAMAGE_MULT);
+    if (isTeraName(attacker.name) || opts.form === "tera") damage = Math.round(damage * TERA_DAMAGE_MULT);
   }
   return { damage, multiplier };
 }
@@ -342,6 +374,15 @@ export function eligibleEvolutions(poke: OwnedPoke) {
   return (EVOLUTIONS[poke.name] ?? []).filter((e) => lvl >= e.level);
 }
 
+/** Roll the fixed Terastal type for a freshly created / migrated mon: a random
+ *  pick among its own types, or its sole type when single-typed (no roll). */
+export function rollTeraType(name: string): string | undefined {
+  const spec = speciesByName(name);
+  if (!spec || spec.types.length === 0) return undefined;
+  if (spec.types.length === 1) return spec.types[0];
+  return spec.types[Math.floor(Math.random() * spec.types.length)];
+}
+
 export function makeOwned(
   name: string,
   level: number,
@@ -357,6 +398,7 @@ export function makeOwned(
     shiny,
     prestige,
     hp: 1,
+    teraType: rollTeraType(name),
   };
   poke.hp = combatStats(poke).maxHp;
   return poke;
