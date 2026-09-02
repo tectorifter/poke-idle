@@ -4,7 +4,6 @@ import {
   REGIONS,
   REGION_UNLOCK,
   speciesByName,
-  STARTERS,
   POKEDEX,
   SPECIES_UNLOCK,
   GMAX_FORMS,
@@ -248,7 +247,7 @@ export type GameState = {
 };
 
 type GameActions = {
-  startWith: (name: (typeof STARTERS)[number]) => void;
+  startWith: (name: string) => void;
   step: (dt: number) => void;
   manualTap: () => void;
   setTab: (tab: TabId) => void;

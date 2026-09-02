@@ -168,6 +168,10 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Enamorus-Therian": "enamorus-therian",
   "Ursaluna-Bloodmoon": "ursaluna-bloodmoon",
   "Basculegion-F": "basculegion-f",
+
+  // Let's Go partner forms.
+  "Partner Pikachu": "pikachu-starter",
+  "Partner Eevee": "eevee-starter",
 };
 
 const KNOWN_MISSING_GIFS = new Set<string>([
@@ -292,6 +296,8 @@ const NATIONAL_DEX_ID: Record<string, number> = {
   Terapagos: 1024,
   "Terapagos-Terastal": 1024,
   "Terapagos-Stellar": 1024,
+  "Partner Pikachu": 25,
+  "Partner Eevee": 133,
 };
 
 /** Third-tier fallback, independently verified against a different host
@@ -305,6 +311,69 @@ export function ultimateFallbackUrl(name: string): string | null {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${nationalId}.png`;
 }
 
+// ─── Starter selection: first-stage, non-legendary/mythical pool ────────────
+
+/** Never offered as a random starter: legendaries, mythicals, Ultra Beasts,
+ *  paradox mons, plus a handful of item/trade/regional evolutions that the
+ *  evolution data doesn't record as evolution targets. */
+const NON_STARTER = new Set<string>([
+  "Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew",
+  "Raikou", "Entei", "Suicune", "Lugia", "Ho-Oh", "Celebi",
+  "Regirock", "Regice", "Registeel", "Latias", "Latios", "Kyogre", "Groudon", "Rayquaza", "Jirachi", "Deoxys",
+  "Uxie", "Mesprit", "Azelf", "Dialga", "Palkia", "Heatran", "Regigigas", "Giratina", "Cresselia",
+  "Phione", "Manaphy", "Darkrai", "Shaymin", "Arceus",
+  "Victini", "Cobalion", "Terrakion", "Virizion", "Tornadus", "Thundurus", "Reshiram", "Zekrom",
+  "Landorus", "Kyurem", "Keldeo", "Meloetta", "Genesect",
+  "Xerneas", "Yveltal", "Zygarde", "Diancie", "Hoopa", "Volcanion",
+  "Type: Null", "Silvally", "Tapu Koko", "Tapu Lele", "Tapu Bulu", "Tapu Fini",
+  "Cosmog", "Cosmoem", "Solgaleo", "Lunala", "Necrozma", "Magearna", "Marshadow", "Zeraora", "Meltan", "Melmetal",
+  "Nihilego", "Buzzwole", "Pheromosa", "Xurkitree", "Celesteela", "Kartana", "Guzzlord",
+  "Poipole", "Naganadel", "Stakataka", "Blacephalon",
+  "Zacian", "Zamazenta", "Eternatus", "Kubfu", "Urshifu", "Regieleki", "Regidrago",
+  "Glastrier", "Spectrier", "Calyrex", "Enamorus",
+  "Wo-Chien", "Chien-Pao", "Ting-Lu", "Chi-Yu", "Koraidon", "Miraidon",
+  "Walking Wake", "Iron Leaves", "Gouging Fire", "Raging Bolt", "Iron Boulder", "Iron Crown",
+  "Ogerpon", "Terapagos", "Pecharunt",
+  "Great Tusk", "Scream Tail", "Brute Bonnet", "Flutter Mane", "Slither Wing", "Sandy Shocks",
+  "Iron Treads", "Iron Bundle", "Iron Hands", "Iron Jugulis", "Iron Moth", "Iron Thorns",
+  "Roaring Moon", "Iron Valiant",
+  "Slowking", "Gallade", "Froslass", "Polteageist", "Sirfetchd", "Mr. Rime", "Runerigus",
+  "Perrserker", "Cursola", "Obstagoon",
+]);
+
+const STARTER_FORM_RE =
+  /^(M-|A-|G-|H-|P-|B-|W-|F-|Fan-|Mega |Primal |Alolan |Galarian |Hisuian |Paldean |Dynamax |Gigantamax |Tera |G-Max |Ash-)/;
+
+const EVO_TARGETS = new Set<string>();
+for (const arr of Object.values(EVOLUTIONS)) for (const e of arr) EVO_TARGETS.add(e.to);
+
+/** First-stage, non-legendary/mythical species pickable as a starter, plus the
+ *  two Let's Go partner forms. */
+export const STARTER_POOL: string[] = [
+  ...POKEDEX.filter(
+    (s) =>
+      s.id >= 1 &&
+      s.id <= 1025 &&
+      !STARTER_FORM_RE.test(s.name) &&
+      !(s.name.includes("-") && s.name !== "Jangmo-o") &&
+      !EVO_TARGETS.has(s.name) &&
+      !NON_STARTER.has(s.name),
+  ).map((s) => s.name),
+  "Partner Pikachu",
+  "Partner Eevee",
+];
+
+/** `count` distinct random starter options. */
+export function rollStarters(count = 6): string[] {
+  const pool = [...STARTER_POOL];
+  const out: string[] = [];
+  for (let i = 0; i < count && pool.length; i++) {
+    out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  }
+  return out;
+}
+
+/** Legacy fixed trio — kept for any callers that still reference it. */
 export const STARTERS = ["Bulbasaur", "Charmander", "Squirtle"] as const;
 
 // ─── Anomaly system: base⇄form maps, catch rules, progression gates ──────────
