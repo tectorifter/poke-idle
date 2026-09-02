@@ -252,6 +252,16 @@ function MoveGrid() {
   );
 }
 
+/** One `label  value` cell in the active mon's 2×3 stat grid. */
+function StatCell({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex justify-between gap-2">
+      <span className="text-muted">{label}</span>
+      <span className="text-fg">{Math.floor(value)}</span>
+    </div>
+  );
+}
+
 export function BattleView() {
   const enemy = useGame((s) => s.enemy);
   const team = useGame((s) => s.team);
@@ -398,10 +408,13 @@ export function BattleView() {
                     </span>
                   )}
                 </div>
-                <div className="text-right font-mono text-[10px] tabular-nums text-muted leading-relaxed">
-                  <div>Dmg {Math.floor(pStats.avgAtk)}</div>
-                  <div>Def {Math.floor(pStats.avgDef)}</div>
-                  <div>MaxHP {pStats.maxHp}</div>
+                <div className="grid shrink-0 grid-cols-2 gap-x-3 gap-y-0.5 font-mono text-[10px] tabular-nums leading-relaxed min-w-[128px]">
+                  <StatCell label="HP" value={pStats.maxHp} />
+                  <StatCell label="Speed" value={pStats.spe} />
+                  <StatCell label="Atk" value={pStats.atk} />
+                  <StatCell label="Sp.A" value={pStats.spa} />
+                  <StatCell label="Def" value={pStats.def} />
+                  <StatCell label="Sp.D" value={pStats.spd} />
                 </div>
               </div>
             </div>
