@@ -5,7 +5,7 @@ import { TYPE_COLOR } from "@/lib/game/type-chart";
 import {
   combatStats,
   levelOf,
-  autoTapMsFromLevel,
+  attacksPerSecond,
   uniqueCaughtBonus,
   playerMaxHp,
   playerLevelOf,
@@ -269,7 +269,6 @@ export function BattleView() {
   const region = useGame((s) => s.region);
   const route = useGame((s) => s.route);
   const pokeyen = useGame((s) => s.pokeyen);
-  const autoTapLevel = useGame((s) => s.autoTapLevel);
   const playerPrestige = useGame((s) => s.playerPrestige);
   const playerHp = useGame((s) => s.playerHp);
   const playerExp = useGame((s) => s.playerExp);
@@ -285,7 +284,6 @@ export function BattleView() {
   const owned = uniqueCaught(dex);
   const routePokes = ROUTES[region]?.[route]?.pokes ?? [];
   const routeOwned = routePokes.filter((name) => (dex[name] ?? 0) >= 5).length;
-  const autoMs = autoTapMsFromLevel(autoTapLevel);
   const uniqueBonus = uniqueCaughtBonus(owned);
 
   const pStats = player
@@ -342,7 +340,11 @@ export function BattleView() {
           <div className="flex items-center gap-3 px-1">
             <div className="h-px flex-1 bg-border" />
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
-              {paused ? "Paused" : `Tap · Auto ${autoMs} ms`}
+              {paused
+                ? "Paused"
+                : pStats
+                  ? `Tap · ${attacksPerSecond(pStats.spe).toFixed(1)} atk/s`
+                  : "Tap"}
             </span>
             <div className="h-px flex-1 bg-border" />
           </div>
