@@ -378,16 +378,17 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     while (playerTimer >= playerSpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
       playerTimer -= playerSpeed;
       const eff = leagueEffective(player, lf, now);
-      const { damage, multiplier } = attackDamage(eff.poke, enemy, {
+      const { damage, multiplier, crit } = attackDamage(eff.poke, enemy, {
         form: eff.form,
         teraType: eff.teraType,
       });
       const dmg = now < buffs.cheerUntil ? Math.round(damage * LEAGUE_CHEER_MULT) : damage;
       enemy = { ...enemy, hp: Math.max(0, enemy.hp - dmg) };
       enemyTeam[enemyIndex] = enemy;
-      if (multiplier >= 2) log = [...log, `Super effective! ${dmg} dmg`];
-      else if (multiplier > 0 && multiplier <= 0.5) log = [...log, `Not very effective... ${dmg}`];
-      else log = [...log, `${player.name} hits ${enemy.name} for ${dmg}.`];
+      const critTag = crit ? "Critical hit! " : "";
+      if (multiplier >= 2) log = [...log, `${critTag}Super effective! ${dmg} dmg`];
+      else if (multiplier > 0 && multiplier <= 0.5) log = [...log, `${critTag}Not very effective... ${dmg}`];
+      else log = [...log, `${critTag}${player.name} hits ${enemy.name} for ${dmg}.`];
 
       if (enemy.hp <= 0) {
         enemyFainted = enemyFainted.map((f, i) => (i === enemyIndex ? true : f));

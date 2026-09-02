@@ -47,6 +47,8 @@ export type OwnedPoke = {
   evs?: StatSpread;
   /** Nature rolled once at creation: +10% one stat, −10% another (5 are neutral). */
   nature?: Nature;
+  /** Player-chosen move names (≤ 4). Unset ⇒ auto-picked from the learnable pool. */
+  moves?: string[];
 };
 
 /** A live temporary anomaly activation on one wild-combat mon. `formName` is the

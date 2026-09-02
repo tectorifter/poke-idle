@@ -16,7 +16,8 @@ import {
   teraUnlocked,
 } from "./dex";
 import type { AnomalyKind } from "./dex";
-import { rollNature } from "./natures";
+import { rollNature, NATURE_NAMES } from "./natures";
+import { learnableMoveNames } from "./learnsets";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
 import {
@@ -37,6 +38,10 @@ import {
   zeroEVs,
   evYield,
   addEVs,
+  STAT_KEYS,
+  IV_MAX,
+  EV_MAX_PER_STAT,
+  EV_MAX_TOTAL,
   attackIntervalMs,
   WILD_FORM_DEFEATS,
   WILD_RECHARGE_DEFEATS,
@@ -62,6 +67,8 @@ import type {
   CatchMode,
   CatchTier,
   DexFlag,
+  Nature,
+  StatSpread,
   LogLine,
   OwnedPoke,
   RechargeCounts,
@@ -281,6 +288,12 @@ type GameActions = {
   /** Prestige the player (global). Requires at least one mon at Lv.100. */
   prestigePlayer: () => void;
   evolve: (uid: string, to: string) => void;
+  /** Apply an IV / EV / nature / move edit to a party mon. ¥2000 per changed
+   *  category among IV/EV/nature; moves are free. Returns false if unaffordable. */
+  modifyPoke: (
+    uid: string,
+    draft: { ivs: StatSpread; evs: StatSpread; nature: Nature; moves: string[] },
+  ) => boolean;
   moveToStorage: (uid: string) => void;
   moveToTeam: (uid: string) => void;
   release: (uid: string, from: "team" | "storage") => void;
@@ -1196,6 +1209,58 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       log: pushLog(s.log, `Evolved into ${to}!`, "level"),
     });
     persist({ ...get() });
+  },
+
+  modifyPoke: (uid, draft) => {
+    const s = get();
+    const idx = s.team.findIndex((p) => p.uid === uid); // party mons only
+    if (idx < 0) return false;
+    const cur = s.team[idx];
+    const MOD_COST = 2000;
+
+    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.floor(v || 0)));
+    const ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as StatSpread;
+    for (const k of STAT_KEYS) ivs[k] = clamp(draft.ivs?.[k] ?? 0, 0, IV_MAX);
+
+    const evs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as StatSpread;
+    let evLeft = EV_MAX_TOTAL;
+    for (const k of STAT_KEYS) {
+      const want = clamp(draft.evs?.[k] ?? 0, 0, EV_MAX_PER_STAT);
+      evs[k] = Math.min(want, evLeft);
+      evLeft -= evs[k];
+    }
+
+    const nature: Nature = NATURE_NAMES.includes(draft.nature) ? draft.nature : cur.nature ?? "Hardy";
+
+    const learnable = new Set(learnableMoveNames(cur.name, levelOf(cur)));
+    const moves = [...new Set(draft.moves ?? [])].filter((n) => learnable.has(n)).slice(0, 4);
+
+    const spreadEq = (a: StatSpread | undefined, b: StatSpread) =>
+      STAT_KEYS.every((k) => (a?.[k] ?? 0) === b[k]);
+    let cost = 0;
+    if (!spreadEq(cur.ivs, ivs)) cost += MOD_COST;
+    if (!spreadEq(cur.evs, evs)) cost += MOD_COST;
+    if ((cur.nature ?? nature) !== nature) cost += MOD_COST;
+    if (cost > s.pokeyen) return false;
+
+    const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
+    const next: OwnedPoke = { ...cur, ivs, evs, nature, moves: moves.length ? moves : undefined };
+    next.hp = Math.min(
+      cur.hp,
+      combatStats(next, { isPlayer: true, playerPrestige: s.playerPrestige, uniqueBonus }).maxHp,
+    );
+
+    set({
+      team: s.team.map((p, i) => (i === idx ? next : p)),
+      pokeyen: s.pokeyen - cost,
+      log: pushLog(
+        s.log,
+        cost > 0 ? `${cur.name} retrained (−¥${cost.toLocaleString()}).` : `${cur.name} moves updated.`,
+        "system",
+      ),
+    });
+    persist({ ...get() });
+    return true;
   },
 
   moveToStorage: (uid) => {
