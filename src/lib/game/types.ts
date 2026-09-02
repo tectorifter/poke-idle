@@ -39,12 +39,12 @@ export type WildForms = { mega: WildActivation | null; dynamax: WildActivation |
 export type RechargeCounts = { mega: number; dynamax: number; tera: number };
 
 /** Permanent catch-power tiers (no consumable balls). */
-export type CatchTier = "pokeball" | "greatball" | "ultraball" | "masterball";
+export type CatchTier = "pokeball" | "greatball" | "ultraball" | "timerball";
 
 /** Catch behaviour is always available; the store only toggles which filter is active. */
 export type CatchMode = "new" | "all";
 
-export type TabId = "battle" | "map" | "team" | "dex" | "store" | "league";
+export type TabId = "battle" | "map" | "team" | "dex" | "store" | "league" | "settings";
 
 export type LogLine = {
   id: number;
@@ -128,6 +128,8 @@ export type SaveBlob = {
   autoTapLevel: number; // 0–25
   catchTier: CatchTier;
   catchLevel: number; // 1–10 inside current tier
+  /** Ball the manual-catch button throws (must be an unlocked tier ≤ catchTier). */
+  selectedBall?: CatchTier;
   catchMode: CatchMode;
   region: string;
   route: string;

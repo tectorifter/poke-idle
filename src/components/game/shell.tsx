@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { BookOpen, Map, Package, Swords, Trophy, Users } from "lucide-react";
+import { BookOpen, Map, Package, Settings, Swords, Trophy, Users } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import type { TabId } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 import { StoreView } from "./store-view";
+import { SettingsView } from "./settings-view";
 import { BattleView } from "./battle";
 import { DexView } from "./dex-view";
 import { LeagueView } from "./league-view";
@@ -18,6 +19,7 @@ const TABS: { id: TabId; label: string; icon: typeof Swords }[] = [
   { id: "team", label: "Team", icon: Users },
   { id: "dex", label: "Dex", icon: BookOpen },
   { id: "store", label: "Store", icon: Package },
+  { id: "settings", label: "Settings", icon: Settings },
 ];
 
 export function GameShell() {
@@ -93,8 +95,9 @@ export function GameShell() {
           {tab === "team" && <TeamView />}
           {tab === "dex" && <DexView />}
           {tab === "store" && <StoreView />}
+          {tab === "settings" && <SettingsView />}
         </main>
-        <nav className="grid h-[4.25rem] shrink-0 grid-cols-6 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
+        <nav className="grid h-[4.25rem] shrink-0 grid-cols-7 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
           {TABS.map((t) => {
             const Icon = t.icon;
             const on = tab === t.id;
