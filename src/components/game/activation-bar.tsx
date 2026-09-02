@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   anyMegaOwned,
+  baseSpeciesOf,
   dynamaxUnlocked,
   gmaxFormFor,
   megaFormsFor,
@@ -105,12 +106,24 @@ export function WildActivationBar() {
 
   const megaForms = megaFormsFor(dex, mon.name);
   const canFight = !!enemy && enemy.hp > 0;
+  const isRayquaza = baseSpeciesOf(mon.name) === "Rayquaza";
 
   const build = (kind: AnomalyKind, unlockedForMon: boolean): Btn => {
     const rec = wa[kind];
     const onThisMon = rec?.uid === mon.uid;
     const onOtherMon = !!rec && !onThisMon;
     const recharge = wr[kind];
+    // Rayquaza Mega-Evolves via a known Dragon Ascent, not this button.
+    if (kind === "mega" && isRayquaza) {
+      return {
+        kind,
+        active: onThisMon,
+        status: onThisMon ? `Active · ${rec!.defeatsLeft}` : "Dragon Ascent",
+        enabled: false,
+        muted: !onThisMon,
+        onClick: () => {},
+      };
+    }
     let status = "Ready";
     let enabled = canFight && unlockedForMon && !rec && recharge === 0;
     let muted = !enabled && !onThisMon;
@@ -151,10 +164,21 @@ export function LeagueActivationBar() {
   const megaForms = megaFormsFor(dex, mon.name);
   const { leagueForms: lf, formsUsed } = battle;
   const now = Date.now();
+  const isRayquaza = baseSpeciesOf(mon.name) === "Rayquaza";
 
   const build = (kind: AnomalyKind, unlockedForMon: boolean): Btn => {
     const rec = lf[kind];
     const onThisMon = rec?.uid === mon.uid;
+    if (kind === "mega" && isRayquaza) {
+      return {
+        kind,
+        active: onThisMon,
+        status: onThisMon ? "Active" : "Dragon Ascent",
+        enabled: false,
+        muted: !onThisMon,
+        onClick: () => {},
+      };
+    }
     let status = "Ready";
     let enabled = unlockedForMon && !formsUsed[kind] && mon.hp > 0;
     if (kind === "dynamax" && lf.dynamax && now < lf.dynamax.until) {

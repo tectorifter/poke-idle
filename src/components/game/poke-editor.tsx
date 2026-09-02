@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { combatStats, levelOf, uniqueCaughtBonus, IV_MAX, EV_MAX_PER_STAT, EV_MAX_TOTAL } from "@/lib/game/formulas";
-import { learnableMoves } from "@/lib/game/learnsets";
+import { learnableMoves, moveAcquisitionCost } from "@/lib/game/learnsets";
 import { NATURE_NAMES, natureTag } from "@/lib/game/natures";
 import { TYPE_COLOR } from "@/lib/game/type-chart";
-import { useGame, uniqueCaught } from "@/lib/game/store";
+import { useGame, uniqueCaught, sanitizeDraft, modifyPokeCost } from "@/lib/game/store";
 import type { Nature, OwnedPoke, StatKey, StatSpread } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,6 @@ const STATS: { key: StatKey; label: string }[] = [
   { key: "spd", label: "Sp.D" },
   { key: "spe", label: "Spe" },
 ];
-const MOD_COST = 2000;
 
 const copy = (s: StatSpread | undefined): StatSpread => ({
   hp: s?.hp ?? 0, atk: s?.atk ?? 0, def: s?.def ?? 0, spa: s?.spa ?? 0, spd: s?.spd ?? 0, spe: s?.spe ?? 0,
@@ -58,8 +57,10 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
   const natChanged = (poke.nature ?? nature) !== nature;
   const movesChanged =
     JSON.stringify([...moves].sort()) !== JSON.stringify([...(poke.moves ?? [])].sort());
-  const cost = (ivChanged ? MOD_COST : 0) + (evChanged ? MOD_COST : 0) + (natChanged ? MOD_COST : 0);
   const dirty = ivChanged || evChanged || natChanged || movesChanged;
+
+  const sanitized = sanitizeDraft(poke, lvl, { ivs, evs, nature, moves });
+  const cost = modifyPokeCost(poke, lvl, sanitized);
   const canApply = dirty && cost <= pokeyen;
 
   const bumpEv = (k: StatKey, d: number) => {
@@ -194,19 +195,19 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
         {/* Moves */}
         <section className="rounded-2xl bg-surface p-3 shadow-border">
           <div className="flex items-baseline justify-between">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-              Moves — free
-            </h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Moves</h3>
             <span className="text-[11px] text-muted">
               {moves.length}/4{moves.length === 0 && " · auto"}
             </span>
           </div>
-          {lvl < 100 && (
-            <p className="mt-1 text-[10px] text-subtle">TM / egg / tutor moves unlock at Lv.100.</p>
-          )}
+          <p className="mt-1 text-[10px] text-subtle">
+            Level-up moves are free · TM / tutor cost ¥1k / ¥2k / ¥3k by power
+            {lvl < 100 && " · TM / egg / tutor unlock at Lv.100"}
+          </p>
           <div className="mt-2 max-h-64 space-y-1 overflow-y-auto">
             {pool.map((m) => {
               const on = moves.includes(m.name);
+              const mc = moveAcquisitionCost(poke.name, lvl, m.name);
               return (
                 <button
                   key={m.name}
@@ -218,7 +219,12 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
                     !on && moves.length >= 4 && "opacity-40",
                   )}
                 >
-                  <span className="truncate font-medium">{m.name}</span>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate font-medium">{m.name}</span>
+                    {mc > 0 && (
+                      <span className="shrink-0 font-mono text-[9px] text-warn">¥{mc / 1000}k</span>
+                    )}
+                  </span>
                   <span className="flex shrink-0 items-center gap-1.5">
                     <span
                       className="rounded px-1 text-[9px] font-semibold uppercase text-white"
@@ -226,8 +232,8 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
                     >
                       {m.type}
                     </span>
-                    <span className="w-14 text-right font-mono tabular-nums text-muted">
-                      {m.category === "Status" ? "status" : m.power}
+                    <span className="w-12 text-right font-mono tabular-nums text-muted">
+                      {m.category === "Status" ? "—" : m.power}
                     </span>
                   </span>
                 </button>
@@ -252,7 +258,6 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
         <div className="mb-2 flex justify-between text-xs">
           <span className="text-muted">
             Cost: <span className="font-mono tabular-nums text-warn">¥{cost.toLocaleString()}</span>
-            {cost > 0 && <span className="text-subtle"> ({cost / MOD_COST}× ¥2,000)</span>}
           </span>
           <span className="font-mono tabular-nums text-muted">have ¥{pokeyen.toLocaleString()}</span>
         </div>

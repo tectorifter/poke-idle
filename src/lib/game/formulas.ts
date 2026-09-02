@@ -1,7 +1,7 @@
-import { EXP_TABLE, EVOLUTIONS, speciesByName } from "./dex";
+import { EXP_TABLE, EVOLUTIONS, speciesByName, isAnomalyFormName } from "./dex";
 import { defenseMultiplier } from "./type-chart";
 import { natureMult, rollNature } from "./natures";
-import { CRIT_CHANCE, CRIT_MULT } from "./moves";
+import { CRIT_CHANCE, CRIT_MULT, toMaxMove, toGMaxMove } from "./moves";
 import type { MoveData } from "./moves";
 import { chosenMove } from "./learnsets";
 import type { CatchTier, GrowthRate, OwnedPoke, Species, StatKey, StatSpread } from "./types";
@@ -46,33 +46,27 @@ const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
   timerball: 30, // Lv. 31 – 40
 };
 
-const TIER_BASE_MULT: Record<CatchTier, number> = {
-  pokeball: 0.5,
+/** Real-game ball catch multipliers. A tier's Lv.1 is its own bonus; each level
+ *  interpolates toward the next tier's bonus, so Lv.10 = the next ball's value
+ *  (Timer Ball caps at the real Timer-Ball max of ×4). */
+const BALL_BONUS_BASE: Record<CatchTier, number> = {
+  pokeball: 1,
   greatball: 1.5,
-  ultraball: 3,
-  timerball: 5,
+  ultraball: 2,
+  timerball: 3,
 };
+export const BALL_BONUS_MAX = 4;
 
-const MAX_CATCH_MULT = 10;
-/** Final catch multiplier for a given tier + level (1–10). */
-/** Dynamically spreads the tier difference across 10 levels */
-export function catchMultiplier(tier: CatchTier, level: number): number {
-  const lvl = Math.max(1, Math.min(10, level));
+export function ballBonus(tier: CatchTier, level: number): number {
   const idx = CATCH_TIER_ORDER.indexOf(tier);
-  const currentBase = TIER_BASE_MULT[tier];
-
-  const isLastTier = idx === CATCH_TIER_ORDER.length - 1;
-  const nextBase = isLastTier
-    ? MAX_CATCH_MULT
-    : TIER_BASE_MULT[CATCH_TIER_ORDER[idx + 1]];
-
-  // Standard tiers divide by 10 so the tier upgrade grants the 10th step;
-  // the last tier (Timer Ball) divides by 9 so Level 10 lands exactly on 20.0x.
-  const step = isLastTier
-    ? (nextBase - currentBase) / 9
-    : (nextBase - currentBase) / 10;
-
-  return Number((currentBase + (lvl - 1) * step).toFixed(1));
+  const isLast = idx === CATCH_TIER_ORDER.length - 1;
+  const base = BALL_BONUS_BASE[tier];
+  const next = isLast ? BALL_BONUS_MAX : BALL_BONUS_BASE[CATCH_TIER_ORDER[idx + 1]];
+  const lvl = Math.max(1, Math.min(10, level));
+  // Non-last tiers: Lv.10 = the next tier's base (which is Lv.1 there).
+  // Last tier: Lv.10 lands exactly on the ×4 cap (divide by 9, not 10).
+  const span = isLast ? 9 : 10;
+  return Number((base + ((next - base) / span) * (lvl - 1)).toFixed(3));
 }
 
 export function tierIndex(tier: CatchTier): number {
@@ -105,26 +99,35 @@ export function ballChargeCost(ball: CatchTier, qty = 1): number {
   return BALL_META[ball].price * qty;
 }
 
-/** Chance % using permanent catch power (always available, no balls consumed). */
-export function catchChancePercentPermanent(
-  catchRate: number,
-  tier: CatchTier,
-  level: number,
-): number {
-  return (catchRate * catchMultiplier(tier, level)) / 3;
+/** Single-throw catch probability (0–1) from the modified catch rate `a`
+ *  (Gen V/VI shake-check math simplifies to (a/255)^(3/4)). */
+export function catchProbability(a: number): number {
+  if (a >= 255) return 1;
+  if (a <= 0) return 0;
+  return Math.pow(a / 255, 0.75);
 }
 
-/** Manual (hand-thrown) catch chance: the chosen ball's rate, 50% better than
- *  the equivalent auto-catch. Returns 0 if the ball isn't unlocked yet. */
-export function manualCatchChance(
+/** Extra `a` multiplier for a manually-aimed throw — auto-catch gets none, so
+ *  paying a ball charge to hand-throw stays worthwhile. */
+export const MANUAL_CATCH_BONUS = 1.5;
+
+/** Normal Pokémon catch chance (0–1):
+ *    a = ((3·HPmax − 2·HP) · rate · ballBonus) / (3·HPmax)   then  (a/255)^0.75
+ *  `hpFrac` is currentHP / maxHP (0 when the target has fainted). */
+export function catchChance(
   catchRate: number,
   ball: CatchTier,
   curTier: CatchTier,
   curLevel: number,
+  hpFrac = 0,
+  manual = false,
 ): number {
   const lvl = effectiveBallLevel(ball, curTier, curLevel);
-  if (lvl === 0) return 0;
-  return catchChancePercentPermanent(catchRate, ball, lvl) * 1.5;
+  if (lvl === 0) return 0; // ball tier not unlocked
+  const hp = Math.max(0, Math.min(1, hpFrac));
+  const a =
+    ((3 - 2 * hp) * Math.max(1, catchRate) * ballBonus(ball, lvl) * (manual ? MANUAL_CATCH_BONUS : 1)) / 3;
+  return catchProbability(a);
 }
 
 // ─── Pokeyen reward ───────────────────────────────────────────────────────
@@ -407,7 +410,12 @@ export function attackDamage(
     move?: MoveData;
   } = {},
 ): { damage: number; multiplier: number; crit: boolean } {
-  const move = opts.move ?? chosenMove(attacker, levelOf(attacker));
+  let move = opts.move ?? chosenMove(attacker, levelOf(attacker));
+
+  // Dynamax / Gigantamax: the equipped move fires as its Max / G-Max version
+  // (correct Max-move base power; G-Max signature type gets the G-Max move).
+  if (opts.form === "gmax") move = toGMaxMove(move, attacker.name);
+  else if (opts.form === "dynamax") move = toMaxMove(move);
 
   // Status moves have no effect in this model (still listed elsewhere).
   if (move.category === "Status" || move.power <= 0) {
@@ -477,7 +485,11 @@ export const STORAGE_EXP_SHARE = 0.3;
 
 export function eligibleEvolutions(poke: OwnedPoke) {
   const lvl = levelOf(poke);
-  return (EVOLUTIONS[poke.name] ?? []).filter((e) => lvl >= e.level);
+  // Mega / Primal / Tera / Dynamax / Gigantamax are temporary activations, never
+  // a permanent evolution — never offer them as an Evolve target.
+  return (EVOLUTIONS[poke.name] ?? []).filter(
+    (e) => lvl >= e.level && !isAnomalyFormName(e.to),
+  );
 }
 
 /** Roll the fixed Terastal type for a freshly created / migrated mon: a random
