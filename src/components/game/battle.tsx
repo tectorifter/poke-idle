@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play, Scissors, Shield, Sparkles, Swords } from "lucide-react";
 import { speciesByName } from "@/lib/game/dex";
+import { TYPE_COLOR } from "@/lib/game/type-chart";
 import {
   combatStats,
   levelOf,
@@ -94,6 +95,163 @@ function CatchBallButton() {
   );
 }
 
+/** Compact party control: shows only the leading mon; tap/hold reveals the rest
+ *  of the party so the player can swap the lead fighter. */
+function PartyButton() {
+  const team = useGame((s) => s.team);
+  const active = useGame((s) => s.active);
+  const setActive = useGame((s) => s.setActive);
+  const [open, setOpen] = useState(false);
+  const holdTimer = useRef<number | undefined>(undefined);
+  const held = useRef(false);
+
+  const lead = team[active];
+  if (!lead) return null;
+
+  return (
+    <div className="relative shrink-0">
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onPointerDown={() => setOpen(false)} />
+          <div className="absolute bottom-full left-0 z-20 mb-2 flex w-max max-w-[240px] flex-wrap gap-1 rounded-2xl bg-surface p-1.5 shadow-border">
+            {team.map((p, i) => (
+              <button
+                key={p.uid}
+                type="button"
+                onClick={() => {
+                  setActive(i);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "grid size-11 place-items-center rounded-xl",
+                  i === active ? "bg-accent/20 ring-1 ring-accent" : "bg-surface-2",
+                  p.hp <= 0 && "opacity-40",
+                )}
+              >
+                <Sprite name={p.name} shiny={p.shiny} size={36} />
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      <button
+        type="button"
+        aria-label={`Lead: ${lead.name} — hold to swap`}
+        onPointerDown={() => {
+          held.current = false;
+          holdTimer.current = window.setTimeout(() => {
+            held.current = true;
+            setOpen(true);
+          }, 350);
+        }}
+        onPointerUp={() => {
+          window.clearTimeout(holdTimer.current);
+          if (!held.current) setOpen((o) => !o);
+        }}
+        onPointerLeave={() => window.clearTimeout(holdTimer.current)}
+        className="grid size-11 place-items-center rounded-2xl bg-surface shadow-border active:scale-95"
+      >
+        <Sprite name={lead.name} shiny={lead.shiny} size={40} />
+      </button>
+    </div>
+  );
+}
+
+/** Compact False Swipe toggle — same footprint as the catch button. */
+function FalseSwipeButton() {
+  const falseSwipe = useGame((s) => s.falseSwipe);
+  const toggle = useGame((s) => s.toggleFalseSwipe);
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      title="False Swipe"
+      aria-label={`False Swipe ${falseSwipe ? "on" : "off"}`}
+      className={cn(
+        "grid size-11 shrink-0 place-items-center rounded-full shadow-border active:scale-95",
+        falseSwipe ? "bg-warn text-black" : "bg-surface text-muted",
+      )}
+    >
+      <Scissors className="size-5" />
+    </button>
+  );
+}
+
+/** Placeholder for a battle move category — future: real move data. */
+export type MoveSlot = {
+  name: string;
+  type: string;
+  category: "physical" | "special" | "status";
+};
+
+const CATEGORY_ICON: Record<MoveSlot["category"], typeof Swords> = {
+  physical: Swords,
+  special: Sparkles,
+  status: Shield,
+};
+
+/** HOOK: the active mon's four move slots. Empty stubs until movesets are wired in. */
+function movesFor(_pokeName: string): (MoveSlot | null)[] {
+  return [null, null, null, null];
+}
+
+function MoveButton({
+  index,
+  move,
+  selected,
+  onSelect,
+}: {
+  index: number;
+  move: MoveSlot | null;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const Icon = move ? CATEGORY_ICON[move.category] : null;
+  const color = move ? TYPE_COLOR[move.type] ?? "#8b8f9a" : undefined;
+  return (
+    <button
+      type="button"
+      disabled={!move}
+      onClick={onSelect}
+      aria-label={move ? `${move.name} — ${move.type} ${move.category}` : `Move ${index + 1} (empty)`}
+      style={move ? { backgroundColor: color } : undefined}
+      className={cn(
+        "flex min-h-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-bold leading-tight",
+        move
+          ? selected
+            ? "text-white ring-2 ring-white"
+            : "text-white/85 opacity-60"
+          : "border border-dashed border-border bg-surface-2 text-subtle",
+      )}
+    >
+      {Icon ? <Icon className="size-3.5" /> : <span className="text-sm leading-none">·</span>}
+      <span className="w-full truncate text-center">{move ? move.name : `Move ${index + 1}`}</span>
+    </button>
+  );
+}
+
+/** 2×2 grid of move buttons (stubs for now). */
+function MoveGrid() {
+  const team = useGame((s) => s.team);
+  const active = useGame((s) => s.active);
+  const moves = movesFor(team[active]?.name ?? "");
+  // HOOK: which slot is the "selected" move to use in battle.
+  const [selected, setSelected] = useState(0);
+  return (
+    <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-1.5">
+      {moves.map((m, i) => (
+        <MoveButton
+          key={i}
+          index={i}
+          move={m}
+          selected={i === selected}
+          onSelect={() => setSelected(i)}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function BattleView() {
   const enemy = useGame((s) => s.enemy);
   const team = useGame((s) => s.team);
@@ -109,10 +267,7 @@ export function BattleView() {
   const playerHit = useGame((s) => s.playerHit);
   const enemyHit = useGame((s) => s.enemyHit);
   const paused = useGame((s) => s.paused);
-  const setActive = useGame((s) => s.setActive);
   const manualTap = useGame((s) => s.manualTap);
-  const toggleFalseSwipe = useGame((s) => s.toggleFalseSwipe);
-  const falseSwipe = useGame((s) => s.falseSwipe);
   const log = useGame((s) => s.log);
 
   const player = team[active];
@@ -274,56 +429,16 @@ export function BattleView() {
         </div>
       </button>
 
-      {/* ── Activations + manual catch (outside the tap zone) ── */}
-      <div className="shrink-0 space-y-2 px-3 pt-2">
-        <WildActivationBar />
-        {enemy && (
-          <div className="flex items-center gap-2">
-            <CatchBallButton />
-            <button
-              type="button"
-              onClick={toggleFalseSwipe}
-              className={cn(
-                "h-11 flex-1 rounded-full px-4 text-xs font-semibold shadow-border",
-                falseSwipe ? "bg-warn text-black" : "bg-surface text-muted",
-              )}
-            >
-              False Swipe{falseSwipe ? " · ON" : ""}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* ── Team strip ── */}
+      {/* ── Combat controls ── */}
       <div className="shrink-0 border-t border-border bg-bg px-3 pb-2 pt-2">
-        <div className="flex flex-nowrap gap-1.5 overflow-x-auto [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {team.map((p, i) => {
-            const stats = combatStats(p, {
-              isPlayer: true,
-              playerPrestige,
-              uniqueBonus,
-            });
-            return (
-              <button
-                key={p.uid}
-                type="button"
-                onClick={() => setActive(i)}
-                className={cn(
-                  "flex min-w-[64px] flex-shrink-0 flex-col items-center rounded-2xl bg-surface px-2 py-1.5 shadow-border",
-                  i === active && "ring-1 ring-accent",
-                  p.hp <= 0 && "opacity-40",
-                )}
-              >
-                <Sprite name={p.name} shiny={p.shiny} size={36} />
-                <Meter
-                  value={p.hp}
-                  max={stats.maxHp}
-                  tone="hp"
-                  className="mt-1 w-full"
-                />
-              </button>
-            );
-          })}
+        <WildActivationBar />
+        <div className="mt-2 flex gap-2">
+          <div className="flex shrink-0 flex-col gap-1.5">
+            <PartyButton />
+            <CatchBallButton />
+            <FalseSwipeButton />
+          </div>
+          <MoveGrid />
         </div>
       </div>
     </div>
