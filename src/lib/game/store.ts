@@ -16,6 +16,7 @@ import {
   teraUnlocked,
 } from "./dex";
 import type { AnomalyKind } from "./dex";
+import { rollNature } from "./natures";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
 import {
@@ -436,6 +437,7 @@ function hydrate(): GameState {
     teraType: p.teraType ?? rollTeraType(p.name),
     ivs: p.ivs ?? rollIVs(),
     evs: p.evs ?? zeroEVs(),
+    nature: p.nature ?? rollNature(),
   });
   const team = (saved.team ?? []).map((raw) => {
     const p = withMeta(raw);

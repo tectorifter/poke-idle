@@ -10,6 +10,7 @@ import {
   TEAM_SIZE,
   uniqueCaughtBonus,
 } from "@/lib/game/formulas";
+import { natureTag } from "@/lib/game/natures";
 import { useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { Meter } from "./bars";
@@ -139,6 +140,12 @@ function PokeCell({
         <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted">Lv.{lvl}</span>
       </div>
       <Meter value={poke.hp} max={stats.maxHp} tone="hp" className="h-1.5" />
+      {poke.nature && (
+        <div className="truncate text-[9px] font-medium text-muted">
+          {poke.nature}
+          {natureTag(poke.nature) && <span className="text-subtle"> {natureTag(poke.nature)}</span>}
+        </div>
+      )}
       <div className="font-mono text-[9px] tabular-nums text-muted">
         IV {ivSum}/{IV_MAX * 6} · EV {evSum}/510
       </div>

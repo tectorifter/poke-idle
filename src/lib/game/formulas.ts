@@ -1,5 +1,6 @@
 import { EXP_TABLE, EVOLUTIONS, speciesByName } from "./dex";
 import { typeMultiplier } from "./type-chart";
+import { natureMult, rollNature } from "./natures";
 import type { CatchTier, GrowthRate, OwnedPoke, Species, StatKey, StatSpread } from "./types";
 
 // ─── Auto-tap & store constants ───────────────────────────────────────────
@@ -280,18 +281,26 @@ export function combatStats(
 
   // Per-instance IV + EV contribution (real-formula term), one per stat.
   const ie = (k: StatKey, scale = 1) => ivEvBonus(poke, k, lvl) * scale;
+  // Nature: +10% / −10% / neutral per stat (never HP).
+  const nat = (k: StatKey) => natureMult(poke.nature, k);
 
-  const atk =
-    Math.floor(
-      ((((spec.atk + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique,
-    ) + ie("atk");
-  const def =
-    Math.floor(
-      ((((spec.def + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique,
-    ) + ie("def");
-  const spa = Math.floor((((spec.spa + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spa");
-  const spd = Math.floor((((spec.spd + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spd");
-  const spe = Math.floor((((spec.spe + 50) * lvl) / 150) * pMult) + ie("spe");
+  const atk = Math.floor(
+    (Math.floor(((((spec.atk + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique) + ie("atk")) *
+      nat("atk"),
+  );
+  const def = Math.floor(
+    (Math.floor(((((spec.def + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique) + ie("def")) *
+      nat("def"),
+  );
+  const spa = Math.floor(
+    (Math.floor((((spec.spa + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spa")) * nat("spa"),
+  );
+  const spd = Math.floor(
+    (Math.floor((((spec.spd + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spd")) * nat("spd"),
+  );
+  const spe = Math.floor(
+    (Math.floor((((spec.spe + 50) * lvl) / 150) * pMult) + ie("spe")) * nat("spe"),
+  );
 
   const speed = Math.floor((1000 / (500 + spe)) * 800);
   let maxHp = Math.floor(((spec.hp * lvl) / 40) * pMult * 3 * effectiveFormMult) + ie("hp", 3);
@@ -505,6 +514,7 @@ export function makeOwned(
     teraType: rollTeraType(name),
     ivs: rollIVs(),
     evs: zeroEVs(),
+    nature: rollNature(),
   };
   poke.hp = combatStats(poke).maxHp;
   return poke;
