@@ -3,6 +3,7 @@ import {
   autoTapCost,
   autoTapMsFromLevel,
   catchUpgradeCost,
+  ballChargeCost,
   catchMultiplier,
   BALL_META,
   CATCH_TIER_ORDER,
@@ -24,6 +25,10 @@ export function StoreView() {
   const catchMode = useGame((s) => s.catchMode);
   const playerPrestige = useGame((s) => s.playerPrestige);
   const team = useGame((s) => s.team);
+  const selectedBall = useGame((s) => s.selectedBall);
+  const ballCharges = useGame((s) => s.ballCharges);
+  const setSelectedBall = useGame((s) => s.setSelectedBall);
+  const buyBall = useGame((s) => s.buyBall);
   const buyAutoTap = useGame((s) => s.buyAutoTap);
   const buyCatchUpgrade = useGame((s) => s.buyCatchUpgrade);
   const setCatchMode = useGame((s) => s.setCatchMode);
@@ -81,7 +86,7 @@ export function StoreView() {
         </button>
       </section>
 
-      {/* ── Catch power + mode ── */}
+      {/* ── Catch power (permanent upgrade track) + mode ── */}
       <section className="mt-4 rounded-3xl bg-surface p-4 shadow-border">
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
           Catch Power
@@ -90,33 +95,14 @@ export function StoreView() {
           {curBall} Lv.{catchLevel}
         </p>
         <p className="text-xs text-muted">
-          Multiplier ×{mult.toFixed(1)}
-          {catchTier !== "timerball" && " · next ball at Lv.10"}
+          Auto-catch multiplier ×{mult.toFixed(1)}
+          {catchTier !== "timerball" && " · reach Lv.10 to unlock the next ball type"}
         </p>
         <p className="mt-1 text-xs text-muted">
-          No balls consumed — auto-catch is always active. Manual throws are 10% better.
+          Auto-catch is free &amp; always on. Manual throws use a purchased ball and are 10% better.
         </p>
 
-        {/* Which ball tiers are unlocked for manual throws */}
-        <div className="mt-3 flex gap-2">
-          {CATCH_TIER_ORDER.map((b) => {
-            const unlocked = tierIndex(b) <= tierIndex(catchTier);
-            return (
-              <div
-                key={b}
-                title={`${BALL_META[b].label}${unlocked ? "" : ` · ¥${BALL_META[b].price} / Lv`}`}
-                className={cn(
-                  "grid size-9 place-items-center rounded-xl",
-                  unlocked ? "bg-surface-2" : "bg-surface-2 opacity-30",
-                )}
-              >
-                <BallIcon ball={b} className="size-5" />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Catch mode toggle lives here under the ball shop */}
+        {/* Catch mode toggle */}
         <div className="mt-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted mb-1.5">
             Catch filter
@@ -149,10 +135,79 @@ export function StoreView() {
               : "bg-accent text-accent-fg",
           )}
         >
-          {catchMaxed
-            ? "Maxed (×20)"
-            : `Upgrade ${curBall} · ¥ ${catchCost.toLocaleString()}`}
+          {catchMaxed ? "Maxed (×20)" : `Upgrade · ¥ ${catchCost.toLocaleString()}`}
         </button>
+      </section>
+
+      {/* ── Poké Ball stock (consumable, per type) ── */}
+      <section className="mt-4 rounded-3xl bg-surface p-4 shadow-border">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+          Poké Balls
+        </h3>
+        <p className="mt-1 text-xs text-muted">
+          Charges for the manual-catch button. Unlock a type by ranking Catch Power into it.
+        </p>
+
+        <div className="mt-3 flex gap-2">
+          {CATCH_TIER_ORDER.map((b) => {
+            const unlocked = tierIndex(b) <= tierIndex(catchTier);
+            return (
+              <button
+                key={b}
+                type="button"
+                disabled={!unlocked}
+                onClick={() => setSelectedBall(b)}
+                title={BALL_META[b].label}
+                className={cn(
+                  "relative grid size-11 place-items-center rounded-xl",
+                  !unlocked
+                    ? "bg-surface-2 opacity-30"
+                    : b === selectedBall
+                      ? "bg-accent/20 ring-1 ring-accent"
+                      : "bg-surface-2",
+                )}
+              >
+                <BallIcon ball={b} className="size-6" />
+                {unlocked && (
+                  <span className="absolute -bottom-1 -right-1 rounded-full bg-bg px-1 font-mono text-[9px] tabular-nums text-muted">
+                    {ballCharges[b] ?? 0}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between text-sm">
+          <span>
+            {BALL_META[selectedBall].label}
+            <span className="ml-2 font-mono text-xs text-muted">
+              ×{ballCharges[selectedBall] ?? 0}
+            </span>
+          </span>
+          <span className="font-mono text-xs text-muted">
+            ¥ {BALL_META[selectedBall].price.toLocaleString()} each
+          </span>
+        </div>
+        <div className="mt-2 flex gap-2">
+          {[1, 10].map((qty) => {
+            const cost = ballChargeCost(selectedBall, qty);
+            return (
+              <button
+                key={qty}
+                type="button"
+                disabled={pokeyen < cost}
+                onClick={() => buyBall(selectedBall, qty)}
+                className={cn(
+                  "h-11 flex-1 rounded-2xl text-sm font-semibold",
+                  pokeyen < cost ? "bg-surface-2 text-muted" : "bg-accent text-accent-fg",
+                )}
+              >
+                Buy ×{qty} · ¥ {cost.toLocaleString()}
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       {/* ── Player Prestige ── */}

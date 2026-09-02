@@ -38,8 +38,12 @@ export type WildForms = { mega: WildActivation | null; dynamax: WildActivation |
 /** Wild defeats remaining until each anomaly type is available again (0 = ready). */
 export type RechargeCounts = { mega: number; dynamax: number; tera: number };
 
-/** Permanent catch-power tiers (no consumable balls). */
+/** Catch-power tiers. The upgrade track (catchTier + catchLevel) is permanent and
+ *  drives auto-catch; each tier also gates buying that ball type's throw charges. */
 export type CatchTier = "pokeball" | "greatball" | "ultraball" | "timerball";
+
+/** Consumable manual-throw charges, one count per ball type. */
+export type BallCharges = Record<CatchTier, number>;
 
 /** Catch behaviour is always available; the store only toggles which filter is active. */
 export type CatchMode = "new" | "all";
@@ -128,8 +132,10 @@ export type SaveBlob = {
   autoTapLevel: number; // 0–25
   catchTier: CatchTier;
   catchLevel: number; // 1–10 inside current tier
-  /** Ball the manual-catch button throws (must be an unlocked tier ≤ catchTier). */
+  /** Ball the manual-catch button throws AND the Store buys charges for. */
   selectedBall?: CatchTier;
+  /** Manual-throw charges per ball type. */
+  ballCharges?: BallCharges;
   catchMode: CatchMode;
   region: string;
   route: string;

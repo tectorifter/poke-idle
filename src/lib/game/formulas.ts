@@ -27,12 +27,19 @@ export const CATCH_TIER_ORDER: CatchTier[] = [
   "timerball",
 ];
 
-/** Display name + flat store price per level for each ball tier. */
+/** Display name + flat price for ONE manual-throw charge of each ball type. */
 export const BALL_META: Record<CatchTier, { label: string; price: number }> = {
   pokeball: { label: "Poké Ball", price: 200 },
   greatball: { label: "Great Ball", price: 600 },
   ultraball: { label: "Ultra Ball", price: 800 },
   timerball: { label: "Timer Ball", price: 1000 },
+};
+
+const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
+  pokeball: 0, // Lv. 1  – 10  (totalLevel 1  to 10)
+  greatball: 10, // Lv. 11 – 20
+  ultraball: 20, // Lv. 21 – 30
+  timerball: 30, // Lv. 31 – 40
 };
 
 const TIER_BASE_MULT: Record<CatchTier, number> = {
@@ -83,9 +90,15 @@ export function effectiveBallLevel(
   return 0; // locked
 }
 
-/** Flat per-level upgrade price for the tier currently being upgraded. */
-export function catchUpgradeCost(_currentLevel: number, tier: CatchTier = "pokeball"): number {
-  return BALL_META[tier].price;
+/** Exponential cost of the next catch-power upgrade (permanent track). */
+export function catchUpgradeCost(currentLevel: number, tier: CatchTier = "pokeball"): number {
+  const totalLevel = TIER_LEVEL_OFFSET[tier] + Math.max(1, Math.min(10, currentLevel));
+  return Math.floor(5000 * Math.pow(1.15, totalLevel - 1));
+}
+
+/** Price to buy `qty` throw charges of a ball type (flat per charge). */
+export function ballChargeCost(ball: CatchTier, qty = 1): number {
+  return BALL_META[ball].price * qty;
 }
 
 /** Chance % using permanent catch power (always available, no balls consumed). */

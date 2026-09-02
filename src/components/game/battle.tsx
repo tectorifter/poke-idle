@@ -26,6 +26,7 @@ import { BallIcon } from "./ball-icon";
 function CatchBallButton() {
   const selectedBall = useGame((s) => s.selectedBall);
   const catchTier = useGame((s) => s.catchTier);
+  const ballCharges = useGame((s) => s.ballCharges);
   const manualCatch = useGame((s) => s.manualCatch);
   const setSelectedBall = useGame((s) => s.setSelectedBall);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -33,6 +34,7 @@ function CatchBallButton() {
   const held = useRef(false);
 
   const unlocked = CATCH_TIER_ORDER.slice(0, tierIndex(catchTier) + 1);
+  const charges = ballCharges[selectedBall] ?? 0;
 
   return (
     <div className="relative shrink-0">
@@ -50,11 +52,14 @@ function CatchBallButton() {
                   setPickerOpen(false);
                 }}
                 className={cn(
-                  "grid size-10 place-items-center rounded-xl",
+                  "relative grid size-10 place-items-center rounded-xl",
                   b === selectedBall ? "bg-accent/20 ring-1 ring-accent" : "bg-surface-2",
                 )}
               >
                 <BallIcon ball={b} className="size-6" />
+                <span className="absolute -bottom-1 -right-1 rounded-full bg-bg px-1 font-mono text-[9px] tabular-nums text-muted">
+                  {ballCharges[b] ?? 0}
+                </span>
               </button>
             ))}
           </div>
@@ -62,7 +67,7 @@ function CatchBallButton() {
       )}
       <button
         type="button"
-        aria-label={`Throw ${BALL_META[selectedBall].label} — hold to switch`}
+        aria-label={`Throw ${BALL_META[selectedBall].label} (${charges} left) — hold to switch`}
         onPointerDown={() => {
           held.current = false;
           holdTimer.current = window.setTimeout(() => {
@@ -75,9 +80,15 @@ function CatchBallButton() {
           if (!held.current && !pickerOpen) manualCatch();
         }}
         onPointerLeave={() => window.clearTimeout(holdTimer.current)}
-        className="grid size-11 place-items-center rounded-full bg-surface shadow-border active:scale-95"
+        className={cn(
+          "relative grid size-11 place-items-center rounded-full bg-surface shadow-border active:scale-95",
+          charges === 0 && "opacity-50",
+        )}
       >
         <BallIcon ball={selectedBall} className="size-6" />
+        <span className="absolute -bottom-1 -right-1 rounded-full bg-bg px-1 font-mono text-[9px] tabular-nums text-muted">
+          {charges}
+        </span>
       </button>
     </div>
   );
