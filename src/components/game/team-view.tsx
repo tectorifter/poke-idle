@@ -1,6 +1,15 @@
 import { useRef, useState } from "react";
 import { ArrowDownToLine, ArrowUpFromLine, Trash2 } from "lucide-react";
-import { combatStats, eligibleEvolutions, levelOf, TEAM_SIZE, uniqueCaughtBonus } from "@/lib/game/formulas";
+import {
+  combatStats,
+  eligibleEvolutions,
+  evTotal,
+  IV_MAX,
+  levelOf,
+  STAT_KEYS,
+  TEAM_SIZE,
+  uniqueCaughtBonus,
+} from "@/lib/game/formulas";
 import { useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { Meter } from "./bars";
@@ -108,6 +117,8 @@ function PokeCell({
   const stats = combatStats(poke, { isPlayer: true, playerPrestige, uniqueBonus });
   const lvl = levelOf(poke);
   const evos = eligibleEvolutions(poke);
+  const ivSum = poke.ivs ? STAT_KEYS.reduce((n, k) => n + (poke.ivs![k] || 0), 0) : 0;
+  const evSum = evTotal(poke.evs);
   const [confirmRelease, setConfirmRelease] = useState(false);
   const confirmTimer = useRef<number | undefined>(undefined);
 
@@ -128,6 +139,9 @@ function PokeCell({
         <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted">Lv.{lvl}</span>
       </div>
       <Meter value={poke.hp} max={stats.maxHp} tone="hp" className="h-1.5" />
+      <div className="font-mono text-[9px] tabular-nums text-muted">
+        IV {ivSum}/{IV_MAX * 6} · EV {evSum}/510
+      </div>
 
       <div className="mt-0.5 flex flex-wrap gap-1">
         {evos.map((e) => (

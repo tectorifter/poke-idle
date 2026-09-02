@@ -1,6 +1,6 @@
 import { EXP_TABLE, EVOLUTIONS, speciesByName } from "./dex";
 import { typeMultiplier } from "./type-chart";
-import type { CatchTier, GrowthRate, OwnedPoke, Species } from "./types";
+import type { CatchTier, GrowthRate, OwnedPoke, Species, StatKey, StatSpread } from "./types";
 
 // ─── Auto-tap & store constants ───────────────────────────────────────────
 export const BASE_AUTO_MS = 3000;
@@ -278,20 +278,23 @@ export function combatStats(
   const anomalyActive = opts.isPlayer && isAnomalyName(poke.name);
   const effectiveFormMult = anomalyActive || mega ? formStatMult : 1;
 
+  // Per-instance IV + EV contribution (real-formula term), one per stat.
+  const ie = (k: StatKey, scale = 1) => ivEvBonus(poke, k, lvl) * scale;
+
   const atk =
     Math.floor(
       ((((spec.atk + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique,
-    );
+    ) + ie("atk");
   const def =
     Math.floor(
       ((((spec.def + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique,
-    );
-  const spa = Math.floor((((spec.spa + 50) * lvl) / 150) * pMult * effectiveFormMult);
-  const spd = Math.floor((((spec.spd + 50) * lvl) / 150) * pMult * effectiveFormMult);
-  const spe = Math.floor((((spec.spe + 50) * lvl) / 150) * pMult);
+    ) + ie("def");
+  const spa = Math.floor((((spec.spa + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spa");
+  const spd = Math.floor((((spec.spd + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spd");
+  const spe = Math.floor((((spec.spe + 50) * lvl) / 150) * pMult) + ie("spe");
 
   const speed = Math.floor((1000 / (500 + spe)) * 800);
-  let maxHp = Math.floor(((spec.hp * lvl) / 40) * pMult * 3 * effectiveFormMult);
+  let maxHp = Math.floor(((spec.hp * lvl) / 40) * pMult * 3 * effectiveFormMult) + ie("hp", 3);
   maxHp = Math.max(3, maxHp);
   const dynamaxed =
     isDynamaxName(poke.name) || isGmaxName(poke.name) || opts.form === "dynamax" || opts.form === "gmax";
@@ -428,6 +431,62 @@ export function rollTeraType(name: string): string | undefined {
   return spec.types[Math.floor(Math.random() * spec.types.length)];
 }
 
+// ─── IVs / EVs (Phase 2) ─────────────────────────────────────────────────────
+export const STAT_KEYS: StatKey[] = ["hp", "atk", "def", "spa", "spd", "spe"];
+export const IV_MAX = 31;
+export const EV_MAX_PER_STAT = 252;
+export const EV_MAX_TOTAL = 510;
+
+export function rollIVs(): StatSpread {
+  const r = () => Math.floor(Math.random() * (IV_MAX + 1));
+  return { hp: r(), atk: r(), def: r(), spa: r(), spd: r(), spe: r() };
+}
+
+export function zeroEVs(): StatSpread {
+  return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+}
+
+export function evTotal(evs: StatSpread | undefined): number {
+  return evs ? STAT_KEYS.reduce((n, k) => n + (evs[k] || 0), 0) : 0;
+}
+
+/** EV yield for defeating a species — its single highest base stat, 1–3 points
+ *  by how high that base is. (Real games use per-species tables; this stands in
+ *  for one until that data is imported.) */
+export function evYield(spec: Species | undefined): Partial<StatSpread> {
+  if (!spec) return {};
+  const bases: [StatKey, number][] = [
+    ["hp", spec.hp], ["atk", spec.atk], ["def", spec.def],
+    ["spa", spec.spa], ["spd", spec.spd], ["spe", spec.spe],
+  ];
+  bases.sort((a, b) => b[1] - a[1]);
+  const [key, val] = bases[0];
+  return { [key]: val >= 120 ? 3 : val >= 90 ? 2 : 1 };
+}
+
+/** Add an EV yield to a spread, honouring the 252-per-stat and 510-total caps. */
+export function addEVs(evs: StatSpread | undefined, gain: Partial<StatSpread>): StatSpread {
+  const next = evs ? { ...evs } : zeroEVs();
+  let total = evTotal(next);
+  for (const k of STAT_KEYS) {
+    const g = gain[k] ?? 0;
+    if (g <= 0 || total >= EV_MAX_TOTAL) continue;
+    const room = Math.min(EV_MAX_PER_STAT - next[k], EV_MAX_TOTAL - total, g);
+    if (room > 0) {
+      next[k] += room;
+      total += room;
+    }
+  }
+  return next;
+}
+
+/** The real-formula IV + EV contribution to one stat at a given level. */
+function ivEvBonus(poke: OwnedPoke, key: StatKey, lvl: number): number {
+  const iv = poke.ivs?.[key] ?? 0;
+  const ev = poke.evs?.[key] ?? 0;
+  return Math.floor(((iv + Math.floor(ev / 4)) * lvl) / 100);
+}
+
 export function makeOwned(
   name: string,
   level: number,
@@ -444,6 +503,8 @@ export function makeOwned(
     prestige,
     hp: 1,
     teraType: rollTeraType(name),
+    ivs: rollIVs(),
+    evs: zeroEVs(),
   };
   poke.hp = combatStats(poke).maxHp;
   return poke;

@@ -32,6 +32,10 @@ import {
   pickWeighted,
   randomLevel,
   rollTeraType,
+  rollIVs,
+  zeroEVs,
+  evYield,
+  addEVs,
   WILD_FORM_DEFEATS,
   WILD_RECHARGE_DEFEATS,
   SHINY_ODDS,
@@ -426,14 +430,18 @@ function hydrate(): GameState {
     ? (savedBall as CatchTier)
     : undefined;
 
-  // Backfill the Terastal type on saves that predate it.
-  const withTera = (p: OwnedPoke): OwnedPoke =>
-    p.teraType ? p : { ...p, teraType: rollTeraType(p.name) };
+  // Backfill per-instance fields on saves that predate them (teraType, IVs, EVs).
+  const withMeta = (p: OwnedPoke): OwnedPoke => ({
+    ...p,
+    teraType: p.teraType ?? rollTeraType(p.name),
+    ivs: p.ivs ?? rollIVs(),
+    evs: p.evs ?? zeroEVs(),
+  });
   const team = (saved.team ?? []).map((raw) => {
-    const p = withTera(raw);
+    const p = withMeta(raw);
     return { ...p, hp: Math.min(p.hp, combatStats(p).maxHp) };
   });
-  const storage = (saved.storage ?? []).map(withTera);
+  const storage = (saved.storage ?? []).map(withMeta);
   const activeIndex = Math.min(
     saved.active ?? 0,
     Math.max(0, team.length - 1),
@@ -758,6 +766,13 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
       const atkPoke = team[activeIndex];
       const fullReward = expReward(fallen);
+
+      // EV training: every party mon gains the fallen species' EV yield (caps at
+      // 252/stat, 510 total). Storage mons and the player pool are excluded.
+      const evGain = evYield(speciesByName(fallen.name));
+      for (let i = 0; i < team.length; i++) {
+        team[i].evs = addEVs(team[i].evs, evGain);
+      }
 
       const beforePlayerLvl = playerLevelOf(playerExp);
       playerExp += fullReward;
