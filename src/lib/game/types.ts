@@ -4,6 +4,14 @@ export type StatKey = "hp" | "atk" | "def" | "spa" | "spd" | "spe";
 /** A value per battle stat (IVs, EVs, …). */
 export type StatSpread = Record<StatKey, number>;
 
+/** The 25 Pokémon natures (see natures.ts for what each raises / lowers). */
+export type Nature =
+  | "Hardy" | "Lonely" | "Adamant" | "Naughty" | "Brave"
+  | "Bold" | "Docile" | "Impish" | "Lax" | "Relaxed"
+  | "Modest" | "Mild" | "Bashful" | "Rash" | "Quiet"
+  | "Calm" | "Gentle" | "Careful" | "Quirky" | "Sassy"
+  | "Timid" | "Hasty" | "Jolly" | "Naive" | "Serious";
+
 export type Species = {
   id: number;
   name: string;
@@ -37,6 +45,8 @@ export type OwnedPoke = {
   ivs?: StatSpread;
   /** Effort Values (0–252 per stat, 510 total) trained by party mons on exp gain. */
   evs?: StatSpread;
+  /** Nature rolled once at creation: +10% one stat, −10% another (5 are neutral). */
+  nature?: Nature;
 };
 
 /** A live temporary anomaly activation on one wild-combat mon. `formName` is the
