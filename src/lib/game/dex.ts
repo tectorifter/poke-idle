@@ -58,6 +58,11 @@ const SHOWDOWN_SLUG_OVERRIDES: Record<string, string> = {
   "Darmanitan-Zen": "darmanitan-zen",
   "Galarian Darmanitan": "darmanitan-galar",
   "Galarian Darmanitan Zen": "darmanitan-galarzen",
+  // Hyphenated variant actually used in pokedex/routes data. Without this the
+  // "Galarian " prefix strips to "Darmanitan-Zen" -> "darmanitan-zen" -> a
+  // "-galar" suffix is appended, yielding "darmanitan-zen-galar" which 404s on
+  // Showdown (both ani/ and home/). The real slug is "darmanitan-galarzen".
+  "Galarian Darmanitan-Zen": "darmanitan-galarzen",
   "Eiscue-Noice": "eiscue-noice",
   "Indeedee-F": "indeedee-f",
   "Urshifu-Rapid": "urshifu-rapidstrike",
@@ -169,6 +174,24 @@ const KNOWN_MISSING_GIFS = new Set<string>([
   "Terapagos",
   "Terapagos-Terastal",
   "Terapagos-Stellar",
+
+  // Gen 9 paradox mons + Pecharunt: Showdown never produced BW-style animated
+  // sprites for these, only static 'home' renders. Listed here so we skip the
+  // guaranteed-404 ani/ GIF request (and the broken-image flash before onError
+  // swaps in the static PNG). Verified absent from /sprites/ani/ on Showdown.
+  "Iron Treads",
+  "Iron Bundle",
+  "Iron Hands",
+  "Iron Jugulis",
+  "Iron Moth",
+  "Iron Thorns",
+  "Iron Valiant",
+  "Iron Leaves",
+  "Iron Boulder",
+  "Iron Crown",
+  "Miraidon",
+  "Dynamax Miraidon",
+  "Pecharunt",
 ]);
 
 export function showdownSlug(name: string): string {
