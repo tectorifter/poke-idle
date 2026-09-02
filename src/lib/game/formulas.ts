@@ -153,7 +153,7 @@ export function isAnomalyName(name: string): boolean {
 }
 
 // ─── Existing combat helpers (adapted) ────────────────────────────────────
-export const HEAL_COOLDOWN_MS = 15_000;
+export const HEAL_COOLDOWN_MS = 5_000;
 export const SHINY_ODDS = 1 / 8192;
 export const TEAM_SIZE = 6;
 
