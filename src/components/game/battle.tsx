@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Pause, Play, Scissors, Shield, Sparkles, Swords } from "lucide-react";
-import { speciesByName } from "@/lib/game/dex";
+import { speciesByName, isAnomalyFormName, isPermanentAnomalyCatch } from "@/lib/game/dex";
 import { TYPE_COLOR } from "@/lib/game/type-chart";
 import {
   combatStats,
@@ -16,6 +16,7 @@ import {
   tierIndex,
 } from "@/lib/game/formulas";
 import { chosenMoves } from "@/lib/game/learnsets";
+import { computeSynergy, encounterSynergy } from "@/lib/game/synergy";
 import { toMaxMove, toGMaxMove } from "@/lib/game/moves";
 import type { MoveData } from "@/lib/game/moves";
 import type { OwnedPoke } from "@/lib/game/types";
@@ -26,6 +27,7 @@ import { Sprite } from "./sprite";
 import { TypeBadge } from "./type-badge";
 import { WildActivationBar } from "./activation-bar";
 import { BallIcon } from "./ball-icon";
+import { SynergyButton } from "./synergy-panel";
 
 /** Manual-catch button: tap to throw the selected ball, hold to pick a ball. */
 function CatchBallButton() {
@@ -301,16 +303,18 @@ export function BattleView() {
   const routePokes = ROUTES[region]?.[route]?.pokes ?? [];
   const routeOwned = routePokes.filter((name) => (dex[name] ?? 0) >= 5).length;
   const uniqueBonus = uniqueCaughtBonus(owned);
+  const synergy = computeSynergy(team);
 
   const pStats = player
     ? combatStats(player, {
         isPlayer: true,
         playerPrestige,
         uniqueBonus,
+        synergy,
       })
     : null;
   const playerLvl = playerLevelOf(playerExp);
-  const playerMax = playerMaxHp(playerLvl, playerPrestige);
+  const playerMax = playerMaxHp(playerLvl, playerPrestige, synergy.hpPct);
   const xp0 = playerThisLevelExp(playerLvl);
   const xp1 = playerNextLevelExp(playerLvl);
 
@@ -326,14 +330,17 @@ export function BattleView() {
             {routeName}
           </h2>
         </div>
-        <button
-          type="button"
-          className="grid size-11 place-items-center rounded-full bg-surface shadow-border"
-          onClick={() => useGame.setState({ paused: !paused })}
-          aria-label={paused ? "Resume" : "Pause"}
-        >
-          {paused ? <Play className="size-4" /> : <Pause className="size-4" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <SynergyButton team={team} />
+          <button
+            type="button"
+            className="grid size-11 place-items-center rounded-full bg-surface shadow-border"
+            onClick={() => useGame.setState({ paused: !paused })}
+            aria-label={paused ? "Resume" : "Pause"}
+          >
+            {paused ? <Play className="size-4" /> : <Pause className="size-4" />}
+          </button>
+        </div>
       </div>
 
       {/* ── Yellow TAP ZONE (fills remaining space) ── */}
@@ -349,7 +356,15 @@ export function BattleView() {
           {/* Enemy card */}
           {enemy && (
             <div className="rounded-3xl bg-surface p-4 shadow-border">
-              <FighterCard poke={enemy} hitAt={enemyHit} side="wild" />
+              <FighterCard
+                poke={enemy}
+                hitAt={enemyHit}
+                side="wild"
+                synergy={encounterSynergy(
+                  enemy,
+                  isAnomalyFormName(enemy.name) || isPermanentAnomalyCatch(enemy.name),
+                )}
+              />
             </div>
           )}
 
@@ -480,13 +495,16 @@ export function FighterCard({
   poke,
   hitAt,
   side,
+  synergy,
 }: {
   poke: import("@/lib/game/types").OwnedPoke;
   hitAt: number;
   side: "wild" | "you";
+  /** Party synergy — pass for the player's mon so the HP bar shows the +HP%. */
+  synergy?: import("@/lib/game/synergy").TeamSynergy;
 }) {
   const spec = speciesByName(poke.name);
-  const stats = combatStats(poke);
+  const stats = combatStats(poke, synergy ? { synergy } : undefined);
   const lvl = levelOf(poke);
   const shaking = Date.now() - hitAt < 180;
   return (

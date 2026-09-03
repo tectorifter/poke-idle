@@ -3,6 +3,7 @@ import { Heart, Swords, Trophy } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import { attacksPerSecond, combatStats } from "@/lib/game/formulas";
 import { currentStage, leagueOrder, trainerOf } from "@/lib/game/league";
+import { computeSynergy } from "@/lib/game/synergy";
 import { useLeague } from "@/lib/game/league-store";
 import type { LeagueProgress } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ import { FighterCard, MoveButton, movesFor } from "./battle";
 import { Meter } from "./bars";
 import { Sprite } from "./sprite";
 import { LeagueActivationBar } from "./activation-bar";
+import { SynergyButton } from "./synergy-panel";
 
 /** The active mon's four move slots for the league fight. Combat is fully
  *  automatic here — the Speed judge decides how often the mon attacks — so this
@@ -32,7 +34,7 @@ function LeagueMoveGrid() {
       ? { formName: battle.leagueForms.dynamax.formName }
       : null;
   const moves = movesFor(mon, dyna);
-  const aps = mon ? attacksPerSecond(combatStats(mon).spe) : 1;
+  const aps = mon ? attacksPerSecond(combatStats(mon, { synergy: computeSynergy(team) }).spe) : 1;
 
   return (
     <div>
@@ -72,6 +74,7 @@ export function LeagueView() {
   const healOverTime = useLeague((s) => s.healOverTime);
   const clearBattle = useLeague((s) => s.clearBattle);
   const [, forceRender] = useState(0);
+  const synergy = computeSynergy(team);
 
   useEffect(() => {
     rehydrate();
@@ -164,7 +167,10 @@ export function LeagueView() {
   const resistActive = now < battle.buffs.resistUntil;
 
   return (
-    <div className="h-full overflow-y-auto px-4 pb-4 pt-3">
+    <div className="relative h-full overflow-y-auto px-4 pb-4 pt-3">
+      <div className="absolute right-4 top-3 z-10">
+        <SynergyButton team={team} />
+      </div>
       <LeagueHeader progress={progress} totalStages={totalStages} />
 
       <div className="mt-3 text-center text-xs text-muted">
@@ -186,12 +192,14 @@ export function LeagueView() {
         ))}
       </div>
 
-      {enemy && <FighterCard poke={enemy} hitAt={0} side="wild" />}
-      {player && <FighterCard poke={player} hitAt={0} side="you" />}
+      {enemy && (
+        <FighterCard poke={enemy} hitAt={0} side="wild" synergy={computeSynergy(battle.enemyTeam)} />
+      )}
+      {player && <FighterCard poke={player} hitAt={0} side="you" synergy={synergy} />}
 
       <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
         {team.map((p, i) => {
-          const stats = combatStats(p);
+          const stats = combatStats(p, { synergy });
           return (
             <button
               key={p.uid}

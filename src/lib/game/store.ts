@@ -19,6 +19,16 @@ import {
 import type { AnomalyKind } from "./dex";
 import { rollNature, NATURE_NAMES } from "./natures";
 import { learnableMoveNames, moveAcquisitionCost, chosenMoves, bestMoveAgainst } from "./learnsets";
+import {
+  computeSynergy,
+  encounterSynergy,
+  isType,
+  canAct,
+  tickResidual,
+  rollInflictions,
+  GROUND_BLEED_FRAC,
+  WATER_HEAL_FRAC,
+} from "./synergy";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
 import {
@@ -637,6 +647,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const active = team[s.active];
     if (!active) return;
 
+    // Party type-synergy buffs (Flying/Fighting/Psychic/Rock/Bug flat stats +
+    // Bug crit stage + Fairy enemy-Speed debuff).
+    const synergy = computeSynergy(team);
+
     let playerHp = s.playerHp;
     let playerExp = s.playerExp;
     let lastHeal = s.lastHeal;
@@ -646,10 +660,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // ── Timed Auto-Heal (Triggers strictly at 15s timer) ─────────────────
     if (now - lastHeal >= HEAL_COOLDOWN_MS) {
       const playerLvl = playerLevelOf(playerExp);
-      playerHp = playerMaxHp(playerLvl, s.playerPrestige);
+      playerHp = playerMaxHp(playerLvl, s.playerPrestige, synergy.hpPct);
 
       for (let i = 0; i < team.length; i++) {
-        team[i].hp = combatStats(team[i]).maxHp;
+        team[i].hp = combatStats(team[i], { synergy }).maxHp;
       }
 
       lastHeal = now;
@@ -712,6 +726,14 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       dirty = true;
     }
 
+    // The wild encounter's own type-synergy (isolated from the player team): an
+    // anomaly form gets tier 1 of every one of its types; a normal encounter
+    // only the ones whose tier 1 needs a single mon.
+    const enemySynergy = encounterSynergy(
+      enemy,
+      isAnomalyFormName(enemy.name) || isPermanentAnomalyCatch(enemy.name),
+    );
+
     // Rayquaza auto-Mega-Evolves when it knows Dragon Ascent — same slot, same
     // duration/recharge as a button activation, it just triggers itself.
     if (
@@ -741,27 +763,125 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         form: eff.form,
         teraType: eff.teraType,
         move: picked,
+        synergy,
+        critStageBonus: synergy.critStage,
+        defenderSynergy: enemySynergy,
       });
       enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
       stats = { ...stats, damage: stats.damage + damage };
       enemyHit = now;
       dirty = true;
+
+      // Enemy Steel synergy: part of the hit comes back into the player's pool.
+      if (enemySynergy.steelReturnPct > 0 && damage > 0 && isType(enemy, "Steel")) {
+        playerHp = Math.max(0, playerHp - Math.max(1, Math.floor(damage * enemySynergy.steelReturnPct)));
+        playerHit = now;
+        if (playerHp <= 0) {
+          lastHeal = now;
+          log = pushLog(log, "You fainted! Auto-healing in 15 seconds...", "escape");
+        }
+      }
+
+      // Water synergy: chance to heal the player's HP pool on a Water-type hit.
+      if (
+        synergy.waterHealChance > 0 &&
+        isType(atkPoke, "Water") &&
+        Math.random() < synergy.waterHealChance
+      ) {
+        const pMax = playerMaxHp(playerLevelOf(playerExp), s.playerPrestige, synergy.hpPct);
+        playerHp = Math.min(pMax, playerHp + Math.max(1, Math.floor(pMax * WATER_HEAL_FRAC)));
+      }
+
+      // Party status inflictions (freeze/burn/poison/paralyze + Dark flinch).
+      const inf = rollInflictions(synergy, atkPoke, enemy, !!enemy.status);
+      if (inf.flinch) enemy.flinch = true;
+      if (inf.status) {
+        enemy.status = inf.status;
+        log = pushLog(log, `${enemy.name} was ${inf.label}!`, "system");
+      }
     };
 
     const enemyAtk = () => {
       const defPoke = team[activeIndex];
       if (!defPoke || playerHp <= 0 || enemy.hp <= 0) return;
 
+      // Residual poison / toxic damage at the start of the enemy's turn.
+      if (enemy.status?.kind === "poison" || enemy.status?.kind === "toxic") {
+        const r = tickResidual(enemy.hp, combatStats(enemy, { synergy: enemySynergy }).maxHp, enemy.status);
+        enemy.hp = r.hp;
+        enemy.status = r.status;
+        if (r.lost > 0) {
+          enemyHit = now;
+          dirty = true;
+        }
+        if (enemy.hp <= 0) return;
+      }
+
+      // Ground synergy: a bleeding enemy loses 2% max HP each time it attacks.
+      if (enemy.bleed) {
+        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+        enemy.hp = Math.max(0, enemy.hp - Math.max(1, Math.floor(eMax * GROUND_BLEED_FRAC)));
+        enemyHit = now;
+        dirty = true;
+        if (enemy.hp <= 0) return;
+      }
+
+      // Dark synergy: a flinching enemy loses this turn.
+      if (enemy.flinch) {
+        enemy.flinch = false;
+        dirty = true;
+        return;
+      }
+
+      // Freeze / paralyze may cost the enemy its turn.
+      const act = canAct(enemy.status);
+      enemy.status = act.status;
+      if (act.note === "thawed") log = pushLog(log, `${enemy.name} thawed out!`, "system");
+      if (!act.ok) {
+        dirty = true;
+        return;
+      }
+
       const { damage } = attackDamage(enemy, defPoke, {
         attackerIsPlayer: false,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
         move: bestMoveAgainst(enemy, levelOf(enemy), combatStats(defPoke).types),
+        synergy: enemySynergy,
+        defenderSynergy: synergy,
+        critStageBonus: enemySynergy.critStage,
+        attackerBurned: enemy.status?.kind === "burn",
       });
 
       playerHp = Math.max(0, playerHp - damage);
       playerHit = now;
       dirty = true;
+
+      // Enemy Water synergy: chance to heal itself on its attack.
+      if (
+        enemySynergy.waterHealChance > 0 &&
+        isType(enemy, "Water") &&
+        Math.random() < enemySynergy.waterHealChance
+      ) {
+        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+        enemy.hp = Math.min(eMax, enemy.hp + Math.max(1, Math.floor(eMax * WATER_HEAL_FRAC)));
+      }
+
+      // Steel synergy: reflect part of the hit back as true damage.
+      if (synergy.steelReturnPct > 0 && damage > 0 && isType(defPoke, "Steel")) {
+        enemy.hp = Math.max(0, enemy.hp - Math.max(1, Math.floor(damage * synergy.steelReturnPct)));
+        enemyHit = now;
+      }
+      // Ground synergy: chance to start the enemy bleeding after it hits a Ground mon.
+      if (
+        !enemy.bleed &&
+        synergy.groundBleedChance > 0 &&
+        isType(defPoke, "Ground") &&
+        Math.random() < synergy.groundBleedChance
+      ) {
+        enemy.bleed = true;
+        log = pushLog(log, `${enemy.name} started bleeding!`, "system");
+      }
 
       if (playerHp <= 0) {
         lastHeal = now;
@@ -905,13 +1025,20 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     //   • Enemy: attacks automatically every Speed-allowed turn.
     const dtms = dt * 1000;
     const effActive = wildEffective(team[activeIndex], wildActivations);
-    const playerSpe = combatStats(effActive.poke, {
-      isPlayer: true,
-      playerPrestige: s.playerPrestige,
-      uniqueBonus,
-      form: effActive.form,
-    }).spe;
-    const enemySpe = combatStats(enemy).spe;
+    const playerSpe = Math.max(
+      1,
+      combatStats(effActive.poke, {
+        isPlayer: true,
+        playerPrestige: s.playerPrestige,
+        uniqueBonus,
+        form: effActive.form,
+        synergy,
+      }).spe - enemySynergy.enemySpeFlat,
+    );
+    const enemySpe = Math.max(
+      1,
+      combatStats(enemy, { synergy: enemySynergy }).spe - synergy.enemySpeFlat,
+    );
     const playerInt = attackIntervalMs(playerSpe);
     const enemyInt = attackIntervalMs(enemySpe);
 
@@ -947,17 +1074,49 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       while (enemyAtkCd <= 0 && enemy.hp > 0 && playerHp > 0 && g++ < 8) {
         enemyAtkCd = enemyInt;
         enemyAtk();
+        // Steel-return / Ground-bleed synergy can KO the enemy on its own turn.
+        if (enemy.hp <= 0) {
+          onEnemyFaint();
+          playerAtkCd = 0;
+          enemyAtkCd = 0;
+          break;
+        }
       }
     };
 
     // On a simultaneous turn the faster mon resolves first (so it can KO before
-    // the slower one retaliates).
-    if (playerSpe >= enemySpe) {
+    // the slower one retaliates). Ghost synergy: a Ghost-type mon has a chance
+    // to take its turn first regardless of Speed — the player's own roll wins
+    // over the enemy's.
+    const playerGhostFirst =
+      synergy.ghostFirstChance > 0 &&
+      !!team[activeIndex] &&
+      isType(team[activeIndex], "Ghost") &&
+      Math.random() < synergy.ghostFirstChance;
+    const enemyGhostFirst =
+      enemySynergy.ghostFirstChance > 0 &&
+      isType(enemy, "Ghost") &&
+      Math.random() < enemySynergy.ghostFirstChance;
+    let playerFirst = playerSpe >= enemySpe;
+    if (playerGhostFirst) playerFirst = true;
+    else if (enemyGhostFirst) playerFirst = false;
+    if (playerFirst) {
       runPlayerTurns();
       runEnemyTurns();
     } else {
       runEnemyTurns();
       runPlayerTurns();
+    }
+
+    // Grass synergy: chance to shake off one status from the active mon. (Party
+    // mons can't be statused yet, so this is dormant until enemies inflict.)
+    if (
+      synergy.grassCleanseChance > 0 &&
+      team[activeIndex]?.status &&
+      Math.random() < synergy.grassCleanseChance
+    ) {
+      team[activeIndex] = { ...team[activeIndex], status: undefined };
+      dirty = true;
     }
 
     const shouldUi = dirty || uiAcc > 0.08;
@@ -1078,7 +1237,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       });
       return;
     }
-    const reset = (list: OwnedPoke[]) =>
+    const teamSyn = computeSynergy(s.team);
+    const reset = (list: OwnedPoke[], syn?: ReturnType<typeof computeSynergy>) =>
       list.map((p) => {
         const spec = speciesByName(p.name);
         const next = {
@@ -1089,15 +1249,16 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
           isPlayer: true,
           playerPrestige: s.playerPrestige + 1,
           uniqueBonus: uniqueCaughtBonus(uniqueCaught(s.dex)),
+          synergy: syn,
         }).maxHp;
         return next;
       });
 
     set({
       playerPrestige: s.playerPrestige + 1,
-      playerHp: playerMaxHp(1, s.playerPrestige + 1),
+      playerHp: playerMaxHp(1, s.playerPrestige + 1, teamSyn.hpPct),
       playerExp: 0,
-      team: reset(s.team),
+      team: reset(s.team, teamSyn),
       storage: reset(s.storage),
       log: pushLog(
         s.log,
@@ -1270,7 +1431,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // Mega / Primal / Tera / Dynamax / Gigantamax are activations, not evolutions.
     if (isAnomalyFormName(to)) return;
     const uniqueBonus = uniqueCaughtBonus(uniqueCaught(s.dex));
-    const apply = (list: OwnedPoke[]) =>
+    const teamSyn = computeSynergy(s.team.map((p) => (p.uid === uid ? { ...p, name: to } : p)));
+    const apply = (list: OwnedPoke[], syn?: ReturnType<typeof computeSynergy>) =>
       list.map((p) => {
         if (p.uid !== uid) return p;
         const next = { ...p, name: to };
@@ -1278,10 +1440,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
           isPlayer: true,
           playerPrestige: s.playerPrestige,
           uniqueBonus,
+          synergy: syn,
         }).maxHp;
         return next;
       });
-    const team = apply(s.team);
+    const team = apply(s.team, teamSyn);
     const storage = apply(s.storage);
     const poke = [...team, ...storage].find((p) => p.uid === uid);
     let dex = s.dex;
@@ -1313,9 +1476,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       nature: d.nature,
       moves: d.moves.length ? d.moves : undefined,
     };
+    const synergy = computeSynergy(s.team);
     next.hp = Math.min(
       cur.hp,
-      combatStats(next, { isPlayer: true, playerPrestige: s.playerPrestige, uniqueBonus }).maxHp,
+      combatStats(next, { isPlayer: true, playerPrestige: s.playerPrestige, uniqueBonus, synergy }).maxHp,
     );
 
     set({

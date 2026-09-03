@@ -10,6 +10,16 @@ import {
 import type { FormKind } from "./formulas";
 import { bestMoveAgainst, chosenMoves } from "./learnsets";
 import {
+  computeSynergy,
+  isType,
+  canAct,
+  tickResidual,
+  rollInflictions,
+  GROUND_BLEED_FRAC,
+  WATER_HEAL_FRAC,
+} from "./synergy";
+import type { TeamSynergy } from "./synergy";
+import {
   baseSpeciesOf,
   megaFormsFor,
   gmaxFormFor,
@@ -94,12 +104,15 @@ function freshBuffs(): LeagueBuffs {
  *  revive to full HP outright, living ones recover 2% of their own current
  *  missing HP. Shared by the immediate on-press application and the
  *  subsequent tick-driven ones so both behave identically. */
-function applyHealTick(team: OwnedPoke[]): { team: OwnedPoke[]; revived: number; healedAny: boolean } {
+function applyHealTick(
+  team: OwnedPoke[],
+  synergy: TeamSynergy,
+): { team: OwnedPoke[]; revived: number; healedAny: boolean } {
   let revived = 0;
   let healedAny = false;
 
   const next = team.map((p) => {
-    const stats = combatStats(p);
+    const stats = combatStats(p, { synergy });
 
     if (p.hp <= 0) {
       revived += 1;
@@ -274,7 +287,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     // First application fires immediately on press; the remaining ticks
     // follow the normal 3s cadence from here.
     const gs = useGame.getState();
-    const { team, revived, healedAny } = applyHealTick(gs.team);
+    const { team, revived, healedAny } = applyHealTick(gs.team, computeSynergy(gs.team));
     useGame.setState({ team });
     const line = healLogLine(revived, healedAny);
 
@@ -320,7 +333,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       // Refill to the boosted max for the duration; clamped back when it wears off.
       const boosted = combatStats(
         { ...mon, name: formName ?? mon.name },
-        { form: formName ? "gmax" : "dynamax" },
+        { form: formName ? "gmax" : "dynamax", synergy: computeSynergy(gs.team) },
       ).maxHp;
       useGame.setState({
         team: gs.team.map((p) => (p.uid === mon.uid ? { ...p, hp: boosted } : p)),
@@ -351,6 +364,8 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     let team = gs.team.map((p) => ({ ...p }));
     let log = b.log;
     const buffs = { ...b.buffs };
+    // Party type-synergy buffs apply in league fights too.
+    const synergy = computeSynergy(team);
     const lf: LeagueForms = {
       mega: b.leagueForms.mega ? { ...b.leagueForms.mega } : null,
       dynamax: b.leagueForms.dynamax ? { ...b.leagueForms.dynamax } : null,
@@ -362,7 +377,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     // their own current missing HP — recomputed fresh each tick, applied
     // before the "whole team down" check so a pending tick can save a run.
     if (buffs.healTicksLeft > 0 && now >= buffs.nextHealTickAt) {
-      const result = applyHealTick(team);
+      const result = applyHealTick(team, synergy);
       team = result.team;
       const line = healLogLine(result.revived, result.healedAny);
       if (line) log = [...log, line];
@@ -407,14 +422,40 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     let enemy = enemyTeam[enemyIndex];
     let enemyFainted = b.enemyFainted;
 
+    // League enemy teams count as a TEAM for synergy — read the whole trainer
+    // roster, not the one mon in play.
+    const enemySynergy = computeSynergy(enemyTeam);
+
     // Same Speed "judge" as wild combat — but here it directly owns how often a
     // mon attacks (no tapping in the league). 1–4 attacks/s from resolved Speed.
     const pSpeedEff = leagueEffective(player, lf, now);
-    const playerSpeed = attackIntervalMs(combatStats(pSpeedEff.poke, { form: pSpeedEff.form }).spe);
-    const enemySpeed = attackIntervalMs(combatStats(enemy).spe);
+    const playerSpeed = attackIntervalMs(
+      Math.max(
+        1,
+        combatStats(pSpeedEff.poke, { form: pSpeedEff.form, synergy }).spe - enemySynergy.enemySpeFlat,
+      ),
+    );
+    const enemySpeed = attackIntervalMs(
+      Math.max(1, combatStats(enemy, { synergy: enemySynergy }).spe - synergy.enemySpeFlat),
+    );
     let playerTimer = b.playerTimer + dt * 1000;
     let enemyTimer = b.enemyTimer + dt * 1000;
     const pickedMove = chosenMoves(player, levelOf(player))[b.selectedMove] ?? undefined;
+
+    // Shared enemy-faint resolution — reused by the player's own attacks and by
+    // the Steel-return / Ground-bleed synergy damage that can KO an enemy on
+    // its own turn. Sets `won` when the last enemy drops (handled after both
+    // loops so it can `return` from tick cleanly).
+    let won = false;
+    const resolveEnemyFaint = () => {
+      enemyFainted = enemyFainted.map((f, i) => (i === enemyIndex ? true : f));
+      log = [...log, `${enemy.name} fainted!`];
+      enemyIndex += 1;
+      playerTimer = 0;
+      enemyTimer = 0;
+      if (enemyIndex >= enemyTeam.length) won = true;
+      else enemy = enemyTeam[enemyIndex];
+    };
 
     let guard = 0;
     while (playerTimer >= playerSpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
@@ -424,6 +465,9 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         form: eff.form,
         teraType: eff.teraType,
         move: pickedMove,
+        synergy,
+        critStageBonus: synergy.critStage,
+        defenderSynergy: enemySynergy,
       });
       const dmg = now < buffs.cheerUntil ? Math.round(damage * LEAGUE_CHEER_MULT) : damage;
       enemy = { ...enemy, hp: Math.max(0, enemy.hp - dmg) };
@@ -433,38 +477,51 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       else if (multiplier > 0 && multiplier <= 0.5) log = [...log, `${critTag}Not very effective... ${dmg}`];
       else log = [...log, `${critTag}${player.name} hits ${enemy.name} for ${dmg}.`];
 
-      if (enemy.hp <= 0) {
-        enemyFainted = enemyFainted.map((f, i) => (i === enemyIndex ? true : f));
-        log = [...log, `${enemy.name} fainted!`];
-        enemyIndex += 1;
-        playerTimer = 0;
-        enemyTimer = 0;
-        if (enemyIndex >= enemyTeam.length) {
-          const prevRuns = get().progress.runsCompleted;
-          const { progress, team: healed } = winStage(get().progress, team);
-          persist(progress);
+      // Enemy Steel synergy: part of the hit comes back to the player's mon (true).
+      if (enemySynergy.steelReturnPct > 0 && dmg > 0 && isType(enemy, "Steel")) {
+        const back = Math.max(1, Math.floor(dmg * enemySynergy.steelReturnPct));
+        player = { ...player, hp: Math.max(0, player.hp - back) };
+        log = [...log, `${player.name} takes ${back} from ${enemy.name}'s Steel synergy.`];
+        if (player.hp <= 0) {
+          log = [...log, `${player.name} fainted!`];
           team[activeIndex] = player;
-          useGame.setState({ team: healed, active: 0 });
-          const fullClear = progress.runsCompleted > prevRuns;
-          const winMsg = fullClear
-            ? `Defeated ${b.trainer.name}! League cleared — team +1 prestige, enemy prestige +8.`
-            : `Defeated ${b.trainer.name}!`;
-          set({
-            progress,
-            battle: {
-              ...b,
-              enemyTeam,
-              enemyIndex,
-              enemyFainted,
-              buffs: freshBuffs(),
-              log: [...log, winMsg],
-              result: "win",
-            },
-          });
-          useGame.setState({ paused: false });
-          return;
+          const nextLiving = team.findIndex((p) => p.hp > 0);
+          if (nextLiving >= 0) {
+            activeIndex = nextLiving;
+            player = team[activeIndex];
+            log = [...log, `Go, ${player.name}!`];
+          }
+          break;
         }
-        enemy = enemyTeam[enemyIndex];
+      }
+
+      // Water synergy: chance to heal the attacking Water-type mon 5% max HP.
+      if (
+        synergy.waterHealChance > 0 &&
+        isType(player, "Water") &&
+        Math.random() < synergy.waterHealChance
+      ) {
+        const pMax = combatStats(player, { synergy }).maxHp;
+        player = {
+          ...player,
+          hp: Math.min(pMax, player.hp + Math.max(1, Math.floor(pMax * WATER_HEAL_FRAC))),
+        };
+      }
+
+      // Party status inflictions (freeze/burn/poison/paralyze + Dark flinch).
+      const inf = rollInflictions(synergy, player, enemy, !!enemy.status);
+      if (inf.flinch || inf.status) {
+        enemy = {
+          ...enemy,
+          flinch: inf.flinch || enemy.flinch,
+          status: inf.status ?? enemy.status,
+        };
+        enemyTeam[enemyIndex] = enemy;
+        if (inf.status) log = [...log, `${enemy.name} was ${inf.label}!`];
+      }
+
+      if (enemy.hp <= 0) {
+        resolveEnemyFaint();
         break;
       }
     }
@@ -472,12 +529,90 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     guard = 0;
     while (enemyTimer >= enemySpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
       enemyTimer -= enemySpeed;
+
+      // Residual poison / toxic damage at the start of the enemy's turn.
+      if (enemy.status?.kind === "poison" || enemy.status?.kind === "toxic") {
+        const r = tickResidual(
+          enemy.hp,
+          combatStats(enemy, { synergy: enemySynergy }).maxHp,
+          enemy.status,
+        );
+        enemy = { ...enemy, hp: r.hp, status: r.status };
+        enemyTeam[enemyIndex] = enemy;
+        if (enemy.hp <= 0) {
+          resolveEnemyFaint();
+          break;
+        }
+      }
+
+      // Ground synergy: a bleeding enemy loses 2% max HP each attack it makes.
+      if (enemy.bleed) {
+        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+        enemy = { ...enemy, hp: Math.max(0, enemy.hp - Math.max(1, Math.floor(eMax * GROUND_BLEED_FRAC))) };
+        enemyTeam[enemyIndex] = enemy;
+        if (enemy.hp <= 0) {
+          resolveEnemyFaint();
+          break;
+        }
+      }
+
+      // Dark synergy: a flinching enemy loses this turn.
+      if (enemy.flinch) {
+        enemy = { ...enemy, flinch: false };
+        enemyTeam[enemyIndex] = enemy;
+        continue;
+      }
+
+      // Freeze / paralyze may cost the enemy its turn.
+      const act = canAct(enemy.status);
+      if (act.status !== enemy.status) {
+        enemy = { ...enemy, status: act.status };
+        enemyTeam[enemyIndex] = enemy;
+      }
+      if (act.note === "thawed") log = [...log, `${enemy.name} thawed out!`];
+      if (!act.ok) continue;
+
       const { damage } = attackDamage(enemy, player, {
         move: bestMoveAgainst(enemy, levelOf(enemy), combatStats(player).types),
+        synergy: enemySynergy,
+        defenderSynergy: synergy,
+        critStageBonus: enemySynergy.critStage,
+        attackerBurned: enemy.status?.kind === "burn",
       });
       const dmg = now < buffs.resistUntil ? Math.round(damage * LEAGUE_RESIST_TAKEN_MULT) : damage;
       player = { ...player, hp: Math.max(0, player.hp - dmg) };
       log = [...log, `${enemy.name} hits ${player.name} for ${dmg}.`];
+
+      // Enemy Water synergy: chance to heal the enemy on its attack.
+      if (
+        enemySynergy.waterHealChance > 0 &&
+        isType(enemy, "Water") &&
+        Math.random() < enemySynergy.waterHealChance
+      ) {
+        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+        enemy = { ...enemy, hp: Math.min(eMax, enemy.hp + Math.max(1, Math.floor(eMax * WATER_HEAL_FRAC))) };
+        enemyTeam[enemyIndex] = enemy;
+      }
+
+      // Steel synergy: reflect part of the hit back as true damage.
+      if (synergy.steelReturnPct > 0 && dmg > 0 && isType(player, "Steel")) {
+        const back = Math.max(1, Math.floor(dmg * synergy.steelReturnPct));
+        enemy = { ...enemy, hp: Math.max(0, enemy.hp - back) };
+        enemyTeam[enemyIndex] = enemy;
+        log = [...log, `${enemy.name} takes ${back} from Steel synergy.`];
+      }
+      // Ground synergy: chance to start the enemy bleeding after it hits a Ground mon.
+      if (
+        !enemy.bleed &&
+        synergy.groundBleedChance > 0 &&
+        isType(player, "Ground") &&
+        Math.random() < synergy.groundBleedChance
+      ) {
+        enemy = { ...enemy, bleed: true };
+        enemyTeam[enemyIndex] = enemy;
+        log = [...log, `${enemy.name} started bleeding!`];
+      }
+
       if (player.hp <= 0) {
         log = [...log, `${player.name} fainted!`];
         team[activeIndex] = player;
@@ -489,14 +624,54 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         }
         break;
       }
+      if (enemy.hp <= 0) {
+        resolveEnemyFaint();
+        break;
+      }
     }
     team[activeIndex] = player;
+
+    // Grass synergy: chance to shake off a status from the active mon. (Party
+    // mons can't be statused yet, so this is dormant until enemies inflict.)
+    if (
+      synergy.grassCleanseChance > 0 &&
+      team[activeIndex]?.status &&
+      Math.random() < synergy.grassCleanseChance
+    ) {
+      team[activeIndex] = { ...team[activeIndex], status: undefined };
+    }
+
+    if (won) {
+      const prevRuns = get().progress.runsCompleted;
+      const { progress, team: healed } = winStage(get().progress, team);
+      persist(progress);
+      team[activeIndex] = player;
+      useGame.setState({ team: healed, active: 0 });
+      const fullClear = progress.runsCompleted > prevRuns;
+      const winMsg = fullClear
+        ? `Defeated ${b.trainer.name}! League cleared — team +1 prestige, enemy prestige +8.`
+        : `Defeated ${b.trainer.name}!`;
+      set({
+        progress,
+        battle: {
+          ...b,
+          enemyTeam,
+          enemyIndex,
+          enemyFainted,
+          buffs: freshBuffs(),
+          log: [...log, winMsg],
+          result: "win",
+        },
+      });
+      useGame.setState({ paused: false });
+      return;
+    }
 
     // Expire league activations: Dynamax on its real-time cap (clamp HP back),
     // Mega / Tera when the transformed mon has fainted.
     if (lf.dynamax && now >= lf.dynamax.until) {
       const i = team.findIndex((p) => p.uid === lf.dynamax!.uid);
-      if (i >= 0) team[i] = { ...team[i], hp: Math.min(team[i].hp, combatStats(team[i]).maxHp) };
+      if (i >= 0) team[i] = { ...team[i], hp: Math.min(team[i].hp, combatStats(team[i], { synergy }).maxHp) };
       lf.dynamax = null;
       log = [...log, "Dynamax wore off."];
     }

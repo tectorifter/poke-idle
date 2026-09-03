@@ -4,7 +4,8 @@ import { natureMult, rollNature } from "./natures";
 import { CRIT_CHANCE, CRIT_MULT, toMaxMove, toGMaxMove } from "./moves";
 import type { MoveData } from "./moves";
 import { chosenMove } from "./learnsets";
-import type { CatchTier, GrowthRate, OwnedPoke, Species, StatKey, StatSpread } from "./types";
+import type { TeamSynergy } from "./synergy";
+import type { CatchTier, GrowthRate, Nature, OwnedPoke, Species, StatKey, StatSpread } from "./types";
 
 // ─── Auto-tap & store constants ───────────────────────────────────────────
 export const MAX_AUTO_LEVEL = 15;
@@ -270,6 +271,9 @@ export function combatStats(
     /** Active temporary anomaly form on this mon (player side). For mega/gmax the
      *  caller has already swapped `poke.name` to the form species. */
     form?: FormKind;
+    /** Party type-synergy buffs. Only pass this for player-team fighters — it
+     *  adds flat Atk/Def/SpA/SpD/Spe and a max-HP % on top of the base line. */
+    synergy?: TeamSynergy;
   } = {},
 ) {
   const spec = speciesByName(poke.name);
@@ -304,24 +308,26 @@ export function combatStats(
   const ie = (k: StatKey, scale = 1) => ivEvBonus(poke, k, lvl) * scale;
   // Nature: +10% / −10% / neutral per stat (never HP).
   const nat = (k: StatKey) => natureMult(poke.nature, k);
+  // Party type-synergy flat buffs (caller only passes this for the player team).
+  const syn = opts.synergy;
 
   const atk = Math.floor(
     (Math.floor(((((spec.atk + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique) + ie("atk")) *
       nat("atk"),
-  );
+  ) + (syn?.atkFlat ?? 0);
   const def = Math.floor(
     (Math.floor(((((spec.def + 50) * lvl) / 150) * pMult * effectiveFormMult) + unique) + ie("def")) *
       nat("def"),
-  );
+  ) + (syn?.defFlat ?? 0);
   const spa = Math.floor(
     (Math.floor((((spec.spa + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spa")) * nat("spa"),
-  );
+  ) + (syn?.spaFlat ?? 0);
   const spd = Math.floor(
     (Math.floor((((spec.spd + 50) * lvl) / 150) * pMult * effectiveFormMult) + ie("spd")) * nat("spd"),
-  );
+  ) + (syn?.spdFlat ?? 0);
   const spe = Math.floor(
     (Math.floor((((spec.spe + 50) * lvl) / 150) * pMult) + ie("spe")) * nat("spe"),
-  );
+  ) + (syn?.speFlat ?? 0);
 
   const speed = Math.floor((1000 / (500 + spe)) * 800);
   let maxHp = Math.floor(((spec.hp * lvl) / 40) * pMult * 3 * effectiveFormMult) + ie("hp", 3);
@@ -331,6 +337,7 @@ export function combatStats(
   if (dynamaxed && (opts.isPlayer || anomalyActive || opts.form === "dynamax" || opts.form === "gmax")) {
     maxHp = Math.floor(maxHp * DYNAMAX_HP_MULT);
   }
+  if (syn?.hpPct) maxHp = Math.floor(maxHp * (1 + syn.hpPct));
 
   return {
     maxHp,
@@ -386,10 +393,12 @@ export function levelDamageBonus(
   return Math.floor((level / 10) * 1.5 * playerPrestigeMult(prestige) * multiplier);
 }
 
-/** Wild-route player HP pool. Independent of equipped mon; scales with level + prestige. */
-export function playerMaxHp(level: number, prestige: number): number {
+/** Wild-route player HP pool. Independent of equipped mon; scales with level +
+ *  prestige, then the Normal-type team-synergy +HP% (0 by default). */
+export function playerMaxHp(level: number, prestige: number, hpPct = 0): number {
   const lvl = Math.max(1, Math.min(100, level));
-  return Math.max(10, Math.floor(((50 * lvl) / 40) * playerPrestigeMult(prestige) * 3));
+  const base = Math.max(10, Math.floor(((50 * lvl) / 40) * playerPrestigeMult(prestige) * 3));
+  return Math.floor(base * (1 + hpPct));
 }
 
 export function playerLevelOf(exp: number): number {
@@ -423,6 +432,14 @@ export function attackDamage(
     teraType?: string;
     /** The move being used. Defaults to a STAB attack for the mon's type. */
     move?: MoveData;
+    /** Party synergy for the attacker's side (pass only for player attacks). */
+    synergy?: TeamSynergy;
+    /** Party synergy for the defender's side (pass only when the player defends). */
+    defenderSynergy?: TeamSynergy;
+    /** Extra crit stages (Bug synergy): 0 → 1/24, 1 → 1/8, 2 → 1/2, 3 → always. */
+    critStageBonus?: number;
+    /** Attacker is burned (synergy status) — deals 90% damage. */
+    attackerBurned?: boolean;
   } = {},
 ): { damage: number; multiplier: number; crit: boolean } {
   let move = opts.move ?? chosenMove(attacker, levelOf(attacker));
@@ -442,11 +459,13 @@ export function attackDamage(
     playerPrestige: opts.playerPrestige,
     uniqueBonus: opts.uniqueBonus,
     form: opts.form,
+    synergy: opts.synergy,
   });
   const d = combatStats(defender, {
     isPlayer: !opts.attackerIsPlayer,
     playerPrestige: opts.attackerIsPlayer ? 0 : opts.playerPrestige,
     uniqueBonus: opts.attackerIsPlayer ? 0 : opts.uniqueBonus,
+    synergy: opts.defenderSynergy,
   });
 
   const attackerSpec = speciesByName(attacker.name);
@@ -473,7 +492,9 @@ export function attackDamage(
       (Math.floor((Math.floor((2 * lvl) / 5) + 2) * move.power * atkStat) / defStat) / 50,
     ) + 2;
 
-  const crit = Math.random() < CRIT_CHANCE;
+  const critStage = Math.max(0, Math.min(3, opts.critStageBonus ?? 0));
+  const critChance = [CRIT_CHANCE, 1 / 8, 1 / 2, 1][critStage];
+  const crit = Math.random() < critChance;
   const spread = (85 + Math.floor(Math.random() * 16)) / 100; // 0.85–1.00
   const stab = a.types.includes(moveType) ? 1.5 : 1;
 
@@ -484,6 +505,14 @@ export function attackDamage(
   if (opts.form === "gmax") dmg *= GMAX_DAMAGE_MULT;
   else if (opts.form === "dynamax") dmg *= DYNAMAX_DAMAGE_MULT;
   if (isTeraName(attacker.name) || opts.form === "tera") dmg *= TERA_DAMAGE_MULT;
+
+  // Dragon synergy: Dragon-type mons on the defending player team take less.
+  if (opts.defenderSynergy?.dragonDrPct && d.types.includes("Dragon")) {
+    dmg *= 1 - opts.defenderSynergy.dragonDrPct;
+  }
+
+  // Burn (synergy status): the burned attacker deals reduced damage.
+  if (opts.attackerBurned) dmg *= 0.9;
 
   return { damage: Math.max(1, Math.floor(dmg)), multiplier, crit };
 }
@@ -531,6 +560,20 @@ export function zeroEVs(): StatSpread {
   return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
 }
 
+/** Perfect 31 in every stat. */
+export function maxIVs(): StatSpread {
+  return { hp: IV_MAX, atk: IV_MAX, def: IV_MAX, spa: IV_MAX, spd: IV_MAX, spe: IV_MAX };
+}
+
+/** EVs spread evenly across all six stats up to the 510 total (85 each). */
+export function evenEVs(): StatSpread {
+  const each = Math.floor(EV_MAX_TOTAL / STAT_KEYS.length);
+  return { hp: each, atk: each, def: each, spa: each, spd: each, spe: each };
+}
+
+/** A neutral (no +/−) nature. */
+export const NEUTRAL_NATURE: Nature = "Hardy";
+
 export function evTotal(evs: StatSpread | undefined): number {
   return evs ? STAT_KEYS.reduce((n, k) => n + (evs[k] || 0), 0) : 0;
 }
@@ -577,6 +620,9 @@ export function makeOwned(
   level: number,
   shiny = false,
   prestige = 0,
+  /** Override the rolled statline — used to give league opponents a fixed,
+   *  fully-trained spread (31 IVs, even EVs, neutral nature). */
+  spread?: { ivs?: StatSpread; evs?: StatSpread; nature?: Nature },
 ): OwnedPoke {
   const spec = speciesByName(name);
   const growth = (spec?.growth ?? "Medium Fast") as GrowthRate;
@@ -588,9 +634,9 @@ export function makeOwned(
     prestige,
     hp: 1,
     teraType: rollTeraType(name),
-    ivs: rollIVs(),
-    evs: zeroEVs(),
-    nature: rollNature(),
+    ivs: spread?.ivs ?? rollIVs(),
+    evs: spread?.evs ?? zeroEVs(),
+    nature: spread?.nature ?? rollNature(),
   };
   poke.hp = combatStats(poke).maxHp;
   return poke;

@@ -8,7 +8,8 @@
 // a second damage model, so trainer fights feel consistent with wild ones.
 
 import { LEAGUE, ROUTES, speciesByName } from "./dex";
-import { combatStats, makeOwned } from "./formulas";
+import { combatStats, evenEVs, makeOwned, maxIVs, NEUTRAL_NATURE } from "./formulas";
+import { computeSynergy } from "./synergy";
 import type { EliteFourDef, GymDef, LeagueProgress, OwnedPoke, TrainerDef } from "./types";
 
 export type LeagueStage =
@@ -59,7 +60,9 @@ export function anomalyInfusionFraction(runsCompleted: number): number {
   return (runsCompleted - 3) / 3;
 }
 
-/** Builds live OwnedPoke instances for a trainer's team. */
+/** Builds live OwnedPoke instances for a trainer's team. League opponents are
+ *  fully trained by default — 31 IVs, EVs spread evenly (85 each), neutral
+ *  nature — unless the trainer def pins its own `ivs` / `evs` / `nature`. */
 export function buildTrainerTeam(
   trainer: TrainerDef,
   prestige = 0,
@@ -73,7 +76,11 @@ export function buildTrainerTeam(
         pool.length > 0 && Math.random() < anomalyFraction
           ? pool[Math.floor(Math.random() * pool.length)]
           : p.name;
-      return makeOwned(name, p.level, false, prestige);
+      return makeOwned(name, p.level, false, prestige, {
+        ivs: p.ivs ?? maxIVs(),
+        evs: p.evs ?? evenEVs(),
+        nature: p.nature ?? NEUTRAL_NATURE,
+      });
     });
 }
 
@@ -114,7 +121,8 @@ export function currentStage(progress: LeagueProgress): LeagueStage | null {
 }
 
 export function healTeam(team: OwnedPoke[]): OwnedPoke[] {
-  return team.map((p) => ({ ...p, hp: combatStats(p).maxHp }));
+  const synergy = computeSynergy(team);
+  return team.map((p) => ({ ...p, hp: combatStats(p, { synergy }).maxHp }));
 }
 
 export const LEAGUE_PRESTIGE_REWARD = 1;

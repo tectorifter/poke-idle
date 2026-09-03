@@ -11,6 +11,8 @@ import {
   uniqueCaughtBonus,
 } from "@/lib/game/formulas";
 import { natureTag } from "@/lib/game/natures";
+import { computeSynergy } from "@/lib/game/synergy";
+import type { TeamSynergy } from "@/lib/game/synergy";
 import { useGame, uniqueCaught } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { Meter } from "./bars";
@@ -31,6 +33,7 @@ export function TeamView() {
   const setTab = useGame((s) => s.setTab);
 
   const uniqueBonus = uniqueCaughtBonus(uniqueCaught(dex));
+  const synergy = computeSynergy(team);
   const showPc = storage.length > 0;
 
   const [editingUid, setEditingUid] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export function TeamView() {
             active={i === active}
             playerPrestige={playerPrestige}
             uniqueBonus={uniqueBonus}
+            synergy={synergy}
             onSelect={() => setActive(i)}
             onEdit={() => setEditingUid(p.uid)}
             onEvolve={(to) => evolve(p.uid, to)}
@@ -103,6 +107,7 @@ function PokeCell({
   active,
   playerPrestige,
   uniqueBonus,
+  synergy,
   onSelect,
   onEdit,
   onEvolve,
@@ -115,6 +120,8 @@ function PokeCell({
   active?: boolean;
   playerPrestige: number;
   uniqueBonus: number;
+  /** Party only: type-synergy buffs, so the HP bar shows the Normal +HP%. */
+  synergy?: TeamSynergy;
   onSelect?: () => void;
   /** Party only: hold the cell to open the IV/EV/nature/move editor. */
   onEdit?: () => void;
@@ -124,7 +131,7 @@ function PokeCell({
   moveTitle: string;
   onRelease?: () => void;
 }) {
-  const stats = combatStats(poke, { isPlayer: true, playerPrestige, uniqueBonus });
+  const stats = combatStats(poke, { isPlayer: true, playerPrestige, uniqueBonus, synergy });
   const lvl = levelOf(poke);
   const evos = eligibleEvolutions(poke);
   const ivSum = poke.ivs ? STAT_KEYS.reduce((n, k) => n + (poke.ivs![k] || 0), 0) : 0;
