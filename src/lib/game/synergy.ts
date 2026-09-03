@@ -28,9 +28,10 @@ export type TeamSynergy = {
   /** Water — chance, on a Water-type mon's attack, to heal it 5% of max HP. */
   waterHealChance: number;
   /** Ground — chance, when an enemy hits a Ground-type mon, to make that enemy
-   *  bleed 2% max HP on every attack it makes afterwards. */
+   *  bleed GROUND_BLEED_FRAC of max HP on every attack it makes afterwards. */
   groundBleedChance: number;
-  /** Ice — chance an Ice-type attack freezes the target. */
+  /** Ice — chance an Ice-type attack freezes the target. A frozen mon also
+   *  loses FREEZE_DAMAGE_FRAC of max HP each turn it stays frozen. */
   freezeChance: number;
   /** Poison — chance a Poison-type attack inflicts poison (or toxic at tier 3). */
   poisonChance: number;
@@ -99,7 +100,7 @@ export const WATER_HEAL_FRAC = 0.05;
 /** A frozen mon loses this fraction of max HP at the start of each turn it
  *  spends frozen (in addition to losing the turn). */
 export const FREEZE_DAMAGE_FRAC = 0.03;
-/** Burned mons deal 90% damage. */
+/** Burned mons deal 75% of their damage. */
 export const BURN_DAMAGE_MULT = 0.75;
 
 /** Per-attack Ground-synergy bleed damage for a `maxHp` pool (min 1). */
@@ -217,24 +218,24 @@ export const SYNERGY_META: Record<
   string,
   { label: string; effect: string; tierValues: [string, string, string] }
 > = {
-  Flying: { label: "Tailwind", effect: "Flat Speed for the whole team", tierValues: ["+10", "+15", "+25"] },
-  Fighting: { label: "Fighting Spirit", effect: "Flat Attack for the whole team", tierValues: ["+20", "+30", "+40"] },
-  Psychic: { label: "Psychic Power", effect: "Flat Sp. Atk for the whole team", tierValues: ["+20", "+30", "+40"] },
-  Normal: { label: "Endurance", effect: "+Max HP for the player and team", tierValues: ["+10%", "+20%", "+30%"] },
-  Rock: { label: "Sturdy", effect: "Flat Def + Sp. Def for the whole team", tierValues: ["+15", "+30", "+45"] },
+  Flying: { label: "Tailwind", effect: "Flat Speed for the whole team", tierValues: ["+10", "+20", "+30"] },
+  Fighting: { label: "Fighting Spirit", effect: "Flat Attack for the whole team", tierValues: ["+5", "+10", "+15"] },
+  Psychic: { label: "Psychic Power", effect: "Flat Sp. Atk for the whole team", tierValues: ["+5", "+10", "+15"] },
+  Normal: { label: "Endurance", effect: "+Max HP for the player and team", tierValues: ["+10%", "+12%", "+15%"] },
+  Rock: { label: "Sturdy", effect: "Flat Def + Sp. Def for the whole team", tierValues: ["+4", "+8", "+12"] },
   Bug: { label: "Swarm", effect: "Extra critical-hit stage for the team", tierValues: ["+1 stage", "+2", "+2"] },
-  Fairy: { label: "Misty Terrain", effect: "Enemy team loses flat Speed", tierValues: ["-15", "-20", "-30"] },
+  Fairy: { label: "Misty Terrain", effect: "Enemy team loses flat Speed", tierValues: ["-50", "-60", "-70"] },
   Dragon: { label: "Dragonhide", effect: "Dragon-type mons take less damage", tierValues: ["-10%", "-20%", "-30%"] },
   Steel: { label: "Iron Barbs", effect: "Steel-type mons reflect a cut of damage taken (true)", tierValues: ["4%", "6%", "8%"] },
-  Water: { label: "Drain", effect: "Water-type mons: chance to heal 5% max HP on hit", tierValues: ["5%", "10%", "20%"] },
-  Ground: { label: "Spikes", effect: "Chance to bleed foes that hit a Ground mon (2%/turn)", tierValues: ["25%", "50%", "100%"] },
+  Water: { label: "Drain", effect: "Water-type mons: chance to heal 5% max HP on hit", tierValues: ["10%", "18%", "26%"] },
+  Ground: { label: "Spikes", effect: "Chance to bleed foes that hit a Ground mon (5%/turn)", tierValues: ["25%", "50%", "100%"] },
   Ice: { label: "Frostbite", effect: "Ice mons: chance to freeze on hit — frozen mons also lose 3% HP/turn", tierValues: ["5%", "8%", "12%"] },
-  Poison: { label: "Venom", effect: "Poison-type hits: chance to poison (tier 3 = toxic)", tierValues: ["20%", "40%", "50% toxic"] },
-  Electric: { label: "Static", effect: "Electric mons paralyze on hit AND when hit (needs 3)", tierValues: ["—", "—", "on"] },
-  Dark: { label: "Intimidate", effect: "Dark-type hits: chance to flinch the target", tierValues: ["4%", "8%", "16%"] },
-  Fire: { label: "Burn", effect: "Chance to burn — burned mons deal 10% less", tierValues: ["10%", "15%", "20%"] },
+  Poison: { label: "Venom", effect: "Poison-type hits: chance to poison (tier 3 = toxic)", tierValues: ["35%", "55%", "65% toxic"] },
+  Electric: { label: "Static", effect: "Electric mons paralyze on hit AND when hit (needs 2)", tierValues: ["60%", "60%", "60%"] },
+  Dark: { label: "Intimidate", effect: "Dark-type hits: chance to flinch the target", tierValues: ["15%", "25%", "35%"] },
+  Fire: { label: "Burn", effect: "Chance to burn — burned mons deal 25% less", tierValues: ["25%", "35%", "40%"] },
   Ghost: { label: "Phantom", effect: "Ghost mons strike first; the foe then has 50% to Struggle itself", tierValues: ["20%", "40%", "60%"] },
-  Grass: { label: "Herbal Cure", effect: "Chance to clear a team status each action (needs 1)", tierValues: ["25%", "25%", "25%"] },
+  Grass: { label: "Herbal Cure", effect: "Chance to clear a team status each action (needs 1)", tierValues: ["80%", "80%", "80%"] },
   Stellar: {
     label: "Stellar",
     effect: "While a Stellar mon (Terapagos-Stellar) is the active fighter, EVERY synergy — yours and the foe's — is switched off",
