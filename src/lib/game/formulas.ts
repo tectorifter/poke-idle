@@ -115,12 +115,14 @@ export function ballChargeCost(ball: CatchTier, qty = 1): number {
   return BALL_META[ball].price * qty;
 }
 
-/** Single-throw catch probability (0–1) from the modified catch rate `a`
- *  (Gen V/VI shake-check math simplifies to (a/255)^(3/4)). */
+/** Single-throw catch probability (0–1) from the modified catch rate `a`.
+ *  Real Gen 3+ math: 4 independent shake checks, each with probability
+ *  (a/255)^0.25; the ball only succeeds if all 4 pass, so the compounded
+ *  probability is ((a/255)^0.25)^4 = a/255 — linear, not (a/255)^0.75. */
 export function catchProbability(a: number): number {
   if (a >= 255) return 1;
   if (a <= 0) return 0;
-  return Math.pow(a / 255, 0.75);
+  return Math.min(1, a / 255);
 }
 
 /** Extra `a` multiplier for a manually-aimed throw — auto-catch gets none, so
