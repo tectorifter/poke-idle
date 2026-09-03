@@ -6,7 +6,10 @@
     "dev": "vite --host 0.0.0.0 --port 8080",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 8080",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --exclude test/sim.report.test.ts",
+    "test:watch": "vitest --exclude test/sim.report.test.ts",
+    "sim": "vitest run test/sim.report.test.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -24,6 +27,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.7.0",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "^5.0.0"
   }
 }
