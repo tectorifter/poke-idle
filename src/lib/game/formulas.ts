@@ -395,11 +395,18 @@ export function levelDamageBonus(
   return Math.floor((level / 10) * 1.5 * playerPrestigeMult(prestige) * multiplier);
 }
 
+/** Base HP stat the wild-route player pool grows on — as if the "player" were a
+ *  120-base-HP Pokémon (same growth curve as a mon's HP in `combatStats`). */
+export const PLAYER_HP_BASE_STAT = 120;
+
 /** Wild-route player HP pool. Independent of equipped mon; scales with level +
  *  prestige, then the Normal-type team-synergy +HP% (0 by default). */
 export function playerMaxHp(level: number, prestige: number, hpPct = 0): number {
   const lvl = Math.max(1, Math.min(100, level));
-  const base = Math.max(10, Math.floor(((50 * lvl) / 40) * playerPrestigeMult(prestige) * 3));
+  const base = Math.max(
+    10,
+    Math.floor(((PLAYER_HP_BASE_STAT * lvl) / 40) * playerPrestigeMult(prestige) * 3),
+  );
   return Math.floor(base * (1 + hpPct));
 }
 

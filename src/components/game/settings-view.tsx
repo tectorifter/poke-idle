@@ -82,8 +82,8 @@ export function SettingsView() {
             }`}
           >
             <span
-              className={`absolute top-1 size-5 rounded-full bg-white transition-transform ${
-                autoAdvanceRoute ? "translate-x-6" : "translate-x-1"
+              className={`absolute left-1 top-1 size-5 rounded-full bg-white transition-transform ${
+                autoAdvanceRoute ? "translate-x-5" : "translate-x-0"
               }`}
             />
           </button>
@@ -180,8 +180,8 @@ export function SettingsView() {
             }`}
           >
             <span
-              className={`absolute top-1 size-5 rounded-full bg-white transition-transform ${
-                translucentPanels ? "translate-x-6" : "translate-x-1"
+              className={`absolute left-1 top-1 size-5 rounded-full bg-white transition-transform ${
+                translucentPanels ? "translate-x-5" : "translate-x-0"
               }`}
             />
           </button>
