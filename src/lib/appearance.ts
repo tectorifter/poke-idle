@@ -11,6 +11,10 @@ const STORE = "kv";
 const KEY_BLOB = "background";
 const KEY_URL = "background-url";
 const LS_TRANSLUCENT = "pokeidle-translucent-panels";
+const LS_ATTENUATION = "pokeidle-bg-attenuation";
+
+/** Default black-overlay alpha over the background image (0 = full colour). */
+export const BG_ATTENUATION_DEFAULT = 0.35;
 
 export const BG_MAX_BYTES = 20 * 1024 * 1024; // 20 MB
 export const BG_OK_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
@@ -116,6 +120,15 @@ function readTranslucent(): boolean {
   }
 }
 
+function readAttenuation(): number {
+  try {
+    const v = Number(localStorage.getItem(LS_ATTENUATION));
+    return Number.isFinite(v) && v >= 0 && v <= 1 ? v : BG_ATTENUATION_DEFAULT;
+  } catch {
+    return BG_ATTENUATION_DEFAULT;
+  }
+}
+
 type AppearanceState = {
   /** Current background image src (object URL or plain URL), or null for default. */
   url: string | null;
@@ -123,12 +136,16 @@ type AppearanceState = {
   isObjectUrl: boolean;
   ready: boolean;
   translucentPanels: boolean;
+  /** Black-overlay alpha over the background image: 0 = full natural colour,
+   *  1 = fully dimmed. */
+  bgAttenuation: number;
   init: () => Promise<void>;
   /** Returns an error message, or null on success. */
   setFromFile: (file: File) => Promise<string | null>;
   setFromUrl: (raw: string) => Promise<string | null>;
   clearBackground: () => Promise<void>;
   setTranslucentPanels: (on: boolean) => void;
+  setBgAttenuation: (v: number) => void;
 };
 
 function revoke(url: string | null, isObjectUrl: boolean) {
@@ -140,6 +157,7 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
   isObjectUrl: false,
   ready: false,
   translucentPanels: readTranslucent(),
+  bgAttenuation: readAttenuation(),
 
   init: async () => {
     if (get().ready) return;
@@ -223,5 +241,15 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
       /* ignore */
     }
     set({ translucentPanels: on });
+  },
+
+  setBgAttenuation: (v) => {
+    const a = Math.max(0, Math.min(1, Number(v) || 0));
+    try {
+      localStorage.setItem(LS_ATTENUATION, String(a));
+    } catch {
+      /* ignore */
+    }
+    set({ bgAttenuation: a });
   },
 }));

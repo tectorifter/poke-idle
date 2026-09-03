@@ -17,6 +17,8 @@ export function SettingsView() {
   const clearBg = useAppearance((s) => s.clearBackground);
   const translucentPanels = useAppearance((s) => s.translucentPanels);
   const setTranslucentPanels = useAppearance((s) => s.setTranslucentPanels);
+  const bgAttenuation = useAppearance((s) => s.bgAttenuation);
+  const setBgAttenuation = useAppearance((s) => s.setBgAttenuation);
 
   const [saveText, setSaveText] = useState("");
   const [bgLink, setBgLink] = useState("");
@@ -151,16 +153,40 @@ export function SettingsView() {
         </div>
 
         {bgUrl && (
-          <button
-            type="button"
-            className="h-11 w-full rounded-2xl bg-surface text-sm font-medium shadow-border"
-            onClick={async () => {
-              await clearBg();
-              setMsg("Background removed.");
-            }}
-          >
-            Remove background
-          </button>
+          <>
+            <button
+              type="button"
+              className="h-11 w-full rounded-2xl bg-surface text-sm font-medium shadow-border"
+              onClick={async () => {
+                await clearBg();
+                setMsg("Background removed.");
+              }}
+            >
+              Remove background
+            </button>
+
+            <div className="rounded-2xl bg-surface px-4 py-3 shadow-border">
+              <div className="flex items-baseline justify-between text-sm font-medium">
+                <span>Attenuation</span>
+                <span className="font-mono text-xs text-muted">
+                  {Math.round(bgAttenuation * 100)}%
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted">
+                Dim the background — full natural colour at 0%, hidden at 100%.
+              </p>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={Math.round(bgAttenuation * 100)}
+                onChange={(e) => setBgAttenuation(Number(e.target.value) / 100)}
+                className="mt-2 h-2 w-full cursor-pointer accent-accent"
+                aria-label="Background attenuation"
+              />
+            </div>
+          </>
         )}
 
         <label className="flex h-14 w-full items-center justify-between rounded-2xl bg-surface px-4 shadow-border">

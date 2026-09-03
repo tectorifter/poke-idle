@@ -35,6 +35,7 @@ export function GameShell() {
   const bgUrl = useAppearance((s) => s.url);
   const initBg = useAppearance((s) => s.init);
   const translucent = useAppearance((s) => s.translucentPanels);
+  const bgAttenuation = useAppearance((s) => s.bgAttenuation);
   const owned = Object.values(dex).filter((f) => f >= 5).length;
 
   useEffect(() => {
@@ -46,11 +47,14 @@ export function GameShell() {
   }, [initBg]);
 
   // Paint the player's custom image behind everything (falls back to the theme
-  // colour when cleared).
+  // colour when cleared). The attenuation slider layers a black overlay over it
+  // — 0 = full natural colour, 1 = fully dimmed.
   useEffect(() => {
     const s = document.body.style;
     if (bgUrl) {
-      s.backgroundImage = `url("${bgUrl}")`;
+      const a = Math.max(0, Math.min(1, bgAttenuation));
+      const dim = a > 0 ? `linear-gradient(rgba(0,0,0,${a}), rgba(0,0,0,${a})), ` : "";
+      s.backgroundImage = `${dim}url("${bgUrl}")`;
       s.backgroundSize = "cover";
       s.backgroundPosition = "center";
       s.backgroundRepeat = "no-repeat";
@@ -62,7 +66,7 @@ export function GameShell() {
       s.backgroundRepeat = "";
       s.backgroundAttachment = "";
     }
-  }, [bgUrl]);
+  }, [bgUrl, bgAttenuation]);
 
   // Translucent panels: swap the opaque dark theme colours for semi-transparent
   // ones so the background image shows through every GUI window.
@@ -120,11 +124,10 @@ export function GameShell() {
       <div
         className={cn(
           "relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
-          !bgUrl
-            ? "bg-bg"
-            : translucent
-              ? "bg-black/10"
-              : "bg-black/35 backdrop-blur-[1px]",
+          // Dimming is handled by the attenuation slider on the body background;
+          // the frame just stays transparent over it (a light blur helps
+          // legibility once panels go translucent).
+          !bgUrl ? "bg-bg" : translucent ? "bg-transparent backdrop-blur-[1px]" : "bg-transparent",
         )}
       >
         <header className="flex h-12 shrink-0 items-center justify-between px-4 pt-[env(safe-area-inset-top)]">
