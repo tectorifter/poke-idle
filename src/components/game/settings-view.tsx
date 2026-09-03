@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useGame } from "@/lib/game/store";
+import { levelOf } from "@/lib/game/formulas";
+import { Sprite } from "./sprite";
 
 export function SettingsView() {
   const exportSave = useGame((s) => s.exportSave);
@@ -7,9 +9,44 @@ export function SettingsView() {
   const resetGame = useGame((s) => s.resetGame);
   const autoAdvanceRoute = useGame((s) => s.autoAdvanceRoute);
   const toggleAutoAdvanceRoute = useGame((s) => s.toggleAutoAdvanceRoute);
+  const team = useGame((s) => s.team);
 
   const [saveText, setSaveText] = useState("");
   const [msg, setMsg] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const openPicker = () => {
+    setSelected(new Set());
+    setPickerOpen(true);
+  };
+
+  const toggleSelected = (uid: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(uid)) next.delete(uid);
+      else next.add(uid);
+      return next;
+    });
+  };
+
+  const confirmExport = () => {
+    const picked = team.filter((p) => selected.has(p.uid));
+    if (picked.length === 0) return;
+    const data = JSON.stringify(picked, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.download = picked.length === 1 ? `${picked[0].name}-${stamp}.json` : `pokeidle-pokemon-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setPickerOpen(false);
+    setMsg(`Exported ${picked.length} Pokemon.`);
+  };
 
   return (
     <div className="h-full overflow-y-auto px-4 pb-4 pt-3">
@@ -120,6 +157,83 @@ export function SettingsView() {
           </div>
         </details>
       </div>
+
+      <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+        Pokemon export
+      </h3>
+      <div className="mt-3">
+        <button
+          type="button"
+          className="h-11 w-full rounded-2xl bg-surface text-sm font-medium shadow-border"
+          onClick={openPicker}
+        >
+          Export Pokemon (JSON)
+        </button>
+      </div>
+
+      {pickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setPickerOpen(false)}>
+          <div
+            className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-bg p-4 pb-6 shadow-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-display text-lg font-semibold">Select Pokemon to export</h3>
+            <p className="mt-1 text-xs text-muted">
+              Choose which of your party's Pokemon to include in the JSON file.
+            </p>
+
+            <div className="mt-3 space-y-2">
+              {team.length === 0 && <p className="text-sm text-muted">Your party is empty.</p>}
+              {team.map((p) => {
+                const checked = selected.has(p.uid);
+                return (
+                  <label
+                    key={p.uid}
+                    className={`flex items-center gap-3 rounded-2xl px-3 py-2 shadow-border ${
+                      checked ? "bg-accent/15" : "bg-surface"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleSelected(p.uid)}
+                      className="size-5 shrink-0 accent-accent"
+                    />
+                    <Sprite name={p.name} shiny={p.shiny} size={40} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {p.shiny ? "★ " : ""}
+                        {p.name}
+                      </span>
+                      <span className="block text-xs text-muted">Lv. {levelOf(p)}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                className="h-11 flex-1 rounded-2xl bg-surface text-sm font-medium shadow-border"
+                onClick={() => setPickerOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={selected.size === 0}
+                className={`h-11 flex-1 rounded-2xl text-sm font-semibold shadow-border ${
+                  selected.size === 0 ? "bg-surface-2 text-muted" : "bg-accent text-white"
+                }`}
+                onClick={confirmExport}
+              >
+                Confirm & export ({selected.size})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
         Danger zone
