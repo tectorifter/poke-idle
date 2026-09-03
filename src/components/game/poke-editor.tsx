@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { X } from "lucide-react";
 import { combatStats, levelOf, uniqueCaughtBonus, IV_MAX, EV_MAX_PER_STAT, EV_MAX_TOTAL } from "@/lib/game/formulas";
 import { learnableMoves, moveAcquisitionCost } from "@/lib/game/learnsets";
 import { NATURE_NAMES, natureTag } from "@/lib/game/natures";
 import { TYPE_COLOR } from "@/lib/game/type-chart";
 import { computeSynergy } from "@/lib/game/synergy";
+import { SOLID_PANEL_VARS, useAppearance } from "@/lib/appearance";
 import { useGame, uniqueCaught, sanitizeDraft, modifyPokeCost } from "@/lib/game/store";
 import type { Nature, OwnedPoke, StatKey, StatSpread } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
   const dex = useGame((s) => s.dex);
   const team = useGame((s) => s.team);
   const modifyPoke = useGame((s) => s.modifyPoke);
+  const opaque = useAppearance((s) => s.opaqueMenus);
 
   const [ivs, setIvs] = useState<StatSpread>(() => copy(poke.ivs));
   const [evs, setEvs] = useState<StatSpread>(() => copy(poke.evs));
@@ -81,7 +83,10 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
     );
 
   return (
-    <div className="fixed inset-0 z-50 mx-auto flex max-w-[430px] flex-col bg-bg text-fg">
+    <div
+      className="fixed inset-0 z-50 mx-auto flex max-w-[430px] flex-col bg-bg text-fg"
+      style={opaque ? (SOLID_PANEL_VARS as CSSProperties) : undefined}
+    >
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
         <div>

@@ -12,9 +12,18 @@ const KEY_BLOB = "background";
 const KEY_URL = "background-url";
 const LS_TRANSLUCENT = "pokeidle-translucent-panels";
 const LS_ATTENUATION = "pokeidle-bg-attenuation";
+const LS_OPAQUE_MENUS = "pokeidle-opaque-menus";
 
 /** Default black-overlay alpha over the background image (0 = full colour). */
 export const BG_ATTENUATION_DEFAULT = 0.35;
+
+/** The solid theme-colour values — re-declare these on a container to force
+ *  everything inside it back to opaque even when translucent panels is on. */
+export const SOLID_PANEL_VARS: Record<string, string> = {
+  "--color-bg": "#0b0c10",
+  "--color-surface": "#14151c",
+  "--color-surface-2": "#1c1e28",
+};
 
 export const BG_MAX_BYTES = 20 * 1024 * 1024; // 20 MB
 export const BG_OK_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
@@ -129,6 +138,15 @@ function readAttenuation(): number {
   }
 }
 
+function readOpaqueMenus(): boolean {
+  try {
+    // default ON — menu windows stay solid unless explicitly opted out
+    return localStorage.getItem(LS_OPAQUE_MENUS) !== "0";
+  } catch {
+    return true;
+  }
+}
+
 type AppearanceState = {
   /** Current background image src (object URL or plain URL), or null for default. */
   url: string | null;
@@ -139,6 +157,9 @@ type AppearanceState = {
   /** Black-overlay alpha over the background image: 0 = full natural colour,
    *  1 = fully dimmed. */
   bgAttenuation: number;
+  /** Keep the Synergies / Pokémon-editor windows opaque even with translucent
+   *  panels enabled. */
+  opaqueMenus: boolean;
   init: () => Promise<void>;
   /** Returns an error message, or null on success. */
   setFromFile: (file: File) => Promise<string | null>;
@@ -146,6 +167,7 @@ type AppearanceState = {
   clearBackground: () => Promise<void>;
   setTranslucentPanels: (on: boolean) => void;
   setBgAttenuation: (v: number) => void;
+  setOpaqueMenus: (on: boolean) => void;
 };
 
 function revoke(url: string | null, isObjectUrl: boolean) {
@@ -158,6 +180,7 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
   ready: false,
   translucentPanels: readTranslucent(),
   bgAttenuation: readAttenuation(),
+  opaqueMenus: readOpaqueMenus(),
 
   init: async () => {
     if (get().ready) return;
@@ -251,5 +274,14 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
       /* ignore */
     }
     set({ bgAttenuation: a });
+  },
+
+  setOpaqueMenus: (on) => {
+    try {
+      localStorage.setItem(LS_OPAQUE_MENUS, on ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+    set({ opaqueMenus: on });
   },
 }));

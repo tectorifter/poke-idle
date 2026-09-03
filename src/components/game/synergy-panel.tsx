@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Sparkles, X } from "lucide-react";
 import {
   SYNERGY_META,
@@ -8,6 +8,7 @@ import {
   typeCounts,
 } from "@/lib/game/synergy";
 import type { OwnedPoke } from "@/lib/game/types";
+import { SOLID_PANEL_VARS, useAppearance } from "@/lib/appearance";
 import { cn } from "@/lib/utils";
 import { TypeBadge } from "./type-badge";
 
@@ -15,6 +16,7 @@ import { TypeBadge } from "./type-badge";
  *  how many more mons of that type reach the next tier. */
 function SynergyPanel({ team, onClose }: { team: OwnedPoke[]; onClose: () => void }) {
   const counts = typeCounts(team);
+  const opaque = useAppearance((s) => s.opaqueMenus);
 
   const rows = SYNERGY_TYPES.map((type) => {
     const count = counts[type] ?? 0;
@@ -24,7 +26,10 @@ function SynergyPanel({ team, onClose }: { team: OwnedPoke[]; onClose: () => voi
   }).sort((a, b) => b.tier - a.tier || b.count - a.count || a.type.localeCompare(b.type));
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-bg">
+    <div
+      className="fixed inset-0 z-50 flex flex-col bg-bg"
+      style={opaque ? (SOLID_PANEL_VARS as CSSProperties) : undefined}
+    >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-accent" />

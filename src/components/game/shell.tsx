@@ -120,7 +120,11 @@ export function GameShell() {
   if (!started) return <StarterSelect />;
 
   return (
-    <div className={cn("flex min-h-dvh justify-center text-fg", bgUrl ? "bg-transparent" : "bg-bg")}>
+    <div
+      // No browser right-click menu anywhere in the game area.
+      onContextMenu={(e) => e.preventDefault()}
+      className={cn("flex min-h-dvh justify-center text-fg", bgUrl ? "bg-transparent" : "bg-bg")}
+    >
       <div
         className={cn(
           "relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",

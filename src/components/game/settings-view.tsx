@@ -19,6 +19,8 @@ export function SettingsView() {
   const setTranslucentPanels = useAppearance((s) => s.setTranslucentPanels);
   const bgAttenuation = useAppearance((s) => s.bgAttenuation);
   const setBgAttenuation = useAppearance((s) => s.setBgAttenuation);
+  const opaqueMenus = useAppearance((s) => s.opaqueMenus);
+  const setOpaqueMenus = useAppearance((s) => s.setOpaqueMenus);
 
   const [saveText, setSaveText] = useState("");
   const [bgLink, setBgLink] = useState("");
@@ -208,6 +210,30 @@ export function SettingsView() {
             <span
               className={`absolute left-1 top-1 size-5 rounded-full bg-white transition-transform ${
                 translucentPanels ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </label>
+
+        <label className="flex h-14 w-full items-center justify-between rounded-2xl bg-surface px-4 shadow-border">
+          <span className="pr-3 text-sm font-medium">
+            Solid menu windows
+            <span className="mt-0.5 block text-xs font-normal text-muted">
+              Keep the Synergies and Pokemon editor windows opaque even when panels are translucent.
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={opaqueMenus}
+            onClick={() => setOpaqueMenus(!opaqueMenus)}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+              opaqueMenus ? "bg-accent" : "bg-surface-2"
+            }`}
+          >
+            <span
+              className={`absolute left-1 top-1 size-5 rounded-full bg-white transition-transform ${
+                opaqueMenus ? "translate-x-5" : "translate-x-0"
               }`}
             />
           </button>
