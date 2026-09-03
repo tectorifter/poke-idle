@@ -5,6 +5,8 @@ export function SettingsView() {
   const exportSave = useGame((s) => s.exportSave);
   const importSave = useGame((s) => s.importSave);
   const resetGame = useGame((s) => s.resetGame);
+  const autoAdvanceRoute = useGame((s) => s.autoAdvanceRoute);
+  const toggleAutoAdvanceRoute = useGame((s) => s.toggleAutoAdvanceRoute);
 
   const [saveText, setSaveText] = useState("");
   const [msg, setMsg] = useState("");
@@ -13,6 +15,35 @@ export function SettingsView() {
     <div className="h-full overflow-y-auto px-4 pb-4 pt-3">
       <h2 className="font-display text-xl font-semibold tracking-tight">Settings</h2>
       <p className="mt-1 text-xs text-muted">Back up, restore, or wipe your progress.</p>
+
+      <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+        Gameplay
+      </h3>
+      <div className="mt-3">
+        <label className="flex h-14 w-full items-center justify-between rounded-2xl bg-surface px-4 shadow-border">
+          <span className="pr-3 text-sm font-medium">
+            Auto-advance route
+            <span className="mt-0.5 block text-xs font-normal text-muted">
+              Move to the next route once every wild Pokemon on this one is caught.
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={autoAdvanceRoute}
+            onClick={toggleAutoAdvanceRoute}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+              autoAdvanceRoute ? "bg-accent" : "bg-surface-2"
+            }`}
+          >
+            <span
+              className={`absolute top-1 size-5 rounded-full bg-white transition-transform ${
+                autoAdvanceRoute ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </label>
+      </div>
 
       <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
         Save file

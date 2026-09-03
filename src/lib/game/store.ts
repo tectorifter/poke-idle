@@ -287,6 +287,8 @@ export type GameState = {
   wildRecharge: RechargeCounts;
   /** When on, wild HP is clamped to a floor of 1 (nothing can be knocked out). */
   falseSwipe: boolean;
+  /** When on, clearing every species on a route's wild list (all caught) auto-advances to the next route in the region. */
+  autoAdvanceRoute: boolean;
   /** Which of the active mon's 4 move slots is fired (0–3). Resets on mon swap. */
   selectedMove: number;
   log: LogLine[];
@@ -314,6 +316,7 @@ type GameActions = {
   /** Buy `qty` throw charges of a ball type (must be an unlocked tier). */
   buyBall: (ball: CatchTier, qty?: number) => void;
   toggleFalseSwipe: () => void;
+  toggleAutoAdvanceRoute: () => void;
   /** Pick which of the active mon's 4 move slots is fired (0–3). */
   setSelectedMove: (index: number) => void;
   buyAutoTap: () => void;
@@ -361,6 +364,7 @@ function emptyState(): GameState {
     wildActivations: freshWildForms(),
     wildRecharge: freshRecharge(),
     falseSwipe: false,
+    autoAdvanceRoute: false,
     selectedMove: 0,
     log: [],
     paused: false,
@@ -398,6 +402,7 @@ function persist(state: GameState) {
     wildActivations: state.wildActivations,
     wildRecharge: state.wildRecharge,
     falseSwipe: state.falseSwipe,
+    autoAdvanceRoute: state.autoAdvanceRoute,
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(blob));
@@ -457,6 +462,34 @@ function markDex(
 function pushLog(log: LogLine[], text: string, tone: LogLine["tone"]): LogLine[] {
   const next = [...log, { id: logSeq++, text, tone }];
   return next.length > MAX_LOG ? next.slice(next.length - MAX_LOG) : next;
+}
+
+/** True once every species that can spawn on this route has been caught
+ *  (dex flag >= 6 — owned, matching the same threshold uniqueCaught() uses). */
+function isRouteDexComplete(region: string, routeId: string, dex: Record<string, DexFlag>): boolean {
+  const def = ROUTES[region]?.[routeId];
+  if (!def || def.pokes.length === 0) return false;
+  return def.pokes.every((name) => (dex[name] ?? 0) >= 6);
+}
+
+/** Next route in the same region, ordered the same way the Map view presents
+ *  them (by minLevel), skipping anything not yet unlocked. Null if this is
+ *  already the region's last route. */
+function nextRouteInRegion(
+  region: string,
+  currentRoute: string,
+  dex: Record<string, DexFlag>,
+): string | null {
+  const regionRoutes = ROUTES[region];
+  if (!regionRoutes) return null;
+  const ordered = Object.entries(regionRoutes).sort((a, b) => a[1].minLevel - b[1].minLevel);
+  const idx = ordered.findIndex(([id]) => id === currentRoute);
+  if (idx < 0) return null;
+  for (let i = idx + 1; i < ordered.length; i++) {
+    const [id] = ordered[i];
+    if (isRouteUnlocked(region, id, dex)) return id;
+  }
+  return null;
 }
 
 function hydrate(): GameState {
@@ -536,6 +569,7 @@ function hydrate(): GameState {
     wildActivations: pruneActivations(saved.wildActivations ?? freshWildForms(), team),
     wildRecharge: saved.wildRecharge ?? freshRecharge(),
     falseSwipe: saved.falseSwipe ?? false,
+    autoAdvanceRoute: saved.autoAdvanceRoute ?? false,
     enemy: spawnEnemy(region, route, saved.anomalyCleared ?? {}, saved.dex ?? {}, saved.gmaxChanceMult ?? 1),
     now: Date.now(),
   };
@@ -723,6 +757,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const pendingFaint = !!(s.enemy && s.enemy.hp <= 0 && respawnAt === 0);
 
     let enemy: OwnedPoke;
+    let justSpawnedEnemy = false;
     if (s.enemy && s.enemy.hp > 0) {
       enemy = { ...s.enemy };
     } else if (pendingFaint && s.enemy) {
@@ -731,6 +766,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       const spawned = spawnEnemy(s.region, s.route, s.anomalyCleared, dex, s.gmaxChanceMult);
       if (!spawned) return;
       enemy = spawned;
+      justSpawnedEnemy = true;
       respawnAt = 0;
       dex = markDex(dex, enemy.name, enemy.shiny ? 2 : 1);
       if (enemy.shiny) {
@@ -1092,8 +1128,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     if (pendingFaint) {
       onEnemyFaint();
-      playerAtkCd = 0;
-      enemyAtkCd = 0;
     }
 
     // ── Attack cadence ─────────────────────────────────────────────────────
@@ -1125,6 +1159,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // Speed-cap cooldowns count down toward "ready".
     playerAtkCd = Math.max(0, playerAtkCd - dtms);
     enemyAtkCd = Math.max(0, enemyAtkCd - dtms);
+    // A genuinely new enemy (fresh spawn, not just a still-alive one from last
+    // tick) always starts on cooldown — it must wait out one full interval
+    // before its first attack, same as every attack after. Previously this
+    // got left at whatever it was (often 0 right after a kill), letting the
+    // very next enemy get an instant free hit.
+    if (justSpawnedEnemy) enemyAtkCd = enemyInt;
 
     // Auto-tap: queue a tap request at the upgrade-controlled cadence.
     autoTapAcc += dtms;
@@ -1143,8 +1183,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         playerAtk();
         if (enemy.hp <= 0) {
           onEnemyFaint();
-          playerAtkCd = 0;
-          enemyAtkCd = 0;
           break;
         }
       }
@@ -1157,8 +1195,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         // Steel-return / Ground-bleed synergy can KO the enemy on its own turn.
         if (enemy.hp <= 0) {
           onEnemyFaint();
-          playerAtkCd = 0;
-          enemyAtkCd = 0;
           break;
         }
       }
@@ -1197,6 +1233,33 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       }
     }
 
+    // Auto-advance: once every species on this route's wild list is caught,
+    // move on to the next route in the region (opt-in, Settings toggle).
+    let region = s.region;
+    let route = s.route;
+    if (s.autoAdvanceRoute && isRouteDexComplete(region, route, dex)) {
+      const next = nextRouteInRegion(region, route, dex);
+      if (next) {
+        const def = ROUTES[region]?.[next];
+        route = next;
+        respawnAt = 0;
+        playerAtkCd = 0;
+        enemyAtkCd = 0;
+        autoTapAcc = 0;
+        pendingTaps = 0;
+        const spawned = spawnEnemy(region, route, anomalyCleared, dex, s.gmaxChanceMult);
+        if (spawned) {
+          enemy = spawned;
+          dex = markDex(dex, enemy.name, enemy.shiny ? 2 : 1);
+          stats = enemy.shiny
+            ? { ...stats, shinySeen: stats.shinySeen + 1 }
+            : { ...stats, seen: stats.seen + 1 };
+        }
+        log = pushLog(log, `Route complete! Auto-advanced to ${def?.name ?? route}.`, "system");
+        dirty = true;
+      }
+    }
+
     const shouldUi = dirty || uiAcc > 0.08;
     if (shouldUi) {
       uiAcc = 0;
@@ -1204,6 +1267,8 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         team,
         storage,
         active: activeIndex,
+        region,
+        route,
         enemy,
         pokeyen,
         playerHp,
@@ -1394,6 +1459,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
   toggleFalseSwipe: () => {
     set({ falseSwipe: !get().falseSwipe });
+    persist({ ...get() });
+  },
+
+  toggleAutoAdvanceRoute: () => {
+    set({ autoAdvanceRoute: !get().autoAdvanceRoute });
     persist({ ...get() });
   },
 

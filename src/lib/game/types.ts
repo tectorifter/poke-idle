@@ -189,4 +189,5 @@ export type SaveBlob = {
   wildActivations?: WildForms;
   wildRecharge?: RechargeCounts;
   falseSwipe?: boolean;
+  autoAdvanceRoute?: boolean;
 };
