@@ -4,6 +4,7 @@ import { combatStats, levelOf, uniqueCaughtBonus, IV_MAX, EV_MAX_PER_STAT, EV_MA
 import { learnableMoves, moveAcquisitionCost } from "@/lib/game/learnsets";
 import { NATURE_NAMES, natureTag } from "@/lib/game/natures";
 import { TYPE_COLOR } from "@/lib/game/type-chart";
+import { computeSynergy } from "@/lib/game/synergy";
 import { useGame, uniqueCaught, sanitizeDraft, modifyPokeCost } from "@/lib/game/store";
 import type { Nature, OwnedPoke, StatKey, StatSpread } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
   const pokeyen = useGame((s) => s.pokeyen);
   const playerPrestige = useGame((s) => s.playerPrestige);
   const dex = useGame((s) => s.dex);
+  const team = useGame((s) => s.team);
   const modifyPoke = useGame((s) => s.modifyPoke);
 
   const [ivs, setIvs] = useState<StatSpread>(() => copy(poke.ivs));
@@ -48,7 +50,7 @@ export function PokeEditor({ poke, onClose }: { poke: OwnedPoke; onClose: () => 
 
   const preview = combatStats(
     { ...poke, ivs, evs, nature },
-    { isPlayer: true, playerPrestige, uniqueBonus },
+    { isPlayer: true, playerPrestige, uniqueBonus, synergy: computeSynergy(team) },
   );
 
   const evTotal = evSum(evs);

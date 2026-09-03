@@ -49,6 +49,20 @@ export type OwnedPoke = {
   nature?: Nature;
   /** Player-chosen move names (≤ 4). Unset ⇒ auto-picked from the learnable pool. */
   moves?: string[];
+  /** Enemy only: Ground team-synergy bleed — loses 2% max HP on every attack it
+   *  makes. Set for the duration of the fight; never persisted meaningfully. */
+  bleed?: boolean;
+  /** Enemy only: a major status condition inflicted by a party type-synergy. */
+  status?: StatusCondition;
+  /** Enemy only: Dark-synergy flinch — the mon loses its next turn. */
+  flinch?: boolean;
+};
+
+/** A major status condition. `toxicN` is the Showdown "badly poisoned" counter
+ *  (residual = n/16 max HP, climbing each turn). */
+export type StatusCondition = {
+  kind: "burn" | "poison" | "toxic" | "paralyze" | "freeze";
+  toxicN?: number;
 };
 
 /** A live temporary anomaly activation on one wild-combat mon. `formName` is the
@@ -99,7 +113,14 @@ export type RouteDef = {
   subRoutes?: string[];
 };
 
-export type TrainerPokemon = { name: string; level: number };
+export type TrainerPokemon = {
+  name: string;
+  level: number;
+  /** Optional fixed statline — defaults to 31 IVs / even EVs / neutral nature. */
+  ivs?: StatSpread;
+  evs?: StatSpread;
+  nature?: Nature;
+};
 
 export type TrainerDef = {
   id: string;
