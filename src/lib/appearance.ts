@@ -57,6 +57,35 @@ async function idbDelete(key: string): Promise<void> {
   });
 }
 
+const IMG_EXT = /\.(png|jpe?g|gif|webp|avif|bmp)(\?.*)?$/i;
+
+/** Best-effort: turn a link we can safely rewrite into a direct image URL.
+ *  Only conversions whose id is actually present in the URL — anything else
+ *  (Imgur gallery/post pages, Tenor pages) is returned untouched so the caller
+ *  can tell the user to grab the real image address. */
+export function normalizeImageUrl(raw: string): string {
+  const u = raw.trim();
+
+  // i.imgur.com video wrappers → the actual gif (same hash)
+  const gifv = u.match(/^(https?:\/\/i\.imgur\.com\/[A-Za-z0-9]+)\.(?:gifv|mp4)(?:\?.*)?$/i);
+  if (gifv) return `${gifv[1]}.gif`;
+
+  // Giphy page → media gif (the trailing token IS the media id)
+  const giphy = u.match(
+    /^https?:\/\/(?:[a-z0-9.]+\.)?giphy\.com\/(?:gifs|clips|embed)\/(?:[a-z0-9-]*-)?([A-Za-z0-9]{10,})(?:[/?#].*)?$/i,
+  );
+  if (giphy) return `https://media.giphy.com/media/${giphy[1]}/giphy.gif`;
+
+  return u;
+}
+
+/** A page URL we know can't be used directly (id isn't in the link). */
+function isUnusablePage(u: string): boolean {
+  return (
+    /^https?:\/\/(?:www\.)?imgur\.com\//i.test(u) && !/^https?:\/\/i\.imgur\.com\//i.test(u)
+  ) || /^https?:\/\/(?:www\.)?tenor\.com\/view\//i.test(u);
+}
+
 /** Resolve true if `src` loads as an image within 10s. */
 function testImage(src: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -147,12 +176,18 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
   },
 
   setFromUrl: async (raw) => {
-    const link = raw.trim();
-    if (!/^https?:\/\/\S+$/i.test(link)) {
+    const input = raw.trim();
+    if (!/^https?:\/\/\S+$/i.test(input)) {
       return "Enter a full http(s):// image link.";
     }
-    // Apply it right away — a background-image URL is more permissive than a JS
-    // Image() probe (referrer/CORS quirks), so we don't hard-block on the test.
+    if (isUnusablePage(input)) {
+      return "That's a web page, not an image. Open the image/GIF, right-click it → “Copy image address”, and paste that (it ends in .gif / .png / .jpg).";
+    }
+
+    // Rewrite Giphy/.gifv links to their direct media, then apply — a CSS
+    // background URL is more permissive than a JS probe, so we don't hard-block
+    // on the probe, but we do warn if it (and the raw link) both fail to load.
+    const link = normalizeImageUrl(input);
     try {
       await idbPut(KEY_URL, link);
       await idbDelete(KEY_BLOB);
@@ -162,10 +197,12 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
     revoke(get().url, get().isObjectUrl);
     set({ url: link, isObjectUrl: false });
 
-    const ok = await testImage(link);
+    const ok = (await testImage(link)) || (link !== input && (await testImage(input)));
     return ok
       ? null
-      : "Applied — but that link didn't verify as an image. If nothing shows, use a direct .png/.jpg/.gif URL.";
+      : IMG_EXT.test(link)
+        ? "Applied — but the image didn't load. The host may block hotlinking; try a different one (imgur direct links, Discord, a raw GitHub URL)."
+        : "Applied — but that link isn't a direct image. Use a URL ending in .gif / .png / .jpg.";
   },
 
   clearBackground: async () => {
