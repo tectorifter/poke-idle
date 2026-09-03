@@ -251,6 +251,8 @@ function tickWildAnomalies(
 /** Timestamp (ms) when the next wild encounter may spawn. 0 = ready now. */
 let respawnAt = 0;
 const RESPAWN_DELAY_MS = 200;
+/** Grace period before a freshly-spawned wild enemy takes its first action. */
+const ENEMY_FIRST_ATTACK_DELAY_MS = 1000;
 
 export type GameState = {
   started: boolean;
@@ -724,6 +726,21 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     if (playerHp <= 0) {
       playerAtkCd = 0;
       enemyAtkCd = 0;
+      // Wild faint: the encounter flees — no catch, no rewards. A fresh wild
+      // shows up once the team finishes auto-healing.
+      if (s.enemy) {
+        respawnAt = now + RESPAWN_DELAY_MS;
+        set({
+          now,
+          playerHp,
+          team,
+          lastHeal,
+          enemy: null,
+          lastCatch: "none",
+          log: pushLog(log, `The wild ${s.enemy.name} fled.`, "escape"),
+        });
+        return;
+      }
       if (dirty || uiAcc > 0.2) {
         uiAcc = 0;
         set({ now, playerHp, team, lastHeal, log });
@@ -1170,11 +1187,9 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     playerAtkCd = Math.max(0, playerAtkCd - dtms);
     enemyAtkCd = Math.max(0, enemyAtkCd - dtms);
     // A genuinely new enemy (fresh spawn, not just a still-alive one from last
-    // tick) always starts on cooldown — it must wait out one full interval
-    // before its first attack, same as every attack after. Previously this
-    // got left at whatever it was (often 0 right after a kill), letting the
-    // very next enemy get an instant free hit.
-    if (justSpawnedEnemy) enemyAtkCd = enemyInt;
+    // tick) waits out a 1-second grace period — at minimum — before its first
+    // action, so the player always gets the opening move on a fresh encounter.
+    if (justSpawnedEnemy) enemyAtkCd = Math.max(enemyInt, ENEMY_FIRST_ATTACK_DELAY_MS);
 
     // Auto-tap: queue a tap request at the upgrade-controlled cadence.
     autoTapAcc += dtms;

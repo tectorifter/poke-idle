@@ -151,9 +151,8 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
     if (!/^https?:\/\/\S+$/i.test(link)) {
       return "Enter a full http(s):// image link.";
     }
-    if (!(await testImage(link))) {
-      return "That link could not be loaded as an image.";
-    }
+    // Apply it right away — a background-image URL is more permissive than a JS
+    // Image() probe (referrer/CORS quirks), so we don't hard-block on the test.
     try {
       await idbPut(KEY_URL, link);
       await idbDelete(KEY_BLOB);
@@ -162,7 +161,11 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
     }
     revoke(get().url, get().isObjectUrl);
     set({ url: link, isObjectUrl: false });
-    return null;
+
+    const ok = await testImage(link);
+    return ok
+      ? null
+      : "Applied — but that link didn't verify as an image. If nothing shows, use a direct .png/.jpg/.gif URL.";
   },
 
   clearBackground: async () => {
