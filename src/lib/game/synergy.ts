@@ -75,6 +75,20 @@ export function isType(poke: OwnedPoke, type: string): boolean {
   return (speciesByName(poke.name)?.types ?? []).includes(type);
 }
 
+/** The one and only Stellar-type Pokémon. */
+export function isStellar(poke: OwnedPoke | undefined): boolean {
+  return !!poke && (poke.name === "Terapagos-Stellar" || isType(poke, "Stellar"));
+}
+
+/** Terapagos-Stellar's field effect: while it is the active fighter on EITHER
+ *  side, every synergy (both teams) is switched off. */
+export function stellarActive(
+  playerMon: OwnedPoke | undefined,
+  enemyMon: OwnedPoke | undefined,
+): boolean {
+  return isStellar(playerMon) || isStellar(enemyMon);
+}
+
 /** How much HP a bleeding enemy loses each time it attacks (Ground synergy). */
 export const GROUND_BLEED_FRAC = 0.02;
 /** How much a Water-type mon heals when its heal proc triggers. */
@@ -134,6 +148,7 @@ export const SYNERGY_THRESHOLDS: Record<string, [number, number, number]> = {
   Fire: [1, 2, 3],
   Ghost: [1, 2, 3],
   Grass: [1, 1, 1],
+  Stellar: [1, 1, 1],
 };
 
 /** Build a synergy set from an arbitrary per-type mon count. */
@@ -206,6 +221,11 @@ export const SYNERGY_META: Record<
   Fire: { label: "Burn", effect: "Chance to burn — burned mons deal 10% less", tierValues: ["10%", "15%", "20%"] },
   Ghost: { label: "Phantom", effect: "Ghost-type mons: chance to strike first", tierValues: ["20%", "40%", "60%"] },
   Grass: { label: "Herbal Cure", effect: "Chance to clear a team status each action (needs 1)", tierValues: ["25%", "25%", "25%"] },
+  Stellar: {
+    label: "Stellar",
+    effect: "While a Stellar mon (Terapagos-Stellar) is the active fighter, EVERY synergy — yours and the foe's — is switched off",
+    tierValues: ["all off", "all off", "all off"],
+  },
 };
 
 export const SYNERGY_TYPES = Object.keys(SYNERGY_META);

@@ -16,11 +16,11 @@ import {
   tierIndex,
 } from "@/lib/game/formulas";
 import { chosenMoves } from "@/lib/game/learnsets";
-import { computeSynergy, encounterSynergy } from "@/lib/game/synergy";
+import { computeSynergy, encounterSynergy, stellarActive, NO_SYNERGY } from "@/lib/game/synergy";
 import { toMaxMove, toGMaxMove } from "@/lib/game/moves";
 import type { MoveData } from "@/lib/game/moves";
 import type { OwnedPoke } from "@/lib/game/types";
-import { ROUTES, useGame, uniqueCaught } from "@/lib/game/store";
+import { ROUTES, useGame, uniqueCaught, wildEffective } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { Meter } from "./bars";
 import { Sprite } from "./sprite";
@@ -295,6 +295,7 @@ export function BattleView() {
   const enemyHit = useGame((s) => s.enemyHit);
   const paused = useGame((s) => s.paused);
   const manualTap = useGame((s) => s.manualTap);
+  const wildActivations = useGame((s) => s.wildActivations);
   const log = useGame((s) => s.log);
 
   const player = team[active];
@@ -303,7 +304,10 @@ export function BattleView() {
   const routePokes = ROUTES[region]?.[route]?.pokes ?? [];
   const routeOwned = routePokes.filter((name) => (dex[name] ?? 0) >= 5).length;
   const uniqueBonus = uniqueCaughtBonus(owned);
-  const synergy = computeSynergy(team);
+  const synergy =
+    player && stellarActive(wildEffective(player, wildActivations).poke, enemy ?? undefined)
+      ? NO_SYNERGY
+      : computeSynergy(team);
 
   const pStats = player
     ? combatStats(player, {
