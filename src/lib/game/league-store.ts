@@ -563,6 +563,10 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         enemyTeam[enemyIndex] = enemy;
         if (oh.inflictStatus) log = [...log, `${enemy.name} was ${oh.inflictLabel}!`];
       }
+      if (oh.inflictOnAttacker) {
+        player = { ...player, status: oh.inflictOnAttacker };
+        log = [...log, `${player.name} was ${oh.inflictOnAttackerLabel}!`];
+      }
 
       if (enemy.hp <= 0) {
         resolveEnemyFaint();
@@ -630,6 +634,11 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
           status: oh.inflictStatus ?? player.status,
         };
         if (oh.inflictStatus) log = [...log, `${player.name} was ${oh.inflictLabel}!`];
+      }
+      if (oh.inflictOnAttacker) {
+        enemy = { ...enemy, status: oh.inflictOnAttacker };
+        enemyTeam[enemyIndex] = enemy;
+        log = [...log, `${enemy.name} was ${oh.inflictOnAttackerLabel}!`];
       }
 
       if (player.hp <= 0) {

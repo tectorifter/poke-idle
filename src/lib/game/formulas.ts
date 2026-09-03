@@ -532,11 +532,32 @@ export function attackDamage(
   return { damage: Math.max(1, Math.floor(dmg)), multiplier, crit, missed: false };
 }
 
+/** Pokémon Showdown "Struggle": a 50-BP typeless physical hit (no STAB, no type
+ *  effectiveness) plus fixed recoil of ¼ the user's max HP. Used when a mon is
+ *  forced to attack itself (Ghost-synergy turn-order rider). Returns the total
+ *  HP the mon should lose — the caller subtracts it from its own HP model. */
+const STRUGGLE_MOVE: MoveData = {
+  name: "Struggle",
+  type: "Typeless",
+  category: "Physical",
+  power: 50,
+  accuracy: true,
+};
+
+export function struggleSelfHit(mon: OwnedPoke, maxHp: number, synergy?: TeamSynergy): number {
+  const hit = attackDamage(mon, mon, {
+    move: STRUGGLE_MOVE,
+    synergy,
+    defenderSynergy: synergy,
+  }).damage;
+  return hit + Math.max(1, Math.floor(maxHp / 4));
+}
+
 export function expReward(enemy: OwnedPoke): number {
   const spec = speciesByName(enemy.name);
   const base = spec?.exp ?? 50;
   const lvl = levelOf(enemy);
-  return base / 16 + lvl * 7;
+  return base / 16 + lvl * 3;
 }
 
 export const BENCH_EXP_SHARE = 0.6;

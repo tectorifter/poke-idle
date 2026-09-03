@@ -29,6 +29,7 @@ import {
   isType,
   resolvePreAttack,
   resolveOnHit,
+  GHOST_STRUGGLE_CHANCE,
 } from "./synergy";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
@@ -71,6 +72,7 @@ import {
   uniqueCaughtBonus,
   playerMaxHp,
   playerLevelOf,
+  struggleSelfHit,
 } from "./formulas";
 import type { FormKind } from "./formulas";
 import type {
@@ -892,6 +894,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         enemy.status = oh.inflictStatus;
         log = pushLog(log, `${enemy.name} was ${oh.inflictLabel}!`, "system");
       }
+      if (oh.inflictOnAttacker) {
+        atkPoke.status = oh.inflictOnAttacker;
+        log = pushLog(log, `${atkPoke.name} was ${oh.inflictOnAttackerLabel}!`, "system");
+      }
     };
 
     const enemyAtk = () => {
@@ -951,6 +957,10 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       if (oh.inflictStatus) {
         defPoke.status = oh.inflictStatus;
         log = pushLog(log, `${defPoke.name} was ${oh.inflictLabel}!`, "system");
+      }
+      if (oh.inflictOnAttacker) {
+        enemy.status = oh.inflictOnAttacker;
+        log = pushLog(log, `${enemy.name} was ${oh.inflictOnAttackerLabel}!`, "system");
       }
 
       if (playerHp <= 0) {
@@ -1168,6 +1178,28 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let playerFirst = playerSpe >= enemySpe;
     if (playerGhostFirst) playerFirst = true;
     else if (enemyGhostFirst) playerFirst = false;
+
+    // Ghost rider: whoever loses the turn-order roll to a Ghost mon has a 50%
+    // chance to hurt itself with Struggle (PS: 50-BP typeless self-hit + ¼
+    // max-HP recoil) before the round resolves.
+    if (playerGhostFirst && enemy.hp > 0 && Math.random() < GHOST_STRUGGLE_CHANCE) {
+      const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+      enemy.hp = Math.max(0, enemy.hp - struggleSelfHit(enemy, eMax, enemySynergy));
+      enemyHit = now;
+      dirty = true;
+      log = pushLog(log, `${enemy.name} hurt itself in its confusion!`, "system");
+      if (enemy.hp <= 0) onEnemyFaint();
+    }
+    if (enemyGhostFirst && playerHp > 0 && team[activeIndex] && Math.random() < GHOST_STRUGGLE_CHANCE) {
+      const atkPoke = team[activeIndex];
+      const pMax = playerMaxHp(playerLevelOf(playerExp), s.playerPrestige, synergy.hpPct);
+      playerHp = Math.max(0, playerHp - struggleSelfHit(wildEffective(atkPoke, wildActivations).poke, pMax, synergy));
+      playerHit = now;
+      dirty = true;
+      log = pushLog(log, `${atkPoke.name} hurt itself in its confusion!`, "system");
+      if (playerHp <= 0) playerFaintLog();
+    }
+
     if (playerFirst) {
       runPlayerTurns();
       runEnemyTurns();

@@ -14,7 +14,7 @@ export type TeamSynergy = {
   /** Rock — flat Defense + Special Defense for the player team. */
   defFlat: number;
   spdFlat: number;
-  /** Bug — extra critical-hit stage (0–3) for the player team. */
+  /** Bug — extra critical-hit stage (0–2) for the player team. */
   critStage: number;
   /** Normal — +max HP fraction for the player + team (0 / .1 / .2 / .3). */
   hpPct: number;
@@ -35,13 +35,16 @@ export type TeamSynergy = {
   /** Poison — chance a Poison-type attack inflicts poison (or toxic at tier 3). */
   poisonChance: number;
   poisonIsToxic: boolean;
-  /** Electric — chance an Electric-type attack paralyzes the target. */
+  /** Electric — chance an Electric-type mon paralyzes: the target when it
+   *  attacks, and the attacker when it is hit ("Static"). */
   paralyzeChance: number;
   /** Dark — chance a Dark-type attack makes the target flinch (lose next turn). */
   flinchChance: number;
   /** Fire in team — chance ANY attack burns the target (Fire types are immune). */
   burnChance: number;
-  /** Ghost — chance a Ghost-type player mon takes its turn first regardless of Speed. */
+  /** Ghost — chance a Ghost-type player mon takes its turn first regardless of
+   *  Speed. On a successful roll the other side also has GHOST_STRUGGLE_CHANCE to
+   *  hurt itself with Struggle instead of acting. */
   ghostFirstChance: number;
   /** Grass — chance, per action, to clear one status from the player's team. */
   grassCleanseChance: number;
@@ -90,20 +93,26 @@ export function stellarActive(
 }
 
 /** How much HP a bleeding enemy loses each time it attacks (Ground synergy). */
-export const GROUND_BLEED_FRAC = 0.02;
+export const GROUND_BLEED_FRAC = 0.05;
 /** How much a Water-type mon heals when its heal proc triggers. */
 export const WATER_HEAL_FRAC = 0.05;
+/** A frozen mon loses this fraction of max HP at the start of each turn it
+ *  spends frozen (in addition to losing the turn). */
+export const FREEZE_DAMAGE_FRAC = 0.03;
 /** Burned mons deal 90% damage. */
-export const BURN_DAMAGE_MULT = 0.9;
+export const BURN_DAMAGE_MULT = 0.75;
 
 /** Per-attack Ground-synergy bleed damage for a `maxHp` pool (min 1). */
 export const bleedTick = (maxHp: number) => Math.max(1, Math.floor(maxHp * GROUND_BLEED_FRAC));
 /** Water-synergy heal amount for a `maxHp` pool (min 1). */
 export const waterHeal = (maxHp: number) => Math.max(1, Math.floor(maxHp * WATER_HEAL_FRAC));
 /** Each turn a frozen mon has this chance to thaw (the thaw turn is still lost). */
-export const THAW_CHANCE = 0.5;
+export const THAW_CHANCE = 0.3;
 /** Paralysis full-stop chance per turn (Pokémon Showdown value). */
-export const FULL_PARA_CHANCE = 0.25;
+export const FULL_PARA_CHANCE = 0.50;
+/** Ghost synergy rider: when the Ghost mon wins the turn-order roll, the loser
+ *  has this chance to hurt itself with Struggle instead of acting cleanly. */
+export const GHOST_STRUGGLE_CHANCE = 0.5;
 
 export const STATUS_LABEL: Record<StatusCondition["kind"], string> = {
   burn: "burned",
@@ -140,7 +149,7 @@ export const SYNERGY_THRESHOLDS: Record<string, [number, number, number]> = {
   Psychic: [3, 4, 5],
   Normal: [4, 5, 6],
   Rock: [1, 3, 4],
-  Bug: [1, 2, 4],
+  Bug: [2, 5, 5],
   Fairy: [1, 2, 3],
   Dragon: [2, 4, 6],
   Steel: [1, 2, 3],
@@ -162,26 +171,26 @@ export function synergyFromCounts(c: Record<string, number>): TeamSynergy {
   const rock = t("Rock");
   const poison = t("Poison");
   return {
-    speFlat: [0, 10, 15, 25][t("Flying")],
-    atkFlat: [0, 20, 30, 40][t("Fighting")],
-    spaFlat: [0, 20, 30, 40][t("Psychic")],
-    defFlat: [0, 15, 30, 45][rock],
-    spdFlat: [0, 15, 30, 45][rock],
-    critStage: [0, 1, 2, 3][t("Bug")],
-    hpPct: [0, 0.1, 0.2, 0.3][t("Normal")],
-    enemySpeFlat: [0, 15, 20, 30][t("Fairy")],
+    speFlat: [0, 10, 20, 30][t("Flying")],
+    atkFlat: [0, 5, 10, 15][t("Fighting")],
+    spaFlat: [0, 5, 10, 15][t("Psychic")],
+    defFlat: [0, 4, 8, 12][rock],
+    spdFlat: [0, 4, 8, 12][rock],
+    critStage: [0, 1, 2, 2][t("Bug")],
+    hpPct: [0, 0.1, 0.12, 0.15][t("Normal")],
+    enemySpeFlat: [0, 50, 60, 70][t("Fairy")],
     dragonDrPct: [0, 0.1, 0.2, 0.3][t("Dragon")],
     steelReturnPct: [0, 0.04, 0.06, 0.08][t("Steel")],
-    waterHealChance: [0, 0.05, 0.1, 0.2][t("Water")],
+    waterHealChance: [0, 0.10, 0.18, 0.26][t("Water")],
     groundBleedChance: [0, 0.25, 0.5, 1][t("Ground")],
     freezeChance: [0, 0.05, 0.08, 0.12][t("Ice")],
-    poisonChance: [0, 0.2, 0.4, 0.5][poison],
+    poisonChance: [0, 0.35, 0.55, 0.65][poison],
     poisonIsToxic: poison === 3,
-    paralyzeChance: t("Electric") > 0 ? 0.3 : 0,
-    flinchChance: [0, 0.04, 0.08, 0.16][t("Dark")],
-    burnChance: [0, 0.1, 0.15, 0.2][t("Fire")],
+    paralyzeChance: t("Electric") > 0 ? 0.6 : 0,
+    flinchChance: [0, 0.15, 0.25, 0.35][t("Dark")],
+    burnChance: [0, 0.25, 0.35, 0.40][t("Fire")],
     ghostFirstChance: [0, 0.2, 0.4, 0.6][t("Ghost")],
-    grassCleanseChance: t("Grass") > 0 ? 0.25 : 0,
+    grassCleanseChance: t("Grass") > 0 ? 0.8 : 0,
   };
 }
 
@@ -213,18 +222,18 @@ export const SYNERGY_META: Record<
   Psychic: { label: "Psychic Power", effect: "Flat Sp. Atk for the whole team", tierValues: ["+20", "+30", "+40"] },
   Normal: { label: "Endurance", effect: "+Max HP for the player and team", tierValues: ["+10%", "+20%", "+30%"] },
   Rock: { label: "Sturdy", effect: "Flat Def + Sp. Def for the whole team", tierValues: ["+15", "+30", "+45"] },
-  Bug: { label: "Swarm", effect: "Extra critical-hit stage for the team", tierValues: ["+1 stage", "+2", "+3"] },
+  Bug: { label: "Swarm", effect: "Extra critical-hit stage for the team", tierValues: ["+1 stage", "+2", "+2"] },
   Fairy: { label: "Misty Terrain", effect: "Enemy team loses flat Speed", tierValues: ["-15", "-20", "-30"] },
   Dragon: { label: "Dragonhide", effect: "Dragon-type mons take less damage", tierValues: ["-10%", "-20%", "-30%"] },
   Steel: { label: "Iron Barbs", effect: "Steel-type mons reflect a cut of damage taken (true)", tierValues: ["4%", "6%", "8%"] },
   Water: { label: "Drain", effect: "Water-type mons: chance to heal 5% max HP on hit", tierValues: ["5%", "10%", "20%"] },
   Ground: { label: "Spikes", effect: "Chance to bleed foes that hit a Ground mon (2%/turn)", tierValues: ["25%", "50%", "100%"] },
-  Ice: { label: "Frostbite", effect: "Ice-type hits: chance to freeze (50% thaw/turn)", tierValues: ["5%", "8%", "12%"] },
+  Ice: { label: "Frostbite", effect: "Ice mons: chance to freeze on hit — frozen mons also lose 3% HP/turn", tierValues: ["5%", "8%", "12%"] },
   Poison: { label: "Venom", effect: "Poison-type hits: chance to poison (tier 3 = toxic)", tierValues: ["20%", "40%", "50% toxic"] },
-  Electric: { label: "Static", effect: "Electric-type hits: 30% paralyze (needs 3)", tierValues: ["—", "—", "30%"] },
+  Electric: { label: "Static", effect: "Electric mons paralyze on hit AND when hit (needs 3)", tierValues: ["—", "—", "on"] },
   Dark: { label: "Intimidate", effect: "Dark-type hits: chance to flinch the target", tierValues: ["4%", "8%", "16%"] },
   Fire: { label: "Burn", effect: "Chance to burn — burned mons deal 10% less", tierValues: ["10%", "15%", "20%"] },
-  Ghost: { label: "Phantom", effect: "Ghost-type mons: chance to strike first", tierValues: ["20%", "40%", "60%"] },
+  Ghost: { label: "Phantom", effect: "Ghost mons strike first; the foe then has 50% to Struggle itself", tierValues: ["20%", "40%", "60%"] },
   Grass: { label: "Herbal Cure", effect: "Chance to clear a team status each action (needs 1)", tierValues: ["25%", "25%", "25%"] },
   Stellar: {
     label: "Stellar",
@@ -249,8 +258,9 @@ export function encounterSynergy(mon: OwnedPoke, isAnomaly: boolean): TeamSynerg
   return synergyFromCounts(counts);
 }
 
-/** Residual poison / toxic HP loss for a mon at the start of its turn. Pure —
- *  returns the new hp, the (possibly escalated) status, and how much was lost. */
+/** Residual HP loss for a mon at the start of its turn — poison (flat ⅛),
+ *  toxic (escalating n/16) and freeze (flat FREEZE_DAMAGE_FRAC). Pure — returns
+ *  the new hp, the (possibly escalated) status, and how much was lost. */
 export function tickResidual(
   hp: number,
   maxHp: number,
@@ -265,12 +275,16 @@ export function tickResidual(
     const lost = Math.max(1, Math.floor((maxHp * n) / 16));
     return { hp: Math.max(0, hp - lost), status: { kind: "toxic", toxicN: Math.min(15, n + 1) }, lost };
   }
+  if (status?.kind === "freeze") {
+    const lost = Math.max(1, Math.floor(maxHp * FREEZE_DAMAGE_FRAC));
+    return { hp: Math.max(0, hp - lost), status, lost };
+  }
   return { hp, status, lost: 0 };
 }
 
-/** Whether a status'd mon can act this turn. Handles freeze (50% thaw, thaw turn
- *  still lost) and paralysis (25% full-stop). Returns the possibly-cleared
- *  status and a short note for the log. */
+/** Whether a status'd mon can act this turn. Handles freeze (THAW_CHANCE thaw,
+ *  thaw turn still lost) and paralysis (FULL_PARA_CHANCE full-stop). Returns the
+ *  possibly-cleared status and a short note for the log. */
 export function canAct(status: StatusCondition | undefined): {
   ok: boolean;
   status: StatusCondition | undefined;
@@ -352,9 +366,9 @@ export type PreAttack = {
   fainted: boolean;
 };
 
-/** Everything that happens to a mon *before* it swings: residual poison/toxic,
- *  Ground-synergy bleed, Dark-synergy flinch, then the freeze/paralyze roll.
- *  Pure — the caller applies `hp` / `status` to its own model. */
+/** Everything that happens to a mon *before* it swings: residual poison/toxic/
+ *  freeze chip, Ground-synergy bleed, Dark-synergy flinch, then the freeze-thaw
+ *  / paralyze roll. Pure — the caller applies `hp` / `status` to its own model. */
 export function resolvePreAttack(
   hp: number,
   maxHp: number,
@@ -366,7 +380,7 @@ export function resolvePreAttack(
   let st = status;
   let took = false;
 
-  if (st?.kind === "poison" || st?.kind === "toxic") {
+  if (st?.kind === "poison" || st?.kind === "toxic" || st?.kind === "freeze") {
     const r = tickResidual(curHp, maxHp, st);
     if (r.lost > 0) took = true;
     curHp = r.hp;
@@ -409,6 +423,10 @@ export type OnHit = {
   /** Attacker makes the defender flinch. */
   inflictFlinch: boolean;
   inflictLabel?: string;
+  /** Status the DEFENDER inflicts back on the attacker — Electric "Static":
+   *  hitting an Electric-type mon can paralyze the hitter. */
+  inflictOnAttacker?: StatusCondition;
+  inflictOnAttackerLabel?: string;
 };
 
 /** Everything that fires *after* a hit connects: Steel recoil, Ground bleed on
@@ -444,6 +462,17 @@ export function resolveOnHit(
 
   const inf = rollInflictions(attackerSyn, attacker, defender, defenderHasStatus);
 
+  // Electric "Static": the defender paralyzes the attacker that struck it,
+  // regardless of the move used — same chance as the on-hit paralyze.
+  const staticPara =
+    defenderSyn.paralyzeChance > 0 &&
+    isType(defender, "Electric") &&
+    !isType(attacker, "Electric") &&
+    !attacker.status &&
+    Math.random() < defenderSyn.paralyzeChance
+      ? ({ kind: "paralyze" } as StatusCondition)
+      : undefined;
+
   return {
     recoil,
     selfHeal,
@@ -451,5 +480,7 @@ export function resolveOnHit(
     inflictStatus: inf.status,
     inflictFlinch: inf.flinch,
     inflictLabel: inf.label,
+    inflictOnAttacker: staticPara,
+    inflictOnAttackerLabel: staticPara ? STATUS_LABEL.paralyze : undefined,
   };
 }
