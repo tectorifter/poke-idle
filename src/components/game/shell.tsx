@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { BookOpen, Map, Package, Settings, Swords, Trophy, Users } from "lucide-react";
 import { useGame } from "@/lib/game/store";
+import { useBackground } from "@/lib/bg-image";
 import type { TabId } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 import { StoreView } from "./store-view";
@@ -31,11 +32,36 @@ export function GameShell() {
   const playerPrestige = useGame((s) => s.playerPrestige);
   const dex = useGame((s) => s.dex);
   const rehydrate = useGame((s) => s.rehydrate);
+  const bgUrl = useBackground((s) => s.url);
+  const initBg = useBackground((s) => s.init);
   const owned = Object.values(dex).filter((f) => f >= 5).length;
 
   useEffect(() => {
     rehydrate();
   }, [rehydrate]);
+
+  useEffect(() => {
+    initBg();
+  }, [initBg]);
+
+  // Paint the player's custom image behind everything (falls back to the theme
+  // colour when cleared).
+  useEffect(() => {
+    const s = document.body.style;
+    if (bgUrl) {
+      s.backgroundImage = `url("${bgUrl}")`;
+      s.backgroundSize = "cover";
+      s.backgroundPosition = "center";
+      s.backgroundRepeat = "no-repeat";
+      s.backgroundAttachment = "fixed";
+    } else {
+      s.backgroundImage = "";
+      s.backgroundSize = "";
+      s.backgroundPosition = "";
+      s.backgroundRepeat = "";
+      s.backgroundAttachment = "";
+    }
+  }, [bgUrl]);
 
   useEffect(() => {
     if (!started) return;
@@ -74,8 +100,13 @@ export function GameShell() {
   if (!started) return <StarterSelect />;
 
   return (
-    <div className="flex min-h-dvh justify-center bg-bg text-fg">
-      <div className="relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-bg shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
+    <div className={cn("flex min-h-dvh justify-center text-fg", bgUrl ? "bg-transparent" : "bg-bg")}>
+      <div
+        className={cn(
+          "relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
+          bgUrl ? "bg-black/35 backdrop-blur-[1px]" : "bg-bg",
+        )}
+      >
         <header className="flex h-12 shrink-0 items-center justify-between px-4 pt-[env(safe-area-inset-top)]">
           <div className="font-display text-base font-semibold tracking-tight">
             PokeIdle

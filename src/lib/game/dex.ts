@@ -463,6 +463,13 @@ export const ROUTE_UNLOCK: Record<string, (dex: Dex) => boolean> = {
   "Kalos Anomaly/primal": (d) => dexHasAll(d, MEGA_GATE),
 };
 
+/** Total species owned (dex flag ≥ 5) — matches store's `uniqueCaught()`. */
+export function dexCaughtCount(dex: Dex): number {
+  let n = 0;
+  for (const k in dex) if ((dex[k] ?? 0) >= 5) n++;
+  return n;
+}
+
 export function isRouteUnlocked(
   region: string,
   routeId: string,
@@ -473,13 +480,18 @@ export function isRouteUnlocked(
 ): boolean {
   const def = ROUTES[region]?.[routeId];
   if (!def) return false;
+  if (def.dex && dexCaughtCount(dex) < def.dex) return false;
   const pred = ROUTE_UNLOCK[`${region}/${routeId}`];
   return pred ? pred(dex) : true;
 }
 
 /** Short human label for what a locked route still needs (Map view). */
-export function routeRequirementLabel(region: string, routeId: string): string | null {
+export function routeRequirementLabel(region: string, routeId: string, dex?: Dex): string | null {
   if (`${region}/${routeId}` === "Kalos Anomaly/primal") return "Catch every Mega Evolution";
+  const def = ROUTES[region]?.[routeId];
+  if (def?.dex) {
+    return dex ? `Dex ${dexCaughtCount(dex)} / ${def.dex}` : `Dex ${def.dex} required`;
+  }
   return null;
 }
 

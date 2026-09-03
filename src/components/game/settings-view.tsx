@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useGame } from "@/lib/game/store";
 import { levelOf } from "@/lib/game/formulas";
+import { useBackground } from "@/lib/bg-image";
 import { Sprite } from "./sprite";
 
 export function SettingsView() {
@@ -10,6 +11,9 @@ export function SettingsView() {
   const autoAdvanceRoute = useGame((s) => s.autoAdvanceRoute);
   const toggleAutoAdvanceRoute = useGame((s) => s.toggleAutoAdvanceRoute);
   const team = useGame((s) => s.team);
+  const bgUrl = useBackground((s) => s.url);
+  const setBgFromFile = useBackground((s) => s.setFromFile);
+  const clearBg = useBackground((s) => s.clear);
 
   const [saveText, setSaveText] = useState("");
   const [msg, setMsg] = useState("");
@@ -80,6 +84,53 @@ export function SettingsView() {
             />
           </button>
         </label>
+      </div>
+
+      <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+        Appearance
+      </h3>
+      <div className="mt-3 space-y-2">
+        <div className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 shadow-border">
+          <div
+            className="size-12 shrink-0 rounded-xl bg-surface-2 bg-cover bg-center"
+            style={bgUrl ? { backgroundImage: `url("${bgUrl}")` } : undefined}
+          />
+          <span className="min-w-0 flex-1 text-sm font-medium">
+            App background
+            <span className="mt-0.5 block text-xs font-normal text-muted">
+              {bgUrl
+                ? "A custom image is set as the app background."
+                : "Use your own PNG / JPG / GIF instead of the plain background."}
+            </span>
+          </span>
+        </div>
+        <label className="flex h-11 w-full cursor-pointer items-center justify-center rounded-2xl bg-accent text-sm font-medium text-white shadow-border">
+          Import background
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              const err = await setBgFromFile(file);
+              setMsg(err ?? "Background updated.");
+            }}
+          />
+        </label>
+        {bgUrl && (
+          <button
+            type="button"
+            className="h-11 w-full rounded-2xl bg-surface text-sm font-medium shadow-border"
+            onClick={async () => {
+              await clearBg();
+              setMsg("Background removed.");
+            }}
+          >
+            Remove background
+          </button>
+        )}
       </div>
 
       <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">

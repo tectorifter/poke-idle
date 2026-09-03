@@ -108,6 +108,9 @@ export type RouteDef = {
   minLevel: number;
   maxLevel: number;
   unlocked: boolean;
+  /** Total Pokédex entries owned (species caught) required to unlock this route.
+   *  0 ⇒ no requirement. */
+  dex?: number;
   requiredPrestige?: number;
   weights?: number[];
   subRoutes?: string[];

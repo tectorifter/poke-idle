@@ -49,7 +49,7 @@ export function MapView() {
       <ul className="flex-1 space-y-2 overflow-y-auto px-4 pb-4">
         {routes.map(([id, def]) => {
           const locked = !isRouteUnlocked(region, id, dex, playerPrestige);
-          const lockLabel = locked ? routeRequirementLabel(region, id) : null;
+          const lockLabel = locked ? routeRequirementLabel(region, id, dex) : null;
           const known = def.pokes.filter((n) => speciesByName(n));
           const got = known.filter((n) => (dex[n] ?? 0) >= 5).length;
           const shiny = known.filter((n) => (dex[n] ?? 0) >= 7).length;
@@ -77,6 +77,7 @@ export function MapView() {
                     {lockLabel ?? (
                       <>
                         Lv.{def.minLevel}–{def.maxLevel} · {got}/{known.length}
+                        {def.dex ? ` · Dex ${def.dex}` : ""}
                         {shinyDone ? " · shiny" : ""}
                       </>
                     )}
