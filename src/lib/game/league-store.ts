@@ -11,6 +11,8 @@ import type { FormKind } from "./formulas";
 import { bestMoveAgainst, chosenMoves } from "./learnsets";
 import {
   computeSynergy,
+  stellarActive,
+  NO_SYNERGY,
   isType,
   canAct,
   tickResidual,
@@ -25,6 +27,8 @@ import {
   gmaxFormFor,
   dynamaxUnlocked,
   teraUnlocked,
+  teraFormsFor,
+  speciesByName,
 } from "./dex";
 import type { AnomalyKind } from "./dex";
 import {
@@ -118,7 +122,8 @@ function applyHealTick(
       revived += 1;
       const reviveHp = Math.max(1, Math.floor(stats.maxHp * LEAGUE_HEAL_TICK_PERCENT)); // ensure at least 1 HP
       if (reviveHp > 0) healedAny = true;
-      return { ...p, hp: reviveHp };
+      // Fainting clears status.
+      return { ...p, hp: reviveHp, status: undefined, flinch: undefined, bleed: undefined };
     }
 
     const missing = stats.maxHp - p.hp;
@@ -146,14 +151,14 @@ function healLogLine(revived: number, healedAny: boolean): string | null {
 export type LeagueForms = {
   mega: { uid: string; formName: string } | null;
   dynamax: { uid: string; formName: string | null; until: number } | null;
-  tera: { uid: string } | null;
+  tera: { uid: string; formName?: string | null } | null;
 };
 const freshLeagueForms = (): LeagueForms => ({ mega: null, dynamax: null, tera: null });
 const freshFormsUsed = () => ({ mega: false, dynamax: false, tera: false });
 
-/** Effective attacker for a league mon: swap to the Mega / G-Max species and
- *  report the form kind + tera type for the damage formula. */
-function leagueEffective(
+/** Effective attacker for a league mon: swap to the Mega / G-Max / Tera species
+ *  and report the form kind + tera type for the damage formula. */
+export function leagueEffective(
   mon: OwnedPoke,
   lf: LeagueForms,
   now: number,
@@ -164,8 +169,13 @@ function leagueEffective(
     return lf.dynamax.formName
       ? { poke: { ...mon, name: lf.dynamax.formName }, form: "gmax" }
       : { poke: mon, form: "dynamax" };
-  if (lf.tera && lf.tera.uid === mon.uid)
+  if (lf.tera && lf.tera.uid === mon.uid) {
+    if (lf.tera.formName) {
+      const t = speciesByName(lf.tera.formName)?.types[0] ?? mon.teraType;
+      return { poke: { ...mon, name: lf.tera.formName }, form: "tera", teraType: t };
+    }
     return { poke: mon, form: "tera", teraType: mon.teraType };
+  }
   return { poke: mon };
 }
 
@@ -235,8 +245,14 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       },
     });
     // Freeze the wild-route loop for the duration -- both loops would otherwise
-    // fight over the same team/HP state at once.
-    useGame.setState({ paused: true });
+    // fight over the same team/HP state at once. Clear any status carried in
+    // from wild combat so the league fight starts clean.
+    useGame.setState({
+      paused: true,
+      team: useGame
+        .getState()
+        .team.map((p) => ({ ...p, status: undefined, flinch: undefined, bleed: undefined })),
+    });
   },
 
   clearBattle: () => {
@@ -341,8 +357,16 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       line = `${mon.name} ${formName ? "Gigantamaxed" : "Dynamaxed"}!`;
     } else {
       if (!teraUnlocked(gs.dex)) return;
-      next.tera = { uid: mon.uid };
-      line = `${mon.name} Terastallized${mon.teraType ? ` (${mon.teraType})` : ""}!`;
+      const teraForms = teraFormsFor(gs.dex, mon.name);
+      if (teraForms.length > 0) {
+        const formName =
+          formChoice && teraForms.includes(formChoice) ? formChoice : teraForms[0];
+        next.tera = { uid: mon.uid, formName };
+        line = `${mon.name} Terastallized into ${formName.replace("Terapagos-", "")}!`;
+      } else {
+        next.tera = { uid: mon.uid };
+        line = `${mon.name} Terastallized${mon.teraType ? ` (${mon.teraType})` : ""}!`;
+      }
     }
 
     set({
@@ -364,8 +388,15 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     let team = gs.team.map((p) => ({ ...p }));
     let log = b.log;
     const buffs = { ...b.buffs };
-    // Party type-synergy buffs apply in league fights too.
-    const synergy = computeSynergy(team);
+    // Party type-synergy buffs apply in league fights too — unless a Stellar mon
+    // (Terapagos-Stellar, incl. via Tera) is the active fighter on either side,
+    // which switches every synergy off.
+    const activeForStellar = gs.team[gs.active];
+    const stellarOut = stellarActive(
+      activeForStellar ? leagueEffective(activeForStellar, b.leagueForms, now).poke : undefined,
+      b.enemyTeam[b.enemyIndex],
+    );
+    const synergy = stellarOut ? NO_SYNERGY : computeSynergy(team);
     const lf: LeagueForms = {
       mega: b.leagueForms.mega ? { ...b.leagueForms.mega } : null,
       dynamax: b.leagueForms.dynamax ? { ...b.leagueForms.dynamax } : null,
@@ -423,8 +454,8 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     let enemyFainted = b.enemyFainted;
 
     // League enemy teams count as a TEAM for synergy — read the whole trainer
-    // roster, not the one mon in play.
-    const enemySynergy = computeSynergy(enemyTeam);
+    // roster, not the one mon in play. (Off entirely while a Stellar mon is out.)
+    const enemySynergy = stellarOut ? NO_SYNERGY : computeSynergy(enemyTeam);
 
     // Same Speed "judge" as wild combat — but here it directly owns how often a
     // mon attacks (no tapping in the league). 1–4 attacks/s from resolved Speed.
@@ -456,10 +487,52 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       if (enemyIndex >= enemyTeam.length) won = true;
       else enemy = enemyTeam[enemyIndex];
     };
+    /** Player mon dropped — log it and switch to the next living mon if any. */
+    const faintPlayer = () => {
+      log = [...log, `${player.name} fainted!`];
+      team[activeIndex] = player;
+      const next = team.findIndex((p) => p.hp > 0);
+      if (next >= 0) {
+        activeIndex = next;
+        player = team[activeIndex];
+        log = [...log, `Go, ${player.name}!`];
+      }
+    };
 
     let guard = 0;
     while (playerTimer >= playerSpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
       playerTimer -= playerSpeed;
+
+      // Enemy-inflicted status on the active mon: residual, bleed, flinch,
+      // freeze / paralyze — all resolved before the mon can act.
+      if (player.status?.kind === "poison" || player.status?.kind === "toxic") {
+        const r = tickResidual(player.hp, combatStats(player, { synergy }).maxHp, player.status);
+        player = { ...player, hp: r.hp, status: r.status };
+        if (player.hp <= 0) {
+          faintPlayer();
+          break;
+        }
+      }
+      if (player.bleed) {
+        const pMax = combatStats(player, { synergy }).maxHp;
+        player = {
+          ...player,
+          hp: Math.max(0, player.hp - Math.max(1, Math.floor(pMax * GROUND_BLEED_FRAC))),
+        };
+        if (player.hp <= 0) {
+          faintPlayer();
+          break;
+        }
+      }
+      if (player.flinch) {
+        player = { ...player, flinch: false };
+        continue;
+      }
+      const pAct = canAct(player.status);
+      if (pAct.status !== player.status) player = { ...player, status: pAct.status };
+      if (pAct.note === "thawed") log = [...log, `${player.name} thawed out!`];
+      if (!pAct.ok) continue;
+
       const eff = leagueEffective(player, lf, now);
       const { damage, multiplier, crit } = attackDamage(eff.poke, enemy, {
         form: eff.form,
@@ -468,6 +541,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         synergy,
         critStageBonus: synergy.critStage,
         defenderSynergy: enemySynergy,
+        attackerBurned: player.status?.kind === "burn",
       });
       const dmg = now < buffs.cheerUntil ? Math.round(damage * LEAGUE_CHEER_MULT) : damage;
       enemy = { ...enemy, hp: Math.max(0, enemy.hp - dmg) };
@@ -483,16 +557,21 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         player = { ...player, hp: Math.max(0, player.hp - back) };
         log = [...log, `${player.name} takes ${back} from ${enemy.name}'s Steel synergy.`];
         if (player.hp <= 0) {
-          log = [...log, `${player.name} fainted!`];
-          team[activeIndex] = player;
-          const nextLiving = team.findIndex((p) => p.hp > 0);
-          if (nextLiving >= 0) {
-            activeIndex = nextLiving;
-            player = team[activeIndex];
-            log = [...log, `Go, ${player.name}!`];
-          }
+          faintPlayer();
           break;
         }
+      }
+
+      // Enemy Ground synergy: chance the player's mon starts bleeding after it
+      // strikes a Ground-type enemy.
+      if (
+        !player.bleed &&
+        enemySynergy.groundBleedChance > 0 &&
+        isType(enemy, "Ground") &&
+        Math.random() < enemySynergy.groundBleedChance
+      ) {
+        player = { ...player, bleed: true };
+        log = [...log, `${player.name} started bleeding!`];
       }
 
       // Water synergy: chance to heal the attacking Water-type mon 5% max HP.
@@ -613,15 +692,19 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         log = [...log, `${enemy.name} started bleeding!`];
       }
 
+      // Enemy synergy status inflictions on the player's active mon.
+      const eInf = rollInflictions(enemySynergy, enemy, player, !!player.status);
+      if (eInf.flinch || eInf.status) {
+        player = {
+          ...player,
+          flinch: eInf.flinch || player.flinch,
+          status: eInf.status ?? player.status,
+        };
+        if (eInf.status) log = [...log, `${player.name} was ${eInf.label}!`];
+      }
+
       if (player.hp <= 0) {
-        log = [...log, `${player.name} fainted!`];
-        team[activeIndex] = player;
-        const nextLiving = team.findIndex((p) => p.hp > 0);
-        if (nextLiving >= 0) {
-          activeIndex = nextLiving;
-          player = team[activeIndex];
-          log = [...log, `Go, ${player.name}!`];
-        }
+        faintPlayer();
         break;
       }
       if (enemy.hp <= 0) {
@@ -631,14 +714,10 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     }
     team[activeIndex] = player;
 
-    // Grass synergy: chance to shake off a status from the active mon. (Party
-    // mons can't be statused yet, so this is dormant until enemies inflict.)
-    if (
-      synergy.grassCleanseChance > 0 &&
-      team[activeIndex]?.status &&
-      Math.random() < synergy.grassCleanseChance
-    ) {
-      team[activeIndex] = { ...team[activeIndex], status: undefined };
+    // Grass synergy: chance to clear a status from any party mon that has one.
+    if (synergy.grassCleanseChance > 0 && Math.random() < synergy.grassCleanseChance) {
+      const cured = team.findIndex((p) => p.status);
+      if (cured >= 0) team[cured] = { ...team[cured], status: undefined };
     }
 
     if (won) {

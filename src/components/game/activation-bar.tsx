@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   anyMegaOwned,
   baseSpeciesOf,
   dynamaxUnlocked,
   gmaxFormFor,
   megaFormsFor,
+  teraFormsFor,
   teraUnlocked,
 } from "@/lib/game/dex";
 import type { AnomalyKind } from "@/lib/game/dex";
@@ -31,6 +32,14 @@ type Btn = {
   onClick: () => void;
 };
 
+/** Short label for a form chip: "X" / "Y" for Megas, "Stellar" / "Terastal"
+ *  for Terapagos, else the trailing word. */
+function formChipLabel(f: string): string {
+  if (f.startsWith("M-")) return f.replace(/^M-/, "").split(" ").pop() ?? f;
+  if (f.startsWith("Terapagos-")) return f.replace("Terapagos-", "");
+  return f.split(" ").pop() ?? f;
+}
+
 function ActivationButton({
   b,
   forms,
@@ -43,10 +52,13 @@ function ActivationButton({
   compact?: boolean;
 }) {
   const [picking, setPicking] = useState(false);
+  const holdTimer = useRef<number | undefined>(undefined);
+  const held = useRef(false);
   const st = KIND_STYLE[b.kind];
   const h = compact ? "h-10" : "h-14";
+  const multi = forms.length > 1;
 
-  if (picking && forms.length > 1) {
+  if (picking && multi) {
     return (
       <div className={cn("flex gap-1", h)}>
         {forms.map((f) => (
@@ -57,11 +69,21 @@ function ActivationButton({
               onPick(f);
               setPicking(false);
             }}
-            className="flex flex-1 items-center justify-center rounded-2xl bg-fuchsia-500 text-xs font-bold text-white"
+            className={cn(
+              "flex flex-1 items-center justify-center rounded-2xl text-[11px] font-bold text-white",
+              st.ready,
+            )}
           >
-            {f.replace(/^M-/, "").split(" ").pop()}
+            {formChipLabel(f)}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => setPicking(false)}
+          className="flex w-8 items-center justify-center rounded-2xl bg-surface-2 text-xs text-muted"
+        >
+          ✕
+        </button>
       </div>
     );
   }
@@ -70,10 +92,21 @@ function ActivationButton({
     <button
       type="button"
       disabled={!b.enabled}
-      onClick={() => {
-        if (b.kind === "mega" && forms.length > 1) setPicking(true);
-        else b.onClick();
+      // Tap = activate (default form). Hold = pick a form when there are 2+.
+      onPointerDown={() => {
+        held.current = false;
+        if (multi && b.enabled) {
+          holdTimer.current = window.setTimeout(() => {
+            held.current = true;
+            setPicking(true);
+          }, 400);
+        }
       }}
+      onPointerUp={() => {
+        window.clearTimeout(holdTimer.current);
+        if (!held.current && !picking) b.onClick();
+      }}
+      onPointerLeave={() => window.clearTimeout(holdTimer.current)}
       className={cn(
         "flex flex-col items-center justify-center rounded-2xl font-semibold text-white",
         h,
@@ -82,6 +115,7 @@ function ActivationButton({
       )}
     >
       {st.label}
+      {multi && !b.active && <span className="text-[8px] font-normal opacity-70">hold to choose</span>}
       <span className={cn("font-normal opacity-80", compact ? "text-[9px]" : "text-[10px]")}>{b.status}</span>
     </button>
   );
@@ -89,13 +123,13 @@ function ActivationButton({
 
 function Bar({
   btns,
-  forms,
+  formsFor,
   onPick,
   compact,
 }: {
   btns: Btn[];
-  forms: string[];
-  onPick: (f: string) => void;
+  formsFor: (kind: AnomalyKind) => string[];
+  onPick: (kind: AnomalyKind, f: string) => void;
   compact?: boolean;
 }) {
   if (!btns.length) return null;
@@ -111,8 +145,8 @@ function Bar({
         <ActivationButton
           key={b.kind}
           b={b}
-          forms={b.kind === "mega" ? forms : []}
-          onPick={onPick}
+          forms={formsFor(b.kind)}
+          onPick={(f) => onPick(b.kind, f)}
           compact={compact}
         />
       ))}
@@ -140,6 +174,7 @@ export function WildActivationBar() {
   if (!showMega && !showDyn && !showTera) return null;
 
   const megaForms = megaFormsFor(dex, mon.name);
+  const teraForms = teraUnlocked(dex) ? teraFormsFor(dex, mon.name) : [];
   const canFight = !!enemy && enemy.hp > 0;
   const isRayquaza = baseSpeciesOf(mon.name) === "Rayquaza";
 
@@ -175,7 +210,11 @@ export function WildActivationBar() {
   if (showTera) btns.push(build("tera", true));
 
   return (
-    <Bar btns={btns} forms={megaForms} onPick={(f) => activate("mega", f)} />
+    <Bar
+      btns={btns}
+      formsFor={(k) => (k === "mega" ? megaForms : k === "tera" ? teraForms : [])}
+      onPick={(k, f) => activate(k, f)}
+    />
   );
 }
 
@@ -197,6 +236,7 @@ export function LeagueActivationBar({ compact }: { compact?: boolean } = {}) {
   if (!showMega && !showDyn && !showTera) return null;
 
   const megaForms = megaFormsFor(dex, mon.name);
+  const teraForms = teraUnlocked(dex) ? teraFormsFor(dex, mon.name) : [];
   const { leagueForms: lf, formsUsed } = battle;
   const now = Date.now();
   const isRayquaza = baseSpeciesOf(mon.name) === "Rayquaza";
@@ -236,5 +276,12 @@ export function LeagueActivationBar({ compact }: { compact?: boolean } = {}) {
   if (showDyn) btns.push(build("dynamax", true));
   if (showTera) btns.push(build("tera", true));
 
-  return <Bar btns={btns} forms={megaForms} onPick={(f) => activate("mega", f)} compact={compact} />;
+  return (
+    <Bar
+      btns={btns}
+      formsFor={(k) => (k === "mega" ? megaForms : k === "tera" ? teraForms : [])}
+      onPick={(k, f) => activate(k, f)}
+      compact={compact}
+    />
+  );
 }

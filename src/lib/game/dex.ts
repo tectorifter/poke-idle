@@ -514,3 +514,15 @@ export function dynamaxUnlocked(anomalyCleared: Record<string, boolean>): boolea
 export function teraUnlocked(dex: Dex): boolean {
   return dexHas(dex, "Terapagos-Stellar");
 }
+
+/** Base species → its distinct Tera-form species. Only Terapagos has forms
+ *  (Terastal + Stellar, like Charizard's two Megas); every other mon
+ *  Terastallizes in place without changing species. */
+export const TERA_FORMS: Record<string, string[]> = {
+  Terapagos: ["Terapagos-Terastal", "Terapagos-Stellar"],
+};
+
+/** Selectable Tera forms for a mon (empty for a normal in-place Terastal). */
+export function teraFormsFor(_dex: Dex, monName: string): string[] {
+  return TERA_FORMS[baseSpeciesOf(monName)] ?? [];
+}

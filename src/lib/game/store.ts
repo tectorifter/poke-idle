@@ -15,6 +15,7 @@ import {
   gmaxFormFor,
   dynamaxUnlocked,
   teraUnlocked,
+  teraFormsFor,
 } from "./dex";
 import type { AnomalyKind } from "./dex";
 import { rollNature, NATURE_NAMES } from "./natures";
@@ -22,6 +23,8 @@ import { learnableMoveNames, moveAcquisitionCost, chosenMoves, bestMoveAgainst }
 import {
   computeSynergy,
   encounterSynergy,
+  stellarActive,
+  NO_SYNERGY,
   isType,
   canAct,
   tickResidual,
@@ -195,9 +198,9 @@ export function rayquazaAutoMega(mon: OwnedPoke | undefined, dex: Record<string,
   return names.includes("Dragon Ascent");
 }
 
-/** Effective attacker for a wild-combat mon: swaps to the Mega / G-Max species
- *  and reports the form kind + tera type for the damage formula. */
-function wildEffective(
+/** Effective attacker for a wild-combat mon: swaps to the Mega / G-Max / Tera
+ *  species and reports the form kind + tera type for the damage formula. */
+export function wildEffective(
   mon: OwnedPoke,
   wa: WildForms,
 ): { poke: OwnedPoke; form?: FormKind; teraType?: string } {
@@ -207,8 +210,15 @@ function wildEffective(
     return wa.dynamax.formName
       ? { poke: { ...mon, name: wa.dynamax.formName }, form: "gmax" }
       : { poke: mon, form: "dynamax" };
-  if (wa.tera && wa.tera.uid === mon.uid)
+  if (wa.tera && wa.tera.uid === mon.uid) {
+    // Terapagos swaps to its chosen tera-form species; every other mon keeps
+    // its name and just collapses its offensive typing to its tera type.
+    if (wa.tera.formName) {
+      const t = speciesByName(wa.tera.formName)?.types[0] ?? mon.teraType;
+      return { poke: { ...mon, name: wa.tera.formName }, form: "tera", teraType: t };
+    }
     return { poke: mon, form: "tera", teraType: mon.teraType };
+  }
   return { poke: mon };
 }
 
@@ -647,9 +657,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     const active = team[s.active];
     if (!active) return;
 
-    // Party type-synergy buffs (Flying/Fighting/Psychic/Rock/Bug flat stats +
-    // Bug crit stage + Fairy enemy-Speed debuff).
-    const synergy = computeSynergy(team);
+    // Party type-synergy buffs. Terapagos-Stellar (Stellar type, incl. via Tera)
+    // switches every synergy off — both sides — while it is the active fighter.
+    let synergy =
+      stellarActive(wildEffective(active, s.wildActivations).poke, s.enemy ?? undefined)
+        ? NO_SYNERGY
+        : computeSynergy(team);
 
     let playerHp = s.playerHp;
     let playerExp = s.playerExp;
@@ -664,6 +677,9 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
       for (let i = 0; i < team.length; i++) {
         team[i].hp = combatStats(team[i], { synergy }).maxHp;
+        team[i].status = undefined;
+        team[i].flinch = undefined;
+        team[i].bleed = undefined;
       }
 
       lastHeal = now;
@@ -728,11 +744,16 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     // The wild encounter's own type-synergy (isolated from the player team): an
     // anomaly form gets tier 1 of every one of its types; a normal encounter
-    // only the ones whose tier 1 needs a single mon.
-    const enemySynergy = encounterSynergy(
-      enemy,
-      isAnomalyFormName(enemy.name) || isPermanentAnomalyCatch(enemy.name),
-    );
+    // only the ones whose tier 1 needs a single mon. A Stellar mon on either
+    // side switches everything off.
+    const stellarOut = stellarActive(wildEffective(team[activeIndex], wildActivations).poke, enemy);
+    if (stellarOut) synergy = NO_SYNERGY;
+    const enemySynergy = stellarOut
+      ? NO_SYNERGY
+      : encounterSynergy(
+          enemy,
+          isAnomalyFormName(enemy.name) || isPermanentAnomalyCatch(enemy.name),
+        );
 
     // Rayquaza auto-Mega-Evolves when it knows Dragon Ascent — same slot, same
     // duration/recharge as a button activation, it just triggers itself.
@@ -751,9 +772,47 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       dirty = true;
     }
 
+    const playerFaintLog = () => {
+      lastHeal = now;
+      log = pushLog(log, "You fainted! Auto-healing in 15 seconds...", "escape");
+    };
+
     const playerAtk = () => {
       const atkPoke = team[activeIndex];
       if (!atkPoke || playerHp <= 0 || enemy.hp <= 0) return;
+      const pMax = playerMaxHp(playerLevelOf(playerExp), s.playerPrestige, synergy.hpPct);
+
+      // Status the enemy inflicted on the active mon: residual, bleed, flinch,
+      // freeze / paralyze — all against the wild HP pool.
+      if (atkPoke.status?.kind === "poison" || atkPoke.status?.kind === "toxic") {
+        const r = tickResidual(playerHp, pMax, atkPoke.status);
+        playerHp = r.hp;
+        atkPoke.status = r.status;
+        if (r.lost > 0) {
+          playerHit = now;
+          dirty = true;
+        }
+        if (playerHp <= 0) return playerFaintLog();
+      }
+      if (atkPoke.bleed) {
+        playerHp = Math.max(0, playerHp - Math.max(1, Math.floor(pMax * GROUND_BLEED_FRAC)));
+        playerHit = now;
+        dirty = true;
+        if (playerHp <= 0) return playerFaintLog();
+      }
+      if (atkPoke.flinch) {
+        atkPoke.flinch = false;
+        dirty = true;
+        return;
+      }
+      const pAct = canAct(atkPoke.status);
+      atkPoke.status = pAct.status;
+      if (pAct.note === "thawed") log = pushLog(log, `${atkPoke.name} thawed out!`, "system");
+      if (!pAct.ok) {
+        dirty = true;
+        return;
+      }
+
       const eff = wildEffective(atkPoke, wildActivations);
       const picked = chosenMoves(atkPoke, levelOf(atkPoke))[s.selectedMove] ?? undefined;
       const { damage } = attackDamage(eff.poke, enemy, {
@@ -766,11 +825,24 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         synergy,
         critStageBonus: synergy.critStage,
         defenderSynergy: enemySynergy,
+        attackerBurned: atkPoke.status?.kind === "burn",
       });
       enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
       stats = { ...stats, damage: stats.damage + damage };
       enemyHit = now;
       dirty = true;
+
+      // Enemy Ground synergy: chance to start the player's mon bleeding after it
+      // strikes a Ground-type enemy.
+      if (
+        !atkPoke.bleed &&
+        enemySynergy.groundBleedChance > 0 &&
+        isType(enemy, "Ground") &&
+        Math.random() < enemySynergy.groundBleedChance
+      ) {
+        atkPoke.bleed = true;
+        log = pushLog(log, `${atkPoke.name} started bleeding!`, "system");
+      }
 
       // Enemy Steel synergy: part of the hit comes back into the player's pool.
       if (enemySynergy.steelReturnPct > 0 && damage > 0 && isType(enemy, "Steel")) {
@@ -881,6 +953,14 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       ) {
         enemy.bleed = true;
         log = pushLog(log, `${enemy.name} started bleeding!`, "system");
+      }
+
+      // Enemy synergy status inflictions on the player's active mon.
+      const eInf = rollInflictions(enemySynergy, enemy, defPoke, !!defPoke.status);
+      if (eInf.flinch) defPoke.flinch = true;
+      if (eInf.status) {
+        defPoke.status = eInf.status;
+        log = pushLog(log, `${defPoke.name} was ${eInf.label}!`, "system");
       }
 
       if (playerHp <= 0) {
@@ -1108,15 +1188,13 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       runPlayerTurns();
     }
 
-    // Grass synergy: chance to shake off one status from the active mon. (Party
-    // mons can't be statused yet, so this is dormant until enemies inflict.)
-    if (
-      synergy.grassCleanseChance > 0 &&
-      team[activeIndex]?.status &&
-      Math.random() < synergy.grassCleanseChance
-    ) {
-      team[activeIndex] = { ...team[activeIndex], status: undefined };
-      dirty = true;
+    // Grass synergy: chance to clear a status from any party mon that has one.
+    if (synergy.grassCleanseChance > 0 && Math.random() < synergy.grassCleanseChance) {
+      const cured = team.findIndex((p) => p.status);
+      if (cured >= 0) {
+        team[cured] = { ...team[cured], status: undefined };
+        dirty = true;
+      }
     }
 
     const shouldUi = dirty || uiAcc > 0.08;
@@ -1343,7 +1421,13 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       verb = formName ? "Gigantamaxed" : "Dynamaxed";
     } else {
       if (!teraUnlocked(s.dex)) return;
-      verb = `Terastallized${mon.teraType ? ` (${mon.teraType})` : ""}`;
+      const teraForms = teraFormsFor(s.dex, mon.name);
+      if (teraForms.length > 0) {
+        formName = formChoice && teraForms.includes(formChoice) ? formChoice : teraForms[0];
+        verb = `Terastallized into ${formName.replace("Terapagos-", "")}`;
+      } else {
+        verb = `Terastallized${mon.teraType ? ` (${mon.teraType})` : ""}`;
+      }
     }
 
     set({

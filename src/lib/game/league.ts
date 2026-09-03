@@ -122,7 +122,13 @@ export function currentStage(progress: LeagueProgress): LeagueStage | null {
 
 export function healTeam(team: OwnedPoke[]): OwnedPoke[] {
   const synergy = computeSynergy(team);
-  return team.map((p) => ({ ...p, hp: combatStats(p, { synergy }).maxHp }));
+  return team.map((p) => ({
+    ...p,
+    hp: combatStats(p, { synergy }).maxHp,
+    status: undefined,
+    flinch: undefined,
+    bleed: undefined,
+  }));
 }
 
 export const LEAGUE_PRESTIGE_REWARD = 1;

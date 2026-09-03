@@ -3,8 +3,8 @@ import { Heart, Swords, Trophy } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import { attacksPerSecond, combatStats } from "@/lib/game/formulas";
 import { currentStage, leagueOrder, trainerOf } from "@/lib/game/league";
-import { computeSynergy } from "@/lib/game/synergy";
-import { useLeague } from "@/lib/game/league-store";
+import { computeSynergy, stellarActive, NO_SYNERGY } from "@/lib/game/synergy";
+import { leagueEffective, useLeague } from "@/lib/game/league-store";
 import type { LeagueProgress } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 import { FighterCard, MoveButton, movesFor } from "./battle";
@@ -74,7 +74,6 @@ export function LeagueView() {
   const healOverTime = useLeague((s) => s.healOverTime);
   const clearBattle = useLeague((s) => s.clearBattle);
   const [, forceRender] = useState(0);
-  const synergy = computeSynergy(team);
 
   useEffect(() => {
     rehydrate();
@@ -156,6 +155,12 @@ export function LeagueView() {
 
   const enemy = battle.enemyTeam[battle.enemyIndex] ?? null;
   const player = team[active];
+  const synergy = stellarActive(
+    player ? leagueEffective(player, battle.leagueForms, Date.now()).poke : undefined,
+    enemy ?? undefined,
+  )
+    ? NO_SYNERGY
+    : computeSynergy(team);
   const won = battle.result === "win";
   const lost = battle.result === "lose";
   const finished = won || lost;
