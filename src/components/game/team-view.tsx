@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useHoldPress } from "./use-hold-press";
 import { ArrowDownToLine, ArrowUpFromLine, Trash2 } from "lucide-react";
 import {
   combatStats,
@@ -138,8 +139,8 @@ function PokeCell({
   const evSum = evTotal(poke.evs);
   const [confirmRelease, setConfirmRelease] = useState(false);
   const confirmTimer = useRef<number | undefined>(undefined);
-  const holdTimer = useRef<number | undefined>(undefined);
-  const held = useRef(false);
+  // Tap = select this mon; hold = open the IV/EV/nature/move editor (party only).
+  const press = useHoldPress({ onTap: onSelect, onHold: onEdit, delayMs: 500 });
 
   return (
     <div
@@ -148,20 +149,7 @@ function PokeCell({
         (onSelect || onEdit) && "cursor-pointer",
         active && "ring-1 ring-accent",
       )}
-      onPointerDown={() => {
-        held.current = false;
-        if (onEdit) {
-          holdTimer.current = window.setTimeout(() => {
-            held.current = true;
-            onEdit();
-          }, 500);
-        }
-      }}
-      onPointerUp={() => {
-        window.clearTimeout(holdTimer.current);
-        if (!held.current) onSelect?.();
-      }}
-      onPointerLeave={() => window.clearTimeout(holdTimer.current)}
+      {...press}
     >
       <div className="grid place-items-center">
         <Sprite name={poke.name} shiny={poke.shiny} animated size={44} />

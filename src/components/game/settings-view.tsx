@@ -3,6 +3,7 @@ import { useGame } from "@/lib/game/store";
 import { levelOf } from "@/lib/game/formulas";
 import { useAppearance } from "@/lib/appearance";
 import { Sprite } from "./sprite";
+import { ToggleRow } from "./toggle";
 
 export function SettingsView() {
   const exportSave = useGame((s) => s.exportSave);
@@ -69,29 +70,12 @@ export function SettingsView() {
         Gameplay
       </h3>
       <div className="mt-3">
-        <label className="flex h-14 w-full items-center justify-between rounded-2xl bg-surface px-4 shadow-border">
-          <span className="pr-3 text-sm font-medium">
-            Auto-advance route
-            <span className="mt-0.5 block text-xs font-normal text-muted">
-              Move to the next route once every wild Pokemon on this one is caught.
-            </span>
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={autoAdvanceRoute}
-            onClick={toggleAutoAdvanceRoute}
-            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-              autoAdvanceRoute ? "bg-accent" : "bg-surface-2"
-            }`}
-          >
-            <span
-              className={`absolute left-1 top-1 size-5 rounded-full bg-white transition-transform ${
-                autoAdvanceRoute ? "translate-x-5" : "translate-x-0"
-              }`}
-            />
-          </button>
-        </label>
+        <ToggleRow
+          label="Auto-advance route"
+          hint="Move to the next route once every wild Pokemon on this one is caught."
+          checked={autoAdvanceRoute}
+          onChange={toggleAutoAdvanceRoute}
+        />
       </div>
 
       <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
@@ -191,53 +175,19 @@ export function SettingsView() {
           </>
         )}
 
-        <label className="flex h-14 w-full items-center justify-between rounded-2xl bg-surface px-4 shadow-border">
-          <span className="pr-3 text-sm font-medium">
-            Translucent panels
-            <span className="mt-0.5 block text-xs font-normal text-muted">
-              Make the dark GUI windows see-through so the background shows behind them.
-            </span>
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={translucentPanels}
-            onClick={() => setTranslucentPanels(!translucentPanels)}
-            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-              translucentPanels ? "bg-accent" : "bg-surface-2"
-            }`}
-          >
-            <span
-              className={`absolute left-1 top-1 size-5 rounded-full bg-white transition-transform ${
-                translucentPanels ? "translate-x-5" : "translate-x-0"
-              }`}
-            />
-          </button>
-        </label>
+        <ToggleRow
+          label="Translucent panels"
+          hint="Make the dark GUI windows see-through so the background shows behind them."
+          checked={translucentPanels}
+          onChange={setTranslucentPanels}
+        />
 
-        <label className="flex h-14 w-full items-center justify-between rounded-2xl bg-surface px-4 shadow-border">
-          <span className="pr-3 text-sm font-medium">
-            Solid menu windows
-            <span className="mt-0.5 block text-xs font-normal text-muted">
-              Keep the Synergies and Pokemon editor windows opaque even when panels are translucent.
-            </span>
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={opaqueMenus}
-            onClick={() => setOpaqueMenus(!opaqueMenus)}
-            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-              opaqueMenus ? "bg-accent" : "bg-surface-2"
-            }`}
-          >
-            <span
-              className={`absolute left-1 top-1 size-5 rounded-full bg-white transition-transform ${
-                opaqueMenus ? "translate-x-5" : "translate-x-0"
-              }`}
-            />
-          </button>
-        </label>
+        <ToggleRow
+          label="Solid menu windows"
+          hint="Keep the Synergies and Pokemon editor windows opaque even when panels are translucent."
+          checked={opaqueMenus}
+          onChange={setOpaqueMenus}
+        />
       </div>
 
       <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">

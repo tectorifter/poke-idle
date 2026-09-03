@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { POKEDEX } from "@/lib/game/dex";
-import { useGame } from "@/lib/game/store";
+import { uniqueCaught, useGame } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { Sprite } from "./sprite";
 
@@ -10,7 +10,7 @@ export function DexView() {
   const dex = useGame((s) => s.dex);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const owned = Object.values(dex).filter((f) => f >= 5).length;
+  const owned = uniqueCaught(dex);
   const shiny = Object.values(dex).filter((f) => f >= 7).length;
 
   const list = useMemo(() => {

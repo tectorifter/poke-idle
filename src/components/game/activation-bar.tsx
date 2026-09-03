@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useHoldPress } from "./use-hold-press";
 import {
   anyMegaOwned,
   baseSpeciesOf,
@@ -52,11 +53,17 @@ function ActivationButton({
   compact?: boolean;
 }) {
   const [picking, setPicking] = useState(false);
-  const holdTimer = useRef<number | undefined>(undefined);
-  const held = useRef(false);
   const st = KIND_STYLE[b.kind];
   const h = compact ? "h-10" : "h-14";
   const multi = forms.length > 1;
+  // Tap = activate the default form; hold = open the form picker (2+ forms only).
+  const press = useHoldPress({
+    onTap: () => {
+      if (!picking) b.onClick();
+    },
+    onHold: multi && b.enabled ? () => setPicking(true) : undefined,
+    delayMs: 400,
+  });
 
   if (picking && multi) {
     return (
@@ -92,21 +99,7 @@ function ActivationButton({
     <button
       type="button"
       disabled={!b.enabled}
-      // Tap = activate (default form). Hold = pick a form when there are 2+.
-      onPointerDown={() => {
-        held.current = false;
-        if (multi && b.enabled) {
-          holdTimer.current = window.setTimeout(() => {
-            held.current = true;
-            setPicking(true);
-          }, 400);
-        }
-      }}
-      onPointerUp={() => {
-        window.clearTimeout(holdTimer.current);
-        if (!held.current && !picking) b.onClick();
-      }}
-      onPointerLeave={() => window.clearTimeout(holdTimer.current)}
+      {...press}
       className={cn(
         "flex flex-col items-center justify-center rounded-2xl font-semibold text-white",
         h,

@@ -4,6 +4,7 @@ import { natureMult, rollNature } from "./natures";
 import { CRIT_CHANCE, CRIT_MULT, moveHits, toMaxMove, toGMaxMove } from "./moves";
 import type { MoveData } from "./moves";
 import { chosenMove } from "./learnsets";
+import { BURN_DAMAGE_MULT } from "./synergy";
 import type { TeamSynergy } from "./synergy";
 import type { CatchTier, GrowthRate, Nature, OwnedPoke, Species, StatKey, StatSpread } from "./types";
 
@@ -526,7 +527,7 @@ export function attackDamage(
   }
 
   // Burn (synergy status): the burned attacker deals reduced damage.
-  if (opts.attackerBurned) dmg *= 0.9;
+  if (opts.attackerBurned) dmg *= BURN_DAMAGE_MULT;
 
   return { damage: Math.max(1, Math.floor(dmg)), multiplier, crit, missed: false };
 }

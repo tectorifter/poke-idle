@@ -13,12 +13,8 @@ import {
   computeSynergy,
   stellarActive,
   NO_SYNERGY,
-  isType,
-  canAct,
-  tickResidual,
-  rollInflictions,
-  GROUND_BLEED_FRAC,
-  WATER_HEAL_FRAC,
+  resolvePreAttack,
+  resolveOnHit,
 } from "./synergy";
 import type { TeamSynergy } from "./synergy";
 import {
@@ -505,33 +501,20 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
 
       // Enemy-inflicted status on the active mon: residual, bleed, flinch,
       // freeze / paralyze — all resolved before the mon can act.
-      if (player.status?.kind === "poison" || player.status?.kind === "toxic") {
-        const r = tickResidual(player.hp, combatStats(player, { synergy }).maxHp, player.status);
-        player = { ...player, hp: r.hp, status: r.status };
-        if (player.hp <= 0) {
-          faintPlayer();
-          break;
-        }
+      const pMax = combatStats(player, { synergy }).maxHp;
+      const pre = resolvePreAttack(player.hp, pMax, player.status, player.bleed, player.flinch);
+      player = {
+        ...player,
+        hp: pre.hp,
+        status: pre.status,
+        flinch: pre.flinchConsumed ? false : player.flinch,
+      };
+      if (pre.note === "thawed") log = [...log, `${player.name} thawed out!`];
+      if (pre.fainted) {
+        faintPlayer();
+        break;
       }
-      if (player.bleed) {
-        const pMax = combatStats(player, { synergy }).maxHp;
-        player = {
-          ...player,
-          hp: Math.max(0, player.hp - Math.max(1, Math.floor(pMax * GROUND_BLEED_FRAC))),
-        };
-        if (player.hp <= 0) {
-          faintPlayer();
-          break;
-        }
-      }
-      if (player.flinch) {
-        player = { ...player, flinch: false };
-        continue;
-      }
-      const pAct = canAct(player.status);
-      if (pAct.status !== player.status) player = { ...player, status: pAct.status };
-      if (pAct.note === "thawed") log = [...log, `${player.name} thawed out!`];
-      if (!pAct.ok) continue;
+      if (!pre.acts) continue;
 
       const eff = leagueEffective(player, lf, now);
       const { damage, multiplier, crit, missed } = attackDamage(eff.poke, enemy, {
@@ -555,52 +538,30 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       else if (multiplier > 0 && multiplier <= 0.5) log = [...log, `${critTag}Not very effective... ${dmg}`];
       else log = [...log, `${critTag}${player.name} hits ${enemy.name} for ${dmg}.`];
 
-      // Enemy Steel synergy: part of the hit comes back to the player's mon (true).
-      if (enemySynergy.steelReturnPct > 0 && dmg > 0 && isType(enemy, "Steel")) {
-        const back = Math.max(1, Math.floor(dmg * enemySynergy.steelReturnPct));
-        player = { ...player, hp: Math.max(0, player.hp - back) };
-        log = [...log, `${player.name} takes ${back} from ${enemy.name}'s Steel synergy.`];
+      // On-hit synergy procs (enemy Steel recoil onto the player, enemy Ground
+      // bleed on the player, the player's own Water heal, status onto the enemy).
+      const oh = resolveOnHit(synergy, enemySynergy, player, enemy, dmg, pMax, !!enemy.status);
+      if (oh.recoil > 0) {
+        player = { ...player, hp: Math.max(0, player.hp - oh.recoil) };
+        log = [...log, `${player.name} takes ${oh.recoil} from ${enemy.name}'s Steel synergy.`];
         if (player.hp <= 0) {
           faintPlayer();
           break;
         }
       }
-
-      // Enemy Ground synergy: chance the player's mon starts bleeding after it
-      // strikes a Ground-type enemy.
-      if (
-        !player.bleed &&
-        enemySynergy.groundBleedChance > 0 &&
-        isType(enemy, "Ground") &&
-        Math.random() < enemySynergy.groundBleedChance
-      ) {
+      if (oh.bleedAttacker) {
         player = { ...player, bleed: true };
         log = [...log, `${player.name} started bleeding!`];
       }
-
-      // Water synergy: chance to heal the attacking Water-type mon 5% max HP.
-      if (
-        synergy.waterHealChance > 0 &&
-        isType(player, "Water") &&
-        Math.random() < synergy.waterHealChance
-      ) {
-        const pMax = combatStats(player, { synergy }).maxHp;
-        player = {
-          ...player,
-          hp: Math.min(pMax, player.hp + Math.max(1, Math.floor(pMax * WATER_HEAL_FRAC))),
-        };
-      }
-
-      // Party status inflictions (freeze/burn/poison/paralyze + Dark flinch).
-      const inf = rollInflictions(synergy, player, enemy, !!enemy.status);
-      if (inf.flinch || inf.status) {
+      if (oh.selfHeal > 0) player = { ...player, hp: Math.min(pMax, player.hp + oh.selfHeal) };
+      if (oh.inflictFlinch || oh.inflictStatus) {
         enemy = {
           ...enemy,
-          flinch: inf.flinch || enemy.flinch,
-          status: inf.status ?? enemy.status,
+          flinch: oh.inflictFlinch || enemy.flinch,
+          status: oh.inflictStatus ?? enemy.status,
         };
         enemyTeam[enemyIndex] = enemy;
-        if (inf.status) log = [...log, `${enemy.name} was ${inf.label}!`];
+        if (oh.inflictStatus) log = [...log, `${enemy.name} was ${oh.inflictLabel}!`];
       }
 
       if (enemy.hp <= 0) {
@@ -613,47 +574,22 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
     while (enemyTimer >= enemySpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
       enemyTimer -= enemySpeed;
 
-      // Residual poison / toxic damage at the start of the enemy's turn.
-      if (enemy.status?.kind === "poison" || enemy.status?.kind === "toxic") {
-        const r = tickResidual(
-          enemy.hp,
-          combatStats(enemy, { synergy: enemySynergy }).maxHp,
-          enemy.status,
-        );
-        enemy = { ...enemy, hp: r.hp, status: r.status };
-        enemyTeam[enemyIndex] = enemy;
-        if (enemy.hp <= 0) {
-          resolveEnemyFaint();
-          break;
-        }
+      // Residual / bleed / flinch / freeze-paralyze at the start of the turn.
+      const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+      const pre = resolvePreAttack(enemy.hp, eMax, enemy.status, enemy.bleed, enemy.flinch);
+      enemy = {
+        ...enemy,
+        hp: pre.hp,
+        status: pre.status,
+        flinch: pre.flinchConsumed ? false : enemy.flinch,
+      };
+      enemyTeam[enemyIndex] = enemy;
+      if (pre.note === "thawed") log = [...log, `${enemy.name} thawed out!`];
+      if (pre.fainted) {
+        resolveEnemyFaint();
+        break;
       }
-
-      // Ground synergy: a bleeding enemy loses 2% max HP each attack it makes.
-      if (enemy.bleed) {
-        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
-        enemy = { ...enemy, hp: Math.max(0, enemy.hp - Math.max(1, Math.floor(eMax * GROUND_BLEED_FRAC))) };
-        enemyTeam[enemyIndex] = enemy;
-        if (enemy.hp <= 0) {
-          resolveEnemyFaint();
-          break;
-        }
-      }
-
-      // Dark synergy: a flinching enemy loses this turn.
-      if (enemy.flinch) {
-        enemy = { ...enemy, flinch: false };
-        enemyTeam[enemyIndex] = enemy;
-        continue;
-      }
-
-      // Freeze / paralyze may cost the enemy its turn.
-      const act = canAct(enemy.status);
-      if (act.status !== enemy.status) {
-        enemy = { ...enemy, status: act.status };
-        enemyTeam[enemyIndex] = enemy;
-      }
-      if (act.note === "thawed") log = [...log, `${enemy.name} thawed out!`];
-      if (!act.ok) continue;
+      if (!pre.acts) continue;
 
       const { damage, missed } = attackDamage(enemy, player, {
         move: bestMoveAgainst(enemy, levelOf(enemy), combatStats(player).types),
@@ -670,45 +606,30 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       player = { ...player, hp: Math.max(0, player.hp - dmg) };
       log = [...log, `${enemy.name} hits ${player.name} for ${dmg}.`];
 
-      // Enemy Water synergy: chance to heal the enemy on its attack.
-      if (
-        enemySynergy.waterHealChance > 0 &&
-        isType(enemy, "Water") &&
-        Math.random() < enemySynergy.waterHealChance
-      ) {
-        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
-        enemy = { ...enemy, hp: Math.min(eMax, enemy.hp + Math.max(1, Math.floor(eMax * WATER_HEAL_FRAC))) };
+      // On-hit synergy procs (enemy Water self-heal, player-Steel recoil onto
+      // the enemy, player-Ground bleed on the enemy, status onto the player).
+      const oh = resolveOnHit(enemySynergy, synergy, enemy, player, dmg, eMax, !!player.status);
+      if (oh.selfHeal > 0) {
+        enemy = { ...enemy, hp: Math.min(eMax, enemy.hp + oh.selfHeal) };
         enemyTeam[enemyIndex] = enemy;
       }
-
-      // Steel synergy: reflect part of the hit back as true damage.
-      if (synergy.steelReturnPct > 0 && dmg > 0 && isType(player, "Steel")) {
-        const back = Math.max(1, Math.floor(dmg * synergy.steelReturnPct));
-        enemy = { ...enemy, hp: Math.max(0, enemy.hp - back) };
+      if (oh.recoil > 0) {
+        enemy = { ...enemy, hp: Math.max(0, enemy.hp - oh.recoil) };
         enemyTeam[enemyIndex] = enemy;
-        log = [...log, `${enemy.name} takes ${back} from Steel synergy.`];
+        log = [...log, `${enemy.name} takes ${oh.recoil} from Steel synergy.`];
       }
-      // Ground synergy: chance to start the enemy bleeding after it hits a Ground mon.
-      if (
-        !enemy.bleed &&
-        synergy.groundBleedChance > 0 &&
-        isType(player, "Ground") &&
-        Math.random() < synergy.groundBleedChance
-      ) {
+      if (oh.bleedAttacker) {
         enemy = { ...enemy, bleed: true };
         enemyTeam[enemyIndex] = enemy;
         log = [...log, `${enemy.name} started bleeding!`];
       }
-
-      // Enemy synergy status inflictions on the player's active mon.
-      const eInf = rollInflictions(enemySynergy, enemy, player, !!player.status);
-      if (eInf.flinch || eInf.status) {
+      if (oh.inflictFlinch || oh.inflictStatus) {
         player = {
           ...player,
-          flinch: eInf.flinch || player.flinch,
-          status: eInf.status ?? player.status,
+          flinch: oh.inflictFlinch || player.flinch,
+          status: oh.inflictStatus ?? player.status,
         };
-        if (eInf.status) log = [...log, `${player.name} was ${eInf.label}!`];
+        if (oh.inflictStatus) log = [...log, `${player.name} was ${oh.inflictLabel}!`];
       }
 
       if (player.hp <= 0) {

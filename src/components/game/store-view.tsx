@@ -1,4 +1,4 @@
-import { useGame } from "@/lib/game/store";
+import { uniqueCaught, useGame } from "@/lib/game/store";
 import {
   autoTapCost,
   autoTapMsFromLevel,
@@ -36,7 +36,7 @@ export function StoreView() {
   const stats = useGame((s) => s.stats);
   const dex = useGame((s) => s.dex);
 
-  const owned = Object.values(dex).filter((f) => f >= 5).length;
+  const owned = uniqueCaught(dex);
   const uniqueBonus = uniqueCaughtBonus(owned);
   const autoCost = autoTapCost(autoTapLevel);
   const autoMaxed = autoTapLevel >= MAX_AUTO_LEVEL;

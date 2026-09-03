@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Pause, Play, Scissors, Shield, Sparkles, Swords } from "lucide-react";
+import { useHoldPress } from "./use-hold-press";
 import { speciesByName, isAnomalyFormName, isPermanentAnomalyCatch } from "@/lib/game/dex";
 import { TYPE_COLOR } from "@/lib/game/type-chart";
 import {
@@ -37,8 +38,12 @@ function CatchBallButton() {
   const manualCatch = useGame((s) => s.manualCatch);
   const setSelectedBall = useGame((s) => s.setSelectedBall);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const holdTimer = useRef<number | undefined>(undefined);
-  const held = useRef(false);
+  const press = useHoldPress({
+    onTap: () => {
+      if (!pickerOpen) manualCatch();
+    },
+    onHold: () => setPickerOpen(true),
+  });
 
   const unlocked = CATCH_TIER_ORDER.slice(0, tierIndex(catchTier) + 1);
   const charges = ballCharges[selectedBall] ?? 0;
@@ -75,18 +80,7 @@ function CatchBallButton() {
       <button
         type="button"
         aria-label={`Throw ${BALL_META[selectedBall].label} (${charges} left) — hold to switch`}
-        onPointerDown={() => {
-          held.current = false;
-          holdTimer.current = window.setTimeout(() => {
-            held.current = true;
-            setPickerOpen(true);
-          }, 350);
-        }}
-        onPointerUp={() => {
-          window.clearTimeout(holdTimer.current);
-          if (!held.current && !pickerOpen) manualCatch();
-        }}
-        onPointerLeave={() => window.clearTimeout(holdTimer.current)}
+        {...press}
         className={cn(
           "relative grid size-11 place-items-center rounded-full bg-surface shadow-border active:scale-95",
           charges === 0 && "opacity-50",
@@ -108,8 +102,7 @@ function PartyButton() {
   const active = useGame((s) => s.active);
   const setActive = useGame((s) => s.setActive);
   const [open, setOpen] = useState(false);
-  const holdTimer = useRef<number | undefined>(undefined);
-  const held = useRef(false);
+  const press = useHoldPress({ onTap: () => setOpen((o) => !o), onHold: () => setOpen(true) });
 
   const lead = team[active];
   if (!lead) return null;
@@ -143,18 +136,7 @@ function PartyButton() {
       <button
         type="button"
         aria-label={`Lead: ${lead.name} — hold to swap`}
-        onPointerDown={() => {
-          held.current = false;
-          holdTimer.current = window.setTimeout(() => {
-            held.current = true;
-            setOpen(true);
-          }, 350);
-        }}
-        onPointerUp={() => {
-          window.clearTimeout(holdTimer.current);
-          if (!held.current) setOpen((o) => !o);
-        }}
-        onPointerLeave={() => window.clearTimeout(holdTimer.current)}
+        {...press}
         className="grid size-11 place-items-center rounded-2xl bg-surface shadow-border active:scale-95"
       >
         <Sprite name={lead.name} shiny={lead.shiny} size={40} />

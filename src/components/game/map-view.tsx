@@ -1,6 +1,6 @@
 import { Lock } from "lucide-react";
 import { REGION_UNLOCK, speciesByName, isRouteUnlocked, routeRequirementLabel } from "@/lib/game/dex";
-import { regionUnlocked, ROUTES, uniqueOwnedCount, useGame } from "@/lib/game/store";
+import { regionUnlocked, ROUTES, uniqueCaught, useGame } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 
 export function MapView() {
@@ -9,7 +9,7 @@ export function MapView() {
   const dex = useGame((s) => s.dex);
   const setRoute = useGame((s) => s.setRoute);
   const playerPrestige = useGame((s) => s.playerPrestige);
-  const owned = uniqueOwnedCount(dex);
+  const owned = uniqueCaught(dex);
   const regions = Object.keys(ROUTES);
 
   const routes = Object.entries(ROUTES[region] ?? {}).filter(([, r]) => !r.subRoutes);

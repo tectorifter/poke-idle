@@ -16,6 +16,7 @@ import {
   dynamaxUnlocked,
   teraUnlocked,
   teraFormsFor,
+  dexCaughtCount,
 } from "./dex";
 import type { AnomalyKind } from "./dex";
 import { rollNature, NATURE_NAMES } from "./natures";
@@ -26,11 +27,8 @@ import {
   stellarActive,
   NO_SYNERGY,
   isType,
-  canAct,
-  tickResidual,
-  rollInflictions,
-  GROUND_BLEED_FRAC,
-  WATER_HEAL_FRAC,
+  resolvePreAttack,
+  resolveOnHit,
 } from "./synergy";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
@@ -117,9 +115,8 @@ const defaultStats = (): Stats => ({
   damage: 0,
 });
 
-function uniqueCaught(dex: Record<string, DexFlag>): number {
-  return Object.values(dex).filter((f) => f >= 5).length;
-}
+/** Species owned (dex flag ≥ 5). Canonical impl lives in `dex.dexCaughtCount`. */
+const uniqueCaught = dexCaughtCount as (dex: Record<string, DexFlag>) => number;
 
 function hasPokemon(
   team: OwnedPoke[],
@@ -589,14 +586,12 @@ const STAT_MOD_COST = 500; // per individual stat changed within IV or EV
 
 export type PokeDraft = { ivs: StatSpread; evs: StatSpread; nature: Nature; moves: string[] };
 
-const zeroSpread = (): StatSpread => ({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 });
-
 /** Clamp a raw editor draft to the mon's limits and learnable pool. */
 export function sanitizeDraft(poke: OwnedPoke, level: number, draft: PokeDraft): PokeDraft {
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.floor(v || 0)));
-  const ivs = zeroSpread();
+  const ivs = zeroEVs();
   for (const k of STAT_KEYS) ivs[k] = clamp(draft.ivs?.[k] ?? 0, 0, IV_MAX);
-  const evs = zeroSpread();
+  const evs = zeroEVs();
   let left = EV_MAX_TOTAL;
   for (const k of STAT_KEYS) {
     const want = clamp(draft.evs?.[k] ?? 0, 0, EV_MAX_PER_STAT);
@@ -835,33 +830,19 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       if (!atkPoke || playerHp <= 0 || enemy.hp <= 0) return;
       const pMax = playerMaxHp(playerLevelOf(playerExp), s.playerPrestige, synergy.hpPct);
 
-      // Status the enemy inflicted on the active mon: residual, bleed, flinch,
-      // freeze / paralyze — all against the wild HP pool.
-      if (atkPoke.status?.kind === "poison" || atkPoke.status?.kind === "toxic") {
-        const r = tickResidual(playerHp, pMax, atkPoke.status);
-        playerHp = r.hp;
-        atkPoke.status = r.status;
-        if (r.lost > 0) {
-          playerHit = now;
-          dirty = true;
-        }
-        if (playerHp <= 0) return playerFaintLog();
-      }
-      if (atkPoke.bleed) {
-        playerHp = Math.max(0, playerHp - Math.max(1, Math.floor(pMax * GROUND_BLEED_FRAC)));
+      // Enemy-inflicted status on the active mon: residual, bleed, flinch,
+      // freeze / paralyze — resolved against the wild HP pool.
+      const pre = resolvePreAttack(playerHp, pMax, atkPoke.status, atkPoke.bleed, atkPoke.flinch);
+      playerHp = pre.hp;
+      atkPoke.status = pre.status;
+      if (pre.flinchConsumed) atkPoke.flinch = false;
+      if (pre.tookDamage) {
         playerHit = now;
         dirty = true;
-        if (playerHp <= 0) return playerFaintLog();
       }
-      if (atkPoke.flinch) {
-        atkPoke.flinch = false;
-        dirty = true;
-        return;
-      }
-      const pAct = canAct(atkPoke.status);
-      atkPoke.status = pAct.status;
-      if (pAct.note === "thawed") log = pushLog(log, `${atkPoke.name} thawed out!`, "system");
-      if (!pAct.ok) {
+      if (pre.note === "thawed") log = pushLog(log, `${atkPoke.name} thawed out!`, "system");
+      if (pre.fainted) return playerFaintLog();
+      if (!pre.acts) {
         dirty = true;
         return;
       }
@@ -890,44 +871,26 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       enemyHit = now;
       dirty = true;
 
-      // Enemy Ground synergy: chance to start the player's mon bleeding after it
-      // strikes a Ground-type enemy.
-      if (
-        !atkPoke.bleed &&
-        enemySynergy.groundBleedChance > 0 &&
-        isType(enemy, "Ground") &&
-        Math.random() < enemySynergy.groundBleedChance
-      ) {
+      // On-hit synergy procs (Ground bleed on the mon, Steel recoil into the
+      // pool, Water self-heal, status inflicted on the enemy).
+      const oh = resolveOnHit(synergy, enemySynergy, atkPoke, enemy, damage, pMax, !!enemy.status);
+      if (oh.bleedAttacker) {
         atkPoke.bleed = true;
         log = pushLog(log, `${atkPoke.name} started bleeding!`, "system");
       }
-
-      // Enemy Steel synergy: part of the hit comes back into the player's pool.
-      if (enemySynergy.steelReturnPct > 0 && damage > 0 && isType(enemy, "Steel")) {
-        playerHp = Math.max(0, playerHp - Math.max(1, Math.floor(damage * enemySynergy.steelReturnPct)));
+      if (oh.recoil > 0) {
+        playerHp = Math.max(0, playerHp - oh.recoil);
         playerHit = now;
         if (playerHp <= 0) {
           lastHeal = now;
           log = pushLog(log, "You fainted! Auto-healing in 15 seconds...", "escape");
         }
       }
-
-      // Water synergy: chance to heal the player's HP pool on a Water-type hit.
-      if (
-        synergy.waterHealChance > 0 &&
-        isType(atkPoke, "Water") &&
-        Math.random() < synergy.waterHealChance
-      ) {
-        const pMax = playerMaxHp(playerLevelOf(playerExp), s.playerPrestige, synergy.hpPct);
-        playerHp = Math.min(pMax, playerHp + Math.max(1, Math.floor(pMax * WATER_HEAL_FRAC)));
-      }
-
-      // Party status inflictions (freeze/burn/poison/paralyze + Dark flinch).
-      const inf = rollInflictions(synergy, atkPoke, enemy, !!enemy.status);
-      if (inf.flinch) enemy.flinch = true;
-      if (inf.status) {
-        enemy.status = inf.status;
-        log = pushLog(log, `${enemy.name} was ${inf.label}!`, "system");
+      if (oh.selfHeal > 0) playerHp = Math.min(pMax, playerHp + oh.selfHeal);
+      if (oh.inflictFlinch) enemy.flinch = true;
+      if (oh.inflictStatus) {
+        enemy.status = oh.inflictStatus;
+        log = pushLog(log, `${enemy.name} was ${oh.inflictLabel}!`, "system");
       }
     };
 
@@ -935,39 +898,19 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       const defPoke = team[activeIndex];
       if (!defPoke || playerHp <= 0 || enemy.hp <= 0) return;
 
-      // Residual poison / toxic damage at the start of the enemy's turn.
-      if (enemy.status?.kind === "poison" || enemy.status?.kind === "toxic") {
-        const r = tickResidual(enemy.hp, combatStats(enemy, { synergy: enemySynergy }).maxHp, enemy.status);
-        enemy.hp = r.hp;
-        enemy.status = r.status;
-        if (r.lost > 0) {
-          enemyHit = now;
-          dirty = true;
-        }
-        if (enemy.hp <= 0) return;
-      }
-
-      // Ground synergy: a bleeding enemy loses 2% max HP each time it attacks.
-      if (enemy.bleed) {
-        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
-        enemy.hp = Math.max(0, enemy.hp - Math.max(1, Math.floor(eMax * GROUND_BLEED_FRAC)));
+      // Residual / bleed / flinch / freeze-paralyze at the start of the enemy's turn.
+      const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+      const pre = resolvePreAttack(enemy.hp, eMax, enemy.status, enemy.bleed, enemy.flinch);
+      enemy.hp = pre.hp;
+      enemy.status = pre.status;
+      if (pre.flinchConsumed) enemy.flinch = false;
+      if (pre.tookDamage) {
         enemyHit = now;
         dirty = true;
-        if (enemy.hp <= 0) return;
       }
-
-      // Dark synergy: a flinching enemy loses this turn.
-      if (enemy.flinch) {
-        enemy.flinch = false;
-        dirty = true;
-        return;
-      }
-
-      // Freeze / paralyze may cost the enemy its turn.
-      const act = canAct(enemy.status);
-      enemy.status = act.status;
-      if (act.note === "thawed") log = pushLog(log, `${enemy.name} thawed out!`, "system");
-      if (!act.ok) {
+      if (pre.note === "thawed") log = pushLog(log, `${enemy.name} thawed out!`, "system");
+      if (pre.fainted) return;
+      if (!pre.acts) {
         dirty = true;
         return;
       }
@@ -992,38 +935,22 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       playerHit = now;
       dirty = true;
 
-      // Enemy Water synergy: chance to heal itself on its attack.
-      if (
-        enemySynergy.waterHealChance > 0 &&
-        isType(enemy, "Water") &&
-        Math.random() < enemySynergy.waterHealChance
-      ) {
-        const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
-        enemy.hp = Math.min(eMax, enemy.hp + Math.max(1, Math.floor(eMax * WATER_HEAL_FRAC)));
-      }
-
-      // Steel synergy: reflect part of the hit back as true damage.
-      if (synergy.steelReturnPct > 0 && damage > 0 && isType(defPoke, "Steel")) {
-        enemy.hp = Math.max(0, enemy.hp - Math.max(1, Math.floor(damage * synergy.steelReturnPct)));
+      // On-hit synergy procs (enemy Water self-heal, player-Steel recoil onto
+      // the enemy, player-Ground bleed on the enemy, status onto the player).
+      const oh = resolveOnHit(enemySynergy, synergy, enemy, defPoke, damage, eMax, !!defPoke.status);
+      if (oh.selfHeal > 0) enemy.hp = Math.min(eMax, enemy.hp + oh.selfHeal);
+      if (oh.recoil > 0) {
+        enemy.hp = Math.max(0, enemy.hp - oh.recoil);
         enemyHit = now;
       }
-      // Ground synergy: chance to start the enemy bleeding after it hits a Ground mon.
-      if (
-        !enemy.bleed &&
-        synergy.groundBleedChance > 0 &&
-        isType(defPoke, "Ground") &&
-        Math.random() < synergy.groundBleedChance
-      ) {
+      if (oh.bleedAttacker) {
         enemy.bleed = true;
         log = pushLog(log, `${enemy.name} started bleeding!`, "system");
       }
-
-      // Enemy synergy status inflictions on the player's active mon.
-      const eInf = rollInflictions(enemySynergy, enemy, defPoke, !!defPoke.status);
-      if (eInf.flinch) defPoke.flinch = true;
-      if (eInf.status) {
-        defPoke.status = eInf.status;
-        log = pushLog(log, `${defPoke.name} was ${eInf.label}!`, "system");
+      if (oh.inflictFlinch) defPoke.flinch = true;
+      if (oh.inflictStatus) {
+        defPoke.status = oh.inflictStatus;
+        log = pushLog(log, `${defPoke.name} was ${oh.inflictLabel}!`, "system");
       }
 
       if (playerHp <= 0) {
@@ -1745,10 +1672,6 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     set(emptyState());
   },
 }));
-
-export function uniqueOwnedCount(dex: Record<string, DexFlag>): number {
-  return uniqueCaught(dex);
-}
 
 export function regionUnlocked(
   region: string,

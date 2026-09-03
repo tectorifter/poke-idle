@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { BookOpen, Map, Package, Settings, Swords, Trophy, Users } from "lucide-react";
-import { useGame } from "@/lib/game/store";
+import { uniqueCaught, useGame } from "@/lib/game/store";
 import { useAppearance } from "@/lib/appearance";
 import type { TabId } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,7 @@ export function GameShell() {
   const initBg = useAppearance((s) => s.init);
   const translucent = useAppearance((s) => s.translucentPanels);
   const bgAttenuation = useAppearance((s) => s.bgAttenuation);
-  const owned = Object.values(dex).filter((f) => f >= 5).length;
+  const owned = uniqueCaught(dex);
 
   useEffect(() => {
     rehydrate();

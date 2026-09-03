@@ -95,6 +95,11 @@ export const GROUND_BLEED_FRAC = 0.02;
 export const WATER_HEAL_FRAC = 0.05;
 /** Burned mons deal 90% damage. */
 export const BURN_DAMAGE_MULT = 0.9;
+
+/** Per-attack Ground-synergy bleed damage for a `maxHp` pool (min 1). */
+export const bleedTick = (maxHp: number) => Math.max(1, Math.floor(maxHp * GROUND_BLEED_FRAC));
+/** Water-synergy heal amount for a `maxHp` pool (min 1). */
+export const waterHeal = (maxHp: number) => Math.max(1, Math.floor(maxHp * WATER_HEAL_FRAC));
 /** Each turn a frozen mon has this chance to thaw (the thaw turn is still lost). */
 export const THAW_CHANCE = 0.5;
 /** Paralysis full-stop chance per turn (Pokémon Showdown value). */
@@ -326,4 +331,125 @@ export function rollInflictions(
     return { status: { kind: "paralyze" }, flinch, label: STATUS_LABEL.paralyze };
 
   return { flinch };
+}
+
+// ─── Shared per-attack resolution (wild pool + league per-mon both use these) ──
+
+export type PreAttack = {
+  /** HP after residual (poison/toxic) + Ground bleed, clamped to 0. */
+  hp: number;
+  /** HP was actually lost this step (for the wild hit-flash / dirty flags). */
+  tookDamage: boolean;
+  /** Status after residual escalation / thaw. */
+  status: StatusCondition | undefined;
+  /** A flinch flag was consumed — the caller should clear it. */
+  flinchConsumed: boolean;
+  /** The mon gets to attack this turn. */
+  acts: boolean;
+  /** Freeze/paralyze/thaw note (only "thawed" is logged today). */
+  note?: "thawed" | "frozen" | "paralyzed";
+  /** The mon dropped to 0 from residual/bleed before it could act. */
+  fainted: boolean;
+};
+
+/** Everything that happens to a mon *before* it swings: residual poison/toxic,
+ *  Ground-synergy bleed, Dark-synergy flinch, then the freeze/paralyze roll.
+ *  Pure — the caller applies `hp` / `status` to its own model. */
+export function resolvePreAttack(
+  hp: number,
+  maxHp: number,
+  status: StatusCondition | undefined,
+  bleed: boolean | undefined,
+  flinch: boolean | undefined,
+): PreAttack {
+  let curHp = hp;
+  let st = status;
+  let took = false;
+
+  if (st?.kind === "poison" || st?.kind === "toxic") {
+    const r = tickResidual(curHp, maxHp, st);
+    if (r.lost > 0) took = true;
+    curHp = r.hp;
+    st = r.status;
+    if (curHp <= 0)
+      return { hp: 0, tookDamage: took, status: st, flinchConsumed: false, acts: false, fainted: true };
+  }
+
+  if (bleed) {
+    curHp = Math.max(0, curHp - bleedTick(maxHp));
+    took = true;
+    if (curHp <= 0)
+      return { hp: 0, tookDamage: took, status: st, flinchConsumed: false, acts: false, fainted: true };
+  }
+
+  if (flinch)
+    return { hp: curHp, tookDamage: took, status: st, flinchConsumed: true, acts: false, fainted: false };
+
+  const act = canAct(st);
+  return {
+    hp: curHp,
+    tookDamage: took,
+    status: act.status,
+    flinchConsumed: false,
+    acts: act.ok,
+    note: act.note,
+    fainted: false,
+  };
+}
+
+export type OnHit = {
+  /** True recoil the ATTACKER takes (defender's Steel synergy), 0 if none. */
+  recoil: number;
+  /** HP the attacker heals from its own Water synergy, 0 if none. */
+  selfHeal: number;
+  /** Attacker starts bleeding (defender's Ground synergy). */
+  bleedAttacker: boolean;
+  /** Major status the attacker inflicts on the defender. */
+  inflictStatus?: StatusCondition;
+  /** Attacker makes the defender flinch. */
+  inflictFlinch: boolean;
+  inflictLabel?: string;
+};
+
+/** Everything that fires *after* a hit connects: Steel recoil, Ground bleed on
+ *  the attacker, the attacker's own Water heal, and the status/flinch it
+ *  inflicts. Order of the independent RNG rolls is fixed here so wild and
+ *  league stay identical. */
+export function resolveOnHit(
+  attackerSyn: TeamSynergy,
+  defenderSyn: TeamSynergy,
+  attacker: OwnedPoke,
+  defender: OwnedPoke,
+  dmgDealt: number,
+  attackerMaxHp: number,
+  defenderHasStatus: boolean,
+): OnHit {
+  const recoil =
+    defenderSyn.steelReturnPct > 0 && dmgDealt > 0 && isType(defender, "Steel")
+      ? Math.max(1, Math.floor(dmgDealt * defenderSyn.steelReturnPct))
+      : 0;
+
+  const bleedAttacker =
+    !attacker.bleed &&
+    defenderSyn.groundBleedChance > 0 &&
+    isType(defender, "Ground") &&
+    Math.random() < defenderSyn.groundBleedChance;
+
+  const selfHeal =
+    attackerSyn.waterHealChance > 0 &&
+    isType(attacker, "Water") &&
+    Math.random() < attackerSyn.waterHealChance
+      ? waterHeal(attackerMaxHp)
+      : 0;
+
+  const inf = rollInflictions(attackerSyn, attacker, defender, defenderHasStatus);
+
+  return {
+    recoil,
+    selfHeal,
+    bleedAttacker,
+    inflictStatus: inf.status,
+    inflictFlinch: inf.flinch,
+    inflictLabel: inf.label,
+  };
 }
