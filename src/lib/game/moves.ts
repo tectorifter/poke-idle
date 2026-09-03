@@ -4,15 +4,23 @@ import type { OwnedPoke } from "./types";
 
 export type MoveCategory = "Physical" | "Special" | "Status";
 
-/** Trimmed move data (from Pokémon Showdown): base power only — no accuracy,
+/** Trimmed move data (from Pokémon Showdown): base power + accuracy — no
  *  secondary effects, priority, or multi-hit. Status moves have no effect but
- *  are still listed; multi-hit and variable-power moves are flattened to 80. */
+ *  are still listed; multi-hit and variable-power moves are flattened to 80.
+ *  `accuracy` is the Showdown value: a percentage, or `true` for "never misses". */
 export type MoveData = {
   name: string;
   type: string;
   category: MoveCategory;
   power: number;
+  accuracy: number | true;
 };
+
+/** Pokémon Showdown accuracy check (no accuracy/evasion stages in this model):
+ *  `true` always lands; otherwise roll 0–99 < accuracy. */
+export function moveHits(accuracy: number | true): boolean {
+  return accuracy === true || Math.floor(Math.random() * 100) < accuracy;
+}
 
 export const MOVES = movesData as Record<string, MoveData>;
 
@@ -65,6 +73,7 @@ export function fallbackTypeMove(poke: OwnedPoke): MoveData {
     type,
     category: spec && spec.spa > spec.atk ? "Special" : "Physical",
     power: 75,
+    accuracy: 100,
   };
 }
 
@@ -125,16 +134,17 @@ export function maxMovePower(power: number, type: string): number {
   return weak ? 100 : 150;
 }
 
-/** Convert a move to its Dynamax (Max) form. */
+/** Convert a move to its Dynamax (Max) form. Max moves never miss. */
 export function toMaxMove(move: MoveData): MoveData {
   if (move.category === "Status") {
-    return { name: "Max Guard", type: move.type, category: "Status", power: 0 };
+    return { name: "Max Guard", type: move.type, category: "Status", power: 0, accuracy: true };
   }
   return {
     name: MAX_MOVE_NAME[move.type] ?? "Max Strike",
     type: move.type,
     category: move.category,
     power: maxMovePower(move.power, move.type),
+    accuracy: true,
   };
 }
 
@@ -148,6 +158,7 @@ export function toGMaxMove(move: MoveData, gmaxSpecies: string): MoveData {
       type: move.type,
       category: move.category,
       power: maxMovePower(move.power, move.type),
+      accuracy: true,
     };
   }
   return toMaxMove(move);

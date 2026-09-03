@@ -1,7 +1,7 @@
 import { EXP_TABLE, EVOLUTIONS, speciesByName, isAnomalyFormName } from "./dex";
 import { defenseMultiplier } from "./type-chart";
 import { natureMult, rollNature } from "./natures";
-import { CRIT_CHANCE, CRIT_MULT, toMaxMove, toGMaxMove } from "./moves";
+import { CRIT_CHANCE, CRIT_MULT, moveHits, toMaxMove, toGMaxMove } from "./moves";
 import type { MoveData } from "./moves";
 import { chosenMove } from "./learnsets";
 import type { TeamSynergy } from "./synergy";
@@ -443,7 +443,7 @@ export function attackDamage(
     /** Attacker is burned (synergy status) — deals 90% damage. */
     attackerBurned?: boolean;
   } = {},
-): { damage: number; multiplier: number; crit: boolean } {
+): { damage: number; multiplier: number; crit: boolean; missed: boolean } {
   let move = opts.move ?? chosenMove(attacker, levelOf(attacker));
 
   // Dynamax / Gigantamax: the equipped move fires as its Max / G-Max version
@@ -453,7 +453,12 @@ export function attackDamage(
 
   // Status moves have no effect in this model (still listed elsewhere).
   if (move.category === "Status" || move.power <= 0) {
-    return { damage: 0, multiplier: 1, crit: false };
+    return { damage: 0, multiplier: 1, crit: false, missed: false };
+  }
+
+  // Pokémon Showdown accuracy check — a failed roll is a clean miss (0 damage).
+  if (!moveHits(move.accuracy)) {
+    return { damage: 0, multiplier: 1, crit: false, missed: true };
   }
 
   const a = combatStats(attacker, {
@@ -481,7 +486,7 @@ export function attackDamage(
   const moveType = teraType ?? move.type;
 
   const multiplier = defenseMultiplier(moveType, d.types); // move type vs defender
-  if (multiplier === 0) return { damage: 0, multiplier: 0, crit: false };
+  if (multiplier === 0) return { damage: 0, multiplier: 0, crit: false, missed: false };
 
   const physical = move.category === "Physical";
   const atkStat = physical ? a.atk : a.spa;
@@ -516,7 +521,7 @@ export function attackDamage(
   // Burn (synergy status): the burned attacker deals reduced damage.
   if (opts.attackerBurned) dmg *= 0.9;
 
-  return { damage: Math.max(1, Math.floor(dmg)), multiplier, crit };
+  return { damage: Math.max(1, Math.floor(dmg)), multiplier, crit, missed: false };
 }
 
 export function expReward(enemy: OwnedPoke): number {

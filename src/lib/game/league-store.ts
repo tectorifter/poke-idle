@@ -534,7 +534,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       if (!pAct.ok) continue;
 
       const eff = leagueEffective(player, lf, now);
-      const { damage, multiplier, crit } = attackDamage(eff.poke, enemy, {
+      const { damage, multiplier, crit, missed } = attackDamage(eff.poke, enemy, {
         form: eff.form,
         teraType: eff.teraType,
         move: pickedMove,
@@ -543,6 +543,10 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         defenderSynergy: enemySynergy,
         attackerBurned: player.status?.kind === "burn",
       });
+      if (missed) {
+        log = [...log, `${player.name}'s attack missed!`];
+        continue;
+      }
       const dmg = now < buffs.cheerUntil ? Math.round(damage * LEAGUE_CHEER_MULT) : damage;
       enemy = { ...enemy, hp: Math.max(0, enemy.hp - dmg) };
       enemyTeam[enemyIndex] = enemy;
@@ -651,13 +655,17 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       if (act.note === "thawed") log = [...log, `${enemy.name} thawed out!`];
       if (!act.ok) continue;
 
-      const { damage } = attackDamage(enemy, player, {
+      const { damage, missed } = attackDamage(enemy, player, {
         move: bestMoveAgainst(enemy, levelOf(enemy), combatStats(player).types),
         synergy: enemySynergy,
         defenderSynergy: synergy,
         critStageBonus: enemySynergy.critStage,
         attackerBurned: enemy.status?.kind === "burn",
       });
+      if (missed) {
+        log = [...log, `${enemy.name}'s attack missed!`];
+        continue;
+      }
       const dmg = now < buffs.resistUntil ? Math.round(damage * LEAGUE_RESIST_TAKEN_MULT) : damage;
       player = { ...player, hp: Math.max(0, player.hp - dmg) };
       log = [...log, `${enemy.name} hits ${player.name} for ${dmg}.`];

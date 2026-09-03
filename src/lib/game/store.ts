@@ -851,7 +851,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
       const eff = wildEffective(atkPoke, wildActivations);
       const picked = chosenMoves(atkPoke, levelOf(atkPoke))[s.selectedMove] ?? undefined;
-      const { damage } = attackDamage(eff.poke, enemy, {
+      const { damage, missed } = attackDamage(eff.poke, enemy, {
         attackerIsPlayer: true,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
@@ -863,6 +863,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         defenderSynergy: enemySynergy,
         attackerBurned: atkPoke.status?.kind === "burn",
       });
+      if (missed) {
+        log = pushLog(log, `${atkPoke.name}'s attack missed!`, "system");
+        dirty = true;
+        return;
+      }
       enemy.hp = Math.max(s.falseSwipe ? 1 : 0, enemy.hp - damage);
       stats = { ...stats, damage: stats.damage + damage };
       enemyHit = now;
@@ -950,7 +955,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         return;
       }
 
-      const { damage } = attackDamage(enemy, defPoke, {
+      const { damage, missed } = attackDamage(enemy, defPoke, {
         attackerIsPlayer: false,
         playerPrestige: s.playerPrestige,
         uniqueBonus,
@@ -960,6 +965,11 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         critStageBonus: enemySynergy.critStage,
         attackerBurned: enemy.status?.kind === "burn",
       });
+      if (missed) {
+        log = pushLog(log, `${enemy.name}'s attack missed!`, "system");
+        dirty = true;
+        return;
+      }
 
       playerHp = Math.max(0, playerHp - damage);
       playerHit = now;

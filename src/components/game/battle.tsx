@@ -221,7 +221,11 @@ export function MoveButton({
       disabled={!move}
       onClick={onSelect}
       aria-label={
-        move ? `${move.name} — ${move.type} ${move.category}, ${move.power} power` : `Move ${index + 1} (empty)`
+        move
+          ? `${move.name} — ${move.type} ${move.category}, ${move.power} power, ${
+              move.accuracy === true ? "never misses" : `${move.accuracy}% accuracy`
+            }`
+          : `Move ${index + 1} (empty)`
       }
       style={move ? { backgroundColor: color } : undefined}
       className={cn(
@@ -236,7 +240,10 @@ export function MoveButton({
       {Icon ? <Icon className="size-3.5" /> : <span className="text-sm leading-none">·</span>}
       <span className="w-full truncate text-center">{move ? move.name : `Move ${index + 1}`}</span>
       {move && move.category !== "Status" && (
-        <span className="text-[9px] font-normal opacity-80">{move.power}</span>
+        <span className="text-[9px] font-normal opacity-80">
+          {move.power}
+          {move.accuracy !== true && ` · ${move.accuracy}%`}
+        </span>
       )}
     </button>
   );
