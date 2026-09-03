@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useGame } from "@/lib/game/store";
 import { levelOf } from "@/lib/game/formulas";
-import { useBackground } from "@/lib/bg-image";
+import { useAppearance } from "@/lib/appearance";
 import { Sprite } from "./sprite";
 
 export function SettingsView() {
@@ -11,11 +11,15 @@ export function SettingsView() {
   const autoAdvanceRoute = useGame((s) => s.autoAdvanceRoute);
   const toggleAutoAdvanceRoute = useGame((s) => s.toggleAutoAdvanceRoute);
   const team = useGame((s) => s.team);
-  const bgUrl = useBackground((s) => s.url);
-  const setBgFromFile = useBackground((s) => s.setFromFile);
-  const clearBg = useBackground((s) => s.clear);
+  const bgUrl = useAppearance((s) => s.url);
+  const setBgFromFile = useAppearance((s) => s.setFromFile);
+  const setBgFromUrl = useAppearance((s) => s.setFromUrl);
+  const clearBg = useAppearance((s) => s.clearBackground);
+  const translucentPanels = useAppearance((s) => s.translucentPanels);
+  const setTranslucentPanels = useAppearance((s) => s.setTranslucentPanels);
 
   const [saveText, setSaveText] = useState("");
+  const [bgLink, setBgLink] = useState("");
   const [msg, setMsg] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -119,6 +123,33 @@ export function SettingsView() {
             }}
           />
         </label>
+
+        <div className="flex gap-2">
+          <input
+            type="url"
+            inputMode="url"
+            value={bgLink}
+            onChange={(e) => setBgLink(e.target.value)}
+            placeholder="…or paste an image link (https://)"
+            className="h-11 min-w-0 flex-1 rounded-2xl bg-surface px-3 text-sm outline-none shadow-border placeholder:text-subtle"
+          />
+          <button
+            type="button"
+            disabled={!bgLink.trim()}
+            className={`h-11 shrink-0 rounded-2xl px-4 text-sm font-medium shadow-border ${
+              bgLink.trim() ? "bg-surface" : "bg-surface-2 text-muted"
+            }`}
+            onClick={async () => {
+              setMsg("Loading link…");
+              const err = await setBgFromUrl(bgLink);
+              if (!err) setBgLink("");
+              setMsg(err ?? "Background updated.");
+            }}
+          >
+            Use link
+          </button>
+        </div>
+
         {bgUrl && (
           <button
             type="button"
@@ -131,6 +162,30 @@ export function SettingsView() {
             Remove background
           </button>
         )}
+
+        <label className="flex h-14 w-full items-center justify-between rounded-2xl bg-surface px-4 shadow-border">
+          <span className="pr-3 text-sm font-medium">
+            Translucent panels
+            <span className="mt-0.5 block text-xs font-normal text-muted">
+              Make the dark GUI windows see-through so the background shows behind them.
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={translucentPanels}
+            onClick={() => setTranslucentPanels(!translucentPanels)}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+              translucentPanels ? "bg-accent" : "bg-surface-2"
+            }`}
+          >
+            <span
+              className={`absolute top-1 size-5 rounded-full bg-white transition-transform ${
+                translucentPanels ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </label>
       </div>
 
       <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { BookOpen, Map, Package, Settings, Swords, Trophy, Users } from "lucide-react";
 import { useGame } from "@/lib/game/store";
-import { useBackground } from "@/lib/bg-image";
+import { useAppearance } from "@/lib/appearance";
 import type { TabId } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 import { StoreView } from "./store-view";
@@ -32,8 +32,9 @@ export function GameShell() {
   const playerPrestige = useGame((s) => s.playerPrestige);
   const dex = useGame((s) => s.dex);
   const rehydrate = useGame((s) => s.rehydrate);
-  const bgUrl = useBackground((s) => s.url);
-  const initBg = useBackground((s) => s.init);
+  const bgUrl = useAppearance((s) => s.url);
+  const initBg = useAppearance((s) => s.init);
+  const translucent = useAppearance((s) => s.translucentPanels);
   const owned = Object.values(dex).filter((f) => f >= 5).length;
 
   useEffect(() => {
@@ -62,6 +63,21 @@ export function GameShell() {
       s.backgroundAttachment = "";
     }
   }, [bgUrl]);
+
+  // Translucent panels: swap the opaque dark theme colours for semi-transparent
+  // ones so the background image shows through every GUI window.
+  useEffect(() => {
+    const r = document.documentElement.style;
+    if (translucent) {
+      r.setProperty("--color-bg", "rgba(11, 12, 16, 0.55)");
+      r.setProperty("--color-surface", "rgba(20, 21, 28, 0.62)");
+      r.setProperty("--color-surface-2", "rgba(28, 30, 40, 0.68)");
+    } else {
+      r.removeProperty("--color-bg");
+      r.removeProperty("--color-surface");
+      r.removeProperty("--color-surface-2");
+    }
+  }, [translucent]);
 
   useEffect(() => {
     if (!started) return;
@@ -104,7 +120,11 @@ export function GameShell() {
       <div
         className={cn(
           "relative flex h-dvh w-full max-w-[430px] flex-col overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
-          bgUrl ? "bg-black/35 backdrop-blur-[1px]" : "bg-bg",
+          !bgUrl
+            ? "bg-bg"
+            : translucent
+              ? "bg-black/10"
+              : "bg-black/35 backdrop-blur-[1px]",
         )}
       >
         <header className="flex h-12 shrink-0 items-center justify-between px-4 pt-[env(safe-area-inset-top)]">
