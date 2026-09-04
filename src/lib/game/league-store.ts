@@ -3,6 +3,7 @@ import {
   attackDamage,
   attackIntervalMs,
   combatStats,
+  confusionSelfHit,
   HEAL_COOLDOWN_MS,
   LEAGUE_DYNAMAX_MS,
   levelOf,
@@ -11,10 +12,13 @@ import type { FormKind } from "./formulas";
 import { bestMoveAgainst, chosenMoves } from "./learnsets";
 import {
   computeSynergy,
+  isType,
   stellarActive,
   NO_SYNERGY,
   resolvePreAttack,
   resolveOnHit,
+  GHOST_STRUGGLE_CHANCE,
+  GHOST_PRIORITY_COOLDOWN,
 } from "./synergy";
 import type { TeamSynergy } from "./synergy";
 import {
@@ -42,6 +46,10 @@ import { rayquazaAutoMega, useGame } from "./store";
 import type { LeagueProgress, OwnedPoke, TrainerDef } from "./types";
 
 const SAVE_KEY = "pokeidle-league-v1";
+
+/** Attacks that must land before a Ghost-synergy priority trigger can fire again
+ *  in the league. Mirrors the wild store's counter; 0 = every attack eligible. */
+let leagueGhostPriorityCd = 0;
 
 function loadProgress(): LeagueProgress {
   try {
@@ -240,6 +248,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         result: "fighting",
       },
     });
+    leagueGhostPriorityCd = 0;
     // Freeze the wild-route loop for the duration -- both loops would otherwise
     // fight over the same team/HP state at once. Clear any status carried in
     // from wild combat so the league fight starts clean.
@@ -480,6 +489,7 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       enemyIndex += 1;
       playerTimer = 0;
       enemyTimer = 0;
+      leagueGhostPriorityCd = 0;
       if (enemyIndex >= enemyTeam.length) won = true;
       else enemy = enemyTeam[enemyIndex];
     };
@@ -495,9 +505,45 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
       }
     };
 
+    // Ghost synergy: a Ghost-type mon takes its turn first regardless of the
+    // usual player-then-enemy order, gated by a cooldown (in attacks). On a
+    // trigger the TARGET (the ghost mon's opponent) makes ONE confusion self-hit
+    // check — no recoil, the ghost mon is untouched.
+    const priorityReady = leagueGhostPriorityCd <= 0;
+    const playerGhostFirst =
+      priorityReady &&
+      synergy.ghostFirstChance > 0 &&
+      isType(player, "Ghost") &&
+      Math.random() < synergy.ghostFirstChance;
+    const enemyGhostFirst =
+      priorityReady &&
+      !playerGhostFirst &&
+      enemySynergy.ghostFirstChance > 0 &&
+      isType(enemy, "Ghost") &&
+      Math.random() < enemySynergy.ghostFirstChance;
+    const ghostPriorityTriggered = playerGhostFirst || enemyGhostFirst;
+    if (ghostPriorityTriggered) leagueGhostPriorityCd = GHOST_PRIORITY_COOLDOWN;
+    let attacksThisTick = 0;
+
+    if (playerGhostFirst && enemy.hp > 0 && Math.random() < GHOST_STRUGGLE_CHANCE) {
+      enemy = { ...enemy, hp: Math.max(0, enemy.hp - confusionSelfHit(enemy, enemySynergy)) };
+      enemyTeam[enemyIndex] = enemy;
+      log = [...log, `${enemy.name} hurt itself in its confusion!`];
+      if (enemy.hp <= 0) resolveEnemyFaint();
+    } else if (enemyGhostFirst && player.hp > 0 && Math.random() < GHOST_STRUGGLE_CHANCE) {
+      player = {
+        ...player,
+        hp: Math.max(0, player.hp - confusionSelfHit(leagueEffective(player, lf, now).poke, synergy)),
+      };
+      log = [...log, `${player.name} hurt itself in its confusion!`];
+      if (player.hp <= 0) faintPlayer();
+    }
+
+    const runPlayerLoop = () => {
     let guard = 0;
     while (playerTimer >= playerSpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
       playerTimer -= playerSpeed;
+      attacksThisTick += 1;
 
       // Enemy-inflicted status on the active mon: residual, bleed, flinch,
       // freeze / paralyze — all resolved before the mon can act.
@@ -573,10 +619,13 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         break;
       }
     }
+    };
 
-    guard = 0;
+    const runEnemyLoop = () => {
+    let guard = 0;
     while (enemyTimer >= enemySpeed && guard++ < 8 && enemy.hp > 0 && player.hp > 0) {
       enemyTimer -= enemySpeed;
+      attacksThisTick += 1;
 
       // Residual / bleed / flinch / freeze-paralyze at the start of the turn.
       const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
@@ -650,6 +699,22 @@ export const useLeague = create<LeagueBattleState>((set, get) => ({
         break;
       }
     }
+    };
+
+    if (enemyGhostFirst) {
+      runEnemyLoop();
+      runPlayerLoop();
+    } else {
+      runPlayerLoop();
+      runEnemyLoop();
+    }
+
+    // Tick the Ghost-priority cooldown down by the attacks that landed — but not
+    // on the trigger tick itself (its attacks are the priority turn).
+    if (!ghostPriorityTriggered && leagueGhostPriorityCd > 0) {
+      leagueGhostPriorityCd = Math.max(0, leagueGhostPriorityCd - attacksThisTick);
+    }
+
     team[activeIndex] = player;
 
     // Grass synergy: chance to clear a status from any party mon that has one.

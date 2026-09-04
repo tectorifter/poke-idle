@@ -114,6 +114,10 @@ export const FULL_PARA_CHANCE = 0.50;
 /** Ghost synergy rider: when the Ghost mon wins the turn-order roll, the loser
  *  has this chance to hurt itself with Struggle instead of acting cleanly. */
 export const GHOST_STRUGGLE_CHANCE = 0.5;
+/** Attacks that must land after a Ghost-synergy priority trigger before another
+ *  one can fire. 0 ⇒ no cooldown (every attack eligible); 1 ⇒ every other; etc.
+ *  Bump to nerf the Ghost synergy. */
+export const GHOST_PRIORITY_COOLDOWN = 0;
 
 export const STATUS_LABEL: Record<StatusCondition["kind"], string> = {
   burn: "burned",

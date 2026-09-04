@@ -545,25 +545,24 @@ export function attackDamage(
   return { damage: Math.max(1, Math.floor(dmg)), multiplier, crit, missed: false };
 }
 
-/** Pokémon Showdown "Struggle": a 50-BP typeless physical hit (no STAB, no type
- *  effectiveness) plus fixed recoil of ¼ the user's max HP. Used when a mon is
- *  forced to attack itself (Ghost-synergy turn-order rider). Returns the total
- *  HP the mon should lose — the caller subtracts it from its own HP model. */
-const STRUGGLE_MOVE: MoveData = {
-  name: "Struggle",
+/** A confusion-style self-hit: a 50-BP typeless physical hit (no STAB, no type
+ *  effectiveness), the mon's own Atk vs its own Def. Used for the Ghost-synergy
+ *  rider — the TARGET takes this, with NO recoil (the Ghost mon is untouched).
+ *  Returns the HP the target should lose. */
+const SELF_HIT_MOVE: MoveData = {
+  name: "Confusion Hit",
   type: "Typeless",
   category: "Physical",
   power: 50,
   accuracy: true,
 };
 
-export function struggleSelfHit(mon: OwnedPoke, maxHp: number, synergy?: TeamSynergy): number {
-  const hit = attackDamage(mon, mon, {
-    move: STRUGGLE_MOVE,
+export function confusionSelfHit(mon: OwnedPoke, synergy?: TeamSynergy): number {
+  return attackDamage(mon, mon, {
+    move: SELF_HIT_MOVE,
     synergy,
     defenderSynergy: synergy,
   }).damage;
-  return hit + Math.max(1, Math.floor(maxHp / 4));
 }
 
 export function expReward(enemy: OwnedPoke): number {

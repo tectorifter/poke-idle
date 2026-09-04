@@ -31,6 +31,7 @@ import {
   resolvePreAttack,
   resolveOnHit,
   GHOST_STRUGGLE_CHANCE,
+  GHOST_PRIORITY_COOLDOWN,
 } from "./synergy";
 import { leagueEnemyPrestige } from "./league";
 import { useLeague } from "./league-store";
@@ -73,7 +74,7 @@ import {
   uniqueCaughtBonus,
   playerMaxHp,
   playerLevelOf,
-  struggleSelfHit,
+  confusionSelfHit,
   WILD_HP_MULT,
 } from "./formulas";
 import type { FormKind } from "./formulas";
@@ -157,6 +158,10 @@ let autoTapAcc = 0;
 /** Queued tap requests (auto-tap + manual). Consumed at the Speed-allowed rate. */
 let pendingTaps = 0;
 const MAX_PENDING_TAPS = 6;
+/** Attacks that must still land before a Ghost-synergy priority trigger is
+ *  allowed again. Set to GHOST_PRIORITY_COOLDOWN on a trigger, ticks down one
+ *  per attack (0 = ready). Cooldown 0 ⇒ every attack eligible. */
+let ghostPriorityCd = 0;
 let uiAcc = 0;
 let saveAcc = 0;
 let lastManualTap = 0;
@@ -634,6 +639,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     enemyAtkCd = 0;
     autoTapAcc = 0;
     pendingTaps = 0;
+    ghostPriorityCd = 0;
     lastManualTap = 0;
     respawnAt = 0;
     set(next);
@@ -667,6 +673,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     enemyAtkCd = 0;
     autoTapAcc = 0;
     pendingTaps = 0;
+    ghostPriorityCd = 0;
     lastManualTap = 0;
     respawnAt = 0;
     set(next);
@@ -1142,12 +1149,15 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       pendingTaps = Math.min(MAX_PENDING_TAPS, pendingTaps + 1);
     }
 
+    // Attacks resolved this tick — used to tick down the Ghost-priority cooldown.
+    let attacksThisTick = 0;
     const runPlayerTurns = () => {
       let g = 0;
       while (pendingTaps > 0 && playerAtkCd <= 0 && enemy.hp > 0 && playerHp > 0 && g++ < 8) {
         pendingTaps -= 1;
         playerAtkCd = playerInt;
         playerAtk();
+        attacksThisTick += 1;
         if (enemy.hp <= 0) {
           onEnemyFaint();
           break;
@@ -1159,6 +1169,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       while (enemyAtkCd <= 0 && enemy.hp > 0 && playerHp > 0 && g++ < 8) {
         enemyAtkCd = enemyInt;
         enemyAtk();
+        attacksThisTick += 1;
         // Steel-return / Ground-bleed synergy can KO the enemy on its own turn.
         if (enemy.hp <= 0) {
           onEnemyFaint();
@@ -1170,35 +1181,40 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // On a simultaneous turn the faster mon resolves first (so it can KO before
     // the slower one retaliates). Ghost synergy: a Ghost-type mon has a chance
     // to take its turn first regardless of Speed — the player's own roll wins
-    // over the enemy's.
+    // over the enemy's. A cooldown (GHOST_PRIORITY_COOLDOWN, counted in attacks)
+    // keeps it from firing every exchange.
+    const priorityReady = ghostPriorityCd <= 0;
     const playerGhostFirst =
+      priorityReady &&
       synergy.ghostFirstChance > 0 &&
       !!team[activeIndex] &&
       isType(team[activeIndex], "Ghost") &&
       Math.random() < synergy.ghostFirstChance;
     const enemyGhostFirst =
+      priorityReady &&
+      !playerGhostFirst &&
       enemySynergy.ghostFirstChance > 0 &&
       isType(enemy, "Ghost") &&
       Math.random() < enemySynergy.ghostFirstChance;
+    const ghostPriorityTriggered = playerGhostFirst || enemyGhostFirst;
+    if (ghostPriorityTriggered) ghostPriorityCd = GHOST_PRIORITY_COOLDOWN;
+
     let playerFirst = playerSpe >= enemySpe;
     if (playerGhostFirst) playerFirst = true;
     else if (enemyGhostFirst) playerFirst = false;
 
-    // Ghost rider: whoever loses the turn-order roll to a Ghost mon has a 50%
-    // chance to hurt itself with Struggle (PS: 50-BP typeless self-hit + ¼
-    // max-HP recoil) before the round resolves.
+    // Ghost rider: the TARGET (the ghost mon's opponent) makes ONE confusion
+    // self-hit check (50-BP typeless, its own Atk vs Def, no recoil) before the
+    // round resolves. The Ghost mon is untouched. One per trigger.
     if (playerGhostFirst && enemy.hp > 0 && Math.random() < GHOST_STRUGGLE_CHANCE) {
-      const eMax = combatStats(enemy, { synergy: enemySynergy, hpMult: WILD_HP_MULT }).maxHp;
-      enemy.hp = Math.max(0, enemy.hp - struggleSelfHit(enemy, eMax, enemySynergy));
+      enemy.hp = Math.max(0, enemy.hp - confusionSelfHit(enemy, enemySynergy));
       enemyHit = now;
       dirty = true;
       log = pushLog(log, `${enemy.name} hurt itself in its confusion!`, "system");
       if (enemy.hp <= 0) onEnemyFaint();
-    }
-    if (enemyGhostFirst && playerHp > 0 && team[activeIndex] && Math.random() < GHOST_STRUGGLE_CHANCE) {
+    } else if (enemyGhostFirst && playerHp > 0 && team[activeIndex] && Math.random() < GHOST_STRUGGLE_CHANCE) {
       const atkPoke = team[activeIndex];
-      const pMax = playerMaxHp(playerLevelOf(playerExp), s.playerPrestige, synergy.hpPct);
-      playerHp = Math.max(0, playerHp - struggleSelfHit(wildEffective(atkPoke, wildActivations).poke, pMax, synergy));
+      playerHp = Math.max(0, playerHp - confusionSelfHit(wildEffective(atkPoke, wildActivations).poke, synergy));
       playerHit = now;
       dirty = true;
       log = pushLog(log, `${atkPoke.name} hurt itself in its confusion!`, "system");
@@ -1211,6 +1227,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     } else {
       runEnemyTurns();
       runPlayerTurns();
+    }
+
+    // Tick the Ghost-priority cooldown down by the attacks that just landed —
+    // but not on the trigger tick itself (its attacks are the priority turn).
+    if (!ghostPriorityTriggered && ghostPriorityCd > 0) {
+      ghostPriorityCd = Math.max(0, ghostPriorityCd - attacksThisTick);
     }
 
     // Grass synergy: chance to clear a status from any party mon that has one.
@@ -1236,6 +1258,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
         enemyAtkCd = 0;
         autoTapAcc = 0;
         pendingTaps = 0;
+        ghostPriorityCd = 0;
         const spawned = spawnEnemy(region, route, anomalyCleared, dex, s.gmaxChanceMult);
         if (spawned) {
           enemy = spawned;
@@ -1412,6 +1435,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     enemyAtkCd = 0;
     autoTapAcc = 0;
     pendingTaps = 0;
+    ghostPriorityCd = 0;
     respawnAt = 0;
     const enemy = spawnEnemy(region, route, get().anomalyCleared, get().dex, get().gmaxChanceMult);
     let dex = get().dex;
@@ -1691,6 +1715,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       enemyAtkCd = 0;
       autoTapAcc = 0;
       pendingTaps = 0;
+      ghostPriorityCd = 0;
       set(next);
       return true;
     } catch {
@@ -1704,6 +1729,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     enemyAtkCd = 0;
     autoTapAcc = 0;
     pendingTaps = 0;
+    ghostPriorityCd = 0;
     set(emptyState());
   },
 }));
