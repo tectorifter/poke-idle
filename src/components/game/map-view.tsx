@@ -1,5 +1,11 @@
 import { Lock } from "lucide-react";
-import { REGION_UNLOCK, speciesByName, isRouteUnlocked, routeRequirementLabel } from "@/lib/game/dex";
+import {
+  REGION_UNLOCK,
+  REGION_PRESTIGE,
+  speciesByName,
+  isRouteUnlocked,
+  routeRequirementLabel,
+} from "@/lib/game/dex";
 import { regionUnlocked, ROUTES, uniqueCaught, useGame } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +26,12 @@ export function MapView() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Regions</p>
         <div className="mt-2 flex gap-2 overflow-x-auto pb-2">
           {regions.map((r) => {
-            const open = regionUnlocked(r, dex);
+            const open = regionUnlocked(r, dex, playerPrestige);
+            const reqDex = REGION_UNLOCK[r] ?? 0;
+            const reqP = REGION_PRESTIGE[r] ?? 0;
+            const reqLabel = [reqDex ? `Dex ${reqDex}` : "", reqP ? `P${reqP}` : ""]
+              .filter(Boolean)
+              .join(" · ");
             return (
               <button
                 key={r}
@@ -37,7 +48,7 @@ export function MapView() {
                 )}
               >
                 {r}
-                {!open && <span className="ml-1 text-[10px]">{REGION_UNLOCK[r]}</span>}
+                {!open && reqLabel && <span className="ml-1 text-[10px]">{reqLabel}</span>}
               </button>
             );
           })}
@@ -49,7 +60,7 @@ export function MapView() {
       <ul className="flex-1 space-y-2 overflow-y-auto px-4 pb-4">
         {routes.map(([id, def]) => {
           const locked = !isRouteUnlocked(region, id, dex, playerPrestige);
-          const lockLabel = locked ? routeRequirementLabel(region, id, dex) : null;
+          const lockLabel = locked ? routeRequirementLabel(region, id, dex, playerPrestige) : null;
           const known = def.pokes.filter((n) => speciesByName(n));
           const got = known.filter((n) => (dex[n] ?? 0) >= 5).length;
           const shiny = known.filter((n) => (dex[n] ?? 0) >= 7).length;
@@ -78,6 +89,7 @@ export function MapView() {
                       <>
                         Lv.{def.minLevel}–{def.maxLevel} · {got}/{known.length}
                         {def.dex ? ` · Dex ${def.dex}` : ""}
+                        {def.requiredPrestige ? ` · P${def.requiredPrestige}` : ""}
                         {shinyDone ? " · shiny" : ""}
                       </>
                     )}

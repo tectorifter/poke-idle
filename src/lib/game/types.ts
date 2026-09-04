@@ -109,8 +109,10 @@ export type RouteDef = {
   maxLevel: number;
   unlocked: boolean;
   /** Total Pokédex entries owned (species caught) required to unlock this route.
-   *  0 ⇒ no requirement. */
+   *  0 ⇒ no requirement. Read live by isRouteUnlocked + the Map view. */
   dex?: number;
+  /** Player prestige required to unlock this route. 0 ⇒ no requirement. Read
+   *  live by isRouteUnlocked + the Map view. */
   requiredPrestige?: number;
   weights?: number[];
   subRoutes?: string[];

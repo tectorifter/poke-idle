@@ -3,6 +3,7 @@ import {
   ROUTES,
   REGIONS,
   REGION_UNLOCK,
+  REGION_PRESTIGE,
   speciesByName,
   POKEDEX,
   SPECIES_UNLOCK,
@@ -483,6 +484,7 @@ function nextRouteInRegion(
   region: string,
   currentRoute: string,
   dex: Record<string, DexFlag>,
+  playerPrestige = 0,
 ): string | null {
   const regionRoutes = ROUTES[region];
   if (!regionRoutes) return null;
@@ -491,7 +493,7 @@ function nextRouteInRegion(
   if (idx < 0) return null;
   for (let i = idx + 1; i < ordered.length; i++) {
     const [id] = ordered[i];
-    if (isRouteUnlocked(region, id, dex)) return id;
+    if (isRouteUnlocked(region, id, dex, playerPrestige)) return id;
   }
   return null;
 }
@@ -1225,7 +1227,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     let region = s.region;
     let route = s.route;
     if (s.autoAdvanceRoute && isRouteDexComplete(region, route, dex)) {
-      const next = nextRouteInRegion(region, route, dex);
+      const next = nextRouteInRegion(region, route, dex, s.playerPrestige);
       if (next) {
         const def = ROUTES[region]?.[next];
         route = next;
@@ -1402,9 +1404,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
   setTab: (tab) => set({ tab }),
 
   setRoute: (region, route) => {
-    const caught = uniqueCaught(get().dex);
-    const need = REGION_UNLOCK[region] ?? 0;
-    if (caught < need) return;
+    if (!regionUnlocked(region, get().dex, get().playerPrestige)) return;
     const def = ROUTES[region]?.[route];
     if (!def) return;
     if (!isRouteUnlocked(region, route, get().dex, get().playerPrestige)) return;
@@ -1711,8 +1711,12 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 export function regionUnlocked(
   region: string,
   dex: Record<string, DexFlag>,
+  playerPrestige = 0,
 ): boolean {
-  return uniqueCaught(dex) >= (REGION_UNLOCK[region] ?? 0);
+  return (
+    uniqueCaught(dex) >= (REGION_UNLOCK[region] ?? 0) &&
+    playerPrestige >= (REGION_PRESTIGE[region] ?? 0)
+  );
 }
 
 export { REGIONS, ROUTES, uniqueCaught };

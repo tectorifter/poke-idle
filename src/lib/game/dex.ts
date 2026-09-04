@@ -12,20 +12,40 @@ export const EXP_TABLE = expTable as Record<GrowthRate, number[]>;
 export const LEAGUE = league as LeagueDef;
 
 export const REGIONS = Object.keys(ROUTES);
+/** Dex entries (species caught) needed to unlock each region. 0 ⇒ no gate.
+ *  All 0 for now — edit freely; the Map view reads these values live. */
 export const REGION_UNLOCK: Record<string, number> = {
   Kanto: 0,
-  Johto: 40,
-  Hoenn: 90,
-  Sinnoh: 150,
-  Unova: 220,
-  Kalos: 300,
-  Alolan: 380,
-  Galar: 460,
-  Paldea: 540,
-  "Kalos Anomaly": 620,
-  "Alola Anomaly": 620,
-  "Galar Anomaly": 620,
-  "Paldea Anomaly": 620,
+  Johto: 0,
+  Hoenn: 0,
+  Sinnoh: 0,
+  Unova: 0,
+  Kalos: 0,
+  Alolan: 0,
+  Galar: 0,
+  Paldea: 0,
+  "Kalos Anomaly": 0,
+  "Alola Anomaly": 0,
+  "Galar Anomaly": 0,
+  "Paldea Anomaly": 0,
+};
+
+/** Player prestige needed to unlock each region. 0 ⇒ no gate. All 0 for now —
+ *  edit freely; `regionUnlocked` and the Map view read these values live. */
+export const REGION_PRESTIGE: Record<string, number> = {
+  Kanto: 0,
+  Johto: 0,
+  Hoenn: 0,
+  Sinnoh: 0,
+  Unova: 0,
+  Kalos: 0,
+  Alolan: 0,
+  Galar: 0,
+  Paldea: 0,
+  "Kalos Anomaly": 0,
+  "Alola Anomaly": 0,
+  "Galar Anomaly": 0,
+  "Paldea Anomaly": 0,
 };
 
 const byName = new Map<string, Species>();
@@ -474,25 +494,38 @@ export function isRouteUnlocked(
   region: string,
   routeId: string,
   dex: Dex,
-  // Kept in the signature (and `requiredPrestige` kept in the data) but no longer
-  // gates anything — no route requires prestige for now.
-  _playerPrestige?: number,
+  playerPrestige = 0,
 ): boolean {
   const def = ROUTES[region]?.[routeId];
   if (!def) return false;
   if (def.dex && dexCaughtCount(dex) < def.dex) return false;
+  if (def.requiredPrestige && playerPrestige < def.requiredPrestige) return false;
   const pred = ROUTE_UNLOCK[`${region}/${routeId}`];
   return pred ? pred(dex) : true;
 }
 
-/** Short human label for what a locked route still needs (Map view). */
-export function routeRequirementLabel(region: string, routeId: string, dex?: Dex): string | null {
+/** Short human label for what a locked route still needs (Map view). Reads the
+ *  route's `dex` / `requiredPrestige` live, so editing routes.json is enough. */
+export function routeRequirementLabel(
+  region: string,
+  routeId: string,
+  dex?: Dex,
+  playerPrestige?: number,
+): string | null {
   if (`${region}/${routeId}` === "Kalos Anomaly/primal") return "Catch every Mega Evolution";
   const def = ROUTES[region]?.[routeId];
+  const parts: string[] = [];
   if (def?.dex) {
-    return dex ? `Dex ${dexCaughtCount(dex)} / ${def.dex}` : `Dex ${def.dex} required`;
+    parts.push(dex != null ? `Dex ${dexCaughtCount(dex)} / ${def.dex}` : `Dex ${def.dex}`);
   }
-  return null;
+  if (def?.requiredPrestige) {
+    parts.push(
+      playerPrestige != null
+        ? `Prestige ${playerPrestige} / ${def.requiredPrestige}`
+        : `Prestige ${def.requiredPrestige}`,
+    );
+  }
+  return parts.length ? parts.join(" · ") : null;
 }
 
 /** The three player-facing activation buttons. */
