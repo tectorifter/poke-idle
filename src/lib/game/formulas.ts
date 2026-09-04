@@ -14,19 +14,19 @@ export const MAX_AUTO_LEVEL = 15;
 /** Auto-tap request cadence (ms) at each upgrade level — index = level, a
  *  hand-tuned curve with front-loaded gains that taper toward 300 ms. */
 const AUTO_TAP_MS_BY_LEVEL = [
-  3000, 2000, 1500, 1100, 900, 750, 650, 570, 510, 460, 420, 390, 360, 340, 320, 300,
+  3000, 2600, 2500, 2000, 1800, 1550, 1250, 900, 610, 550, 420, 390, 360, 340, 320, 300,
 ] as const;
 
 export const BASE_AUTO_MS = AUTO_TAP_MS_BY_LEVEL[0];
 export const MIN_AUTO_MS = AUTO_TAP_MS_BY_LEVEL[MAX_AUTO_LEVEL];
 
-export const MIN_MANUAL_MS = 50;
+export const MIN_MANUAL_MS = 240;
 
 /** Flat prices for the first few upgrades; index = currentLevel (0 → level 1). */
-const AUTO_TAP_FLAT_COST = [500, 600, 700, 800] as const;
+const AUTO_TAP_FLAT_COST = [500, 600, 1000, 2000] as const;
 /** Exponential ramp after the flat tier, tuned so the final level costs ≈¥500k. */
-const AUTO_TAP_COST_BASE = 1200;
-const AUTO_TAP_COST_GROWTH = 1.828;
+const AUTO_TAP_COST_BASE = 2000;
+const AUTO_TAP_COST_GROWTH = 1.825;
 
 /** Cost to buy the NEXT auto-tap level (currentLevel is 0-based, 0 → level 1). */
 export function autoTapCost(currentLevel: number): number {
@@ -50,10 +50,10 @@ export const CATCH_TIER_ORDER: CatchTier[] = [
 
 /** Display name + flat price for ONE manual-throw charge of each ball type. */
 export const BALL_META: Record<CatchTier, { label: string; price: number }> = {
-  pokeball: { label: "Poké Ball", price: 200 },
-  greatball: { label: "Great Ball", price: 600 },
-  ultraball: { label: "Ultra Ball", price: 800 },
-  timerball: { label: "Timer Ball", price: 1000 },
+  pokeball: { label: "Poké Ball", price: 500 },
+  greatball: { label: "Great Ball", price: 1200 },
+  ultraball: { label: "Ultra Ball", price: 1600 },
+  timerball: { label: "Timer Ball", price: 2000 },
 };
 
 const TIER_LEVEL_OFFSET: Record<CatchTier, number> = {
@@ -277,6 +277,9 @@ export function combatStats(
     /** Party type-synergy buffs. Only pass this for player-team fighters — it
      *  adds flat Atk/Def/SpA/SpD/Spe and a max-HP % on top of the base line. */
     synergy?: TeamSynergy;
+    /** Flat max-HP multiplier applied last (wild enemies pass WILD_HP_MULT so
+     *  fights on a route last longer). Default 1 = no change. */
+    hpMult?: number;
   } = {},
 ) {
   const spec = speciesByName(poke.name);
@@ -341,6 +344,7 @@ export function combatStats(
     maxHp = Math.floor(maxHp * DYNAMAX_HP_MULT);
   }
   if (syn?.hpPct) maxHp = Math.floor(maxHp * (1 + syn.hpPct));
+  if (opts.hpMult && opts.hpMult !== 1) maxHp = Math.max(3, Math.floor(maxHp * opts.hpMult));
 
   return {
     maxHp,
@@ -400,12 +404,21 @@ export function levelDamageBonus(
  *  120-base-HP Pokémon (same growth curve as a mon's HP in `combatStats`). */
 export const PLAYER_HP_BASE_STAT = 120;
 
+/** Floor for the wild-route player pool — a fresh Lv.1 player has exactly this,
+ *  enough to eat ~4 hits from a starting-route wild mon. */
+export const PLAYER_HP_FLOOR = 40;
+
+/** Max-HP multiplier applied to WILD enemies only (via combatStats `hpMult`),
+ *  so route fights don't end in one or two hits. */
+export const WILD_HP_MULT = 2;
+
 /** Wild-route player HP pool. Independent of equipped mon; scales with level +
- *  prestige, then the Normal-type team-synergy +HP% (0 by default). */
+ *  prestige (never below PLAYER_HP_FLOOR), then the Normal-type team-synergy
+ *  +HP% (0 by default). */
 export function playerMaxHp(level: number, prestige: number, hpPct = 0): number {
   const lvl = Math.max(1, Math.min(100, level));
   const base = Math.max(
-    10,
+    PLAYER_HP_FLOOR,
     Math.floor(((PLAYER_HP_BASE_STAT * lvl) / 40) * playerPrestigeMult(prestige) * 3),
   );
   return Math.floor(base * (1 + hpPct));

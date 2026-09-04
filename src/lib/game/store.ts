@@ -73,6 +73,7 @@ import {
   playerMaxHp,
   playerLevelOf,
   struggleSelfHit,
+  WILD_HP_MULT,
 } from "./formulas";
 import type { FormKind } from "./formulas";
 import type {
@@ -447,7 +448,9 @@ function spawnEnemy(
     region.endsWith(" Anomaly") && anomalyCleared[routeId]
       ? leagueEnemyPrestige(useLeague.getState().progress)
       : 0;
-  return makeOwned(name, randomLevel(route.minLevel, route.maxLevel), shiny, prestige);
+  const mon = makeOwned(name, randomLevel(route.minLevel, route.maxLevel), shiny, prestige);
+  // Wild enemies get the WILD_HP_MULT bump so route fights don't end in a hit or two.
+  return { ...mon, hp: combatStats(mon, { hpMult: WILD_HP_MULT }).maxHp };
 }
 
 function markDex(
@@ -905,7 +908,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
       if (!defPoke || playerHp <= 0 || enemy.hp <= 0) return;
 
       // Residual / bleed / flinch / freeze-paralyze at the start of the enemy's turn.
-      const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+      const eMax = combatStats(enemy, { synergy: enemySynergy, hpMult: WILD_HP_MULT }).maxHp;
       const pre = resolvePreAttack(enemy.hp, eMax, enemy.status, enemy.bleed, enemy.flinch);
       enemy.hp = pre.hp;
       enemy.status = pre.status;
@@ -1183,7 +1186,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
     // chance to hurt itself with Struggle (PS: 50-BP typeless self-hit + ¼
     // max-HP recoil) before the round resolves.
     if (playerGhostFirst && enemy.hp > 0 && Math.random() < GHOST_STRUGGLE_CHANCE) {
-      const eMax = combatStats(enemy, { synergy: enemySynergy }).maxHp;
+      const eMax = combatStats(enemy, { synergy: enemySynergy, hpMult: WILD_HP_MULT }).maxHp;
       enemy.hp = Math.max(0, enemy.hp - struggleSelfHit(enemy, eMax, enemySynergy));
       enemyHit = now;
       dirty = true;
@@ -1514,7 +1517,7 @@ export const useGame = create<GameState & GameActions>((set, get) => ({
 
     const spec = speciesByName(e.name);
     // Manual: real formula with the enemy's live HP fraction + aim bonus.
-    const eMax = combatStats(e).maxHp;
+    const eMax = combatStats(e, { hpMult: WILD_HP_MULT }).maxHp;
     const hpFrac = eMax > 0 ? e.hp / eMax : 0;
     const chance = catchChance(spec?.catch ?? 45, ball, s.catchTier, s.catchLevel, hpFrac, true);
 

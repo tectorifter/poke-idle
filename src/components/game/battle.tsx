@@ -9,6 +9,7 @@ import {
   attacksPerSecond,
   uniqueCaughtBonus,
   playerMaxHp,
+  WILD_HP_MULT,
   playerLevelOf,
   playerThisLevelExp,
   playerNextLevelExp,
@@ -353,6 +354,7 @@ export function BattleView() {
                 poke={enemy}
                 hitAt={enemyHit}
                 side="wild"
+                hpMult={WILD_HP_MULT}
                 synergy={encounterSynergy(
                   enemy,
                   isAnomalyFormName(enemy.name) || isPermanentAnomalyCatch(enemy.name),
@@ -489,15 +491,18 @@ export function FighterCard({
   hitAt,
   side,
   synergy,
+  hpMult,
 }: {
   poke: import("@/lib/game/types").OwnedPoke;
   hitAt: number;
   side: "wild" | "you";
   /** Party synergy — pass for the player's mon so the HP bar shows the +HP%. */
   synergy?: import("@/lib/game/synergy").TeamSynergy;
+  /** Max-HP multiplier — pass WILD_HP_MULT for the wild enemy so the bar matches. */
+  hpMult?: number;
 }) {
   const spec = speciesByName(poke.name);
-  const stats = combatStats(poke, synergy ? { synergy } : undefined);
+  const stats = combatStats(poke, { ...(synergy ? { synergy } : {}), ...(hpMult ? { hpMult } : {}) });
   const lvl = levelOf(poke);
   const shaking = Date.now() - hitAt < 180;
   return (
