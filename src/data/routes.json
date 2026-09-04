@@ -19,12 +19,14 @@
       "name": "Route 1",
       "pokes": [
         "Pidgey",
-        "Rattata"
+        "Rattata",
+        "Oddish",
+        "Bellsprout"
       ],
-      "minLevel": 2,
+      "minLevel": 4,
       "maxLevel": 5,
-      "unlocked": true,
-      "dex": 0,
+      "unlocked": false,
+      "dex": 4,
       "requiredPrestige": 0
     },
     "route1": {
@@ -32,13 +34,15 @@
       "pokes": [
         "Pidgey",
         "Rattata",
+        "Oddish",
+        "Bellsprout",
         "Caterpie",
         "Weedle"
       ],
       "minLevel": 3,
       "maxLevel": 5,
-      "unlocked": true,
-      "dex": 0,
+      "unlocked": false,
+      "dex": 6,
       "requiredPrestige": 0
     },
     "special": {
@@ -50,23 +54,23 @@
         "Kakuna",
         "Pikachu"
       ],
-      "minLevel": 3,
-      "maxLevel": 5,
-      "unlocked": true,
-      "dex": 0,
+      "minLevel": 4,
+      "maxLevel": 7,
+      "unlocked": false,
+      "dex": 8,
       "requiredPrestige": 0
     },
     "special1": {
-      "name": "Pewter City",
+      "name": "Cinnabar Lab",
       "pokes": [
         "Omanyte",
         "Kabuto",
         "Aerodactyl"
       ],
-      "minLevel": 5,
-      "maxLevel": 5,
-      "unlocked": true,
-      "dex": 0,
+      "minLevel": 50,
+      "maxLevel": 60,
+      "unlocked": false,
+      "dex": 80,
       "requiredPrestige": 0
     },
     "route2": {

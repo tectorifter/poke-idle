@@ -22301,10 +22301,10 @@
     ],
     "catch": 40,
     "growth": "Medium Fast",
-    "hp": 45,
-    "atk": 80,
-    "def": 50,
-    "spa": 75,
+    "hp": 60,
+    "atk": 90,
+    "def": 60,
+    "spa": 90,
     "spd": 60,
     "spe": 120,
     "exp": 112
@@ -22317,12 +22317,12 @@
     ],
     "catch": 40,
     "growth": "Medium Fast",
-    "hp": 65,
+    "hp": 75,
     "atk": 75,
-    "def": 70,
-    "spa": 65,
+    "def": 85,
+    "spa": 75,
     "spd": 85,
-    "spe": 75,
-    "exp": 65
+    "spe": 85,
+    "exp": 112
   }
 ]
