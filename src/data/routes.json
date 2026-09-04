@@ -60,19 +60,6 @@
       "dex": 8,
       "requiredPrestige": 0
     },
-    "special1": {
-      "name": "Cinnabar Lab",
-      "pokes": [
-        "Omanyte",
-        "Kabuto",
-        "Aerodactyl"
-      ],
-      "minLevel": 50,
-      "maxLevel": 60,
-      "unlocked": false,
-      "dex": 80,
-      "requiredPrestige": 0
-    },
     "route2": {
       "name": "Route 3",
       "pokes": [
@@ -86,7 +73,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special2": {
+    "special1": {
       "name": "Mt. Moon",
       "pokes": [
         "Zubat",
@@ -183,7 +170,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special3": {
+    "special2": {
       "name": "Diglett Cave",
       "pokes": [
         "Diglett",
@@ -223,7 +210,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special4": {
+    "special3": {
       "name": "Rock Tunnel",
       "pokes": [
         "Zubat",
@@ -237,7 +224,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special5": {
+    "special4": {
       "name": "Power Plant",
       "pokes": [
         "Pikachu",
@@ -254,7 +241,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special6": {
+    "special5": {
       "name": "Pokemon Tower",
       "pokes": [
         "Gastly",
@@ -281,7 +268,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special7": {
+    "special6": {
       "name": "Celadon City",
       "pokes": [
         "Eevee",
@@ -293,7 +280,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special8": {
+    "special7": {
       "name": "Saffron City",
       "pokes": [
         "Hitmonlee",
@@ -420,7 +407,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special9": {
+    "special8": {
       "name": "Safari Zone",
       "pokes": [
         "Nidoran f",
@@ -442,7 +429,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special10": {
+    "special9": {
       "name": "Trading Center",
       "pokes": [
         "Farfetchd",
@@ -470,7 +457,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special11": {
+    "special10": {
       "name": "Seafom Island",
       "pokes": [
         "Zubat",
@@ -502,7 +489,7 @@
       "dex": 0,
       "requiredPrestige": 0
     },
-    "special12": {
+    "special11": {
       "name": "Pkmn Mansion",
       "pokes": [
         "Vulpix",
@@ -518,6 +505,19 @@
       "maxLevel": 34,
       "unlocked": true,
       "dex": 0,
+      "requiredPrestige": 0
+    },
+    "special12": {
+      "name": "Cinnabar Lab",
+      "pokes": [
+        "Omanyte",
+        "Kabuto",
+        "Aerodactyl"
+      ],
+      "minLevel": 50,
+      "maxLevel": 60,
+      "unlocked": false,
+      "dex": 80,
       "requiredPrestige": 0
     },
     "route20": {
